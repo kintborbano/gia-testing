@@ -14,6 +14,17 @@
 /coverage
 /test-results
 /playwright-report
+/tests
+/test
+/e2e
+**/__tests__/
+*.test.*
+*.spec.*
+
+# playwright
+playwright.config.*
+/.playwright
+.cache/ms-playwright
 
 # next.js
 /.next/
@@ -38,7 +49,9 @@ yarn-error.log*
 # claude code
 AGENTS.md
 CLAUDE.md
-.claude/settings.local.json
+.claude/
+.claudeignore
+.mcp.json
 
 # vercel
 .vercel
