@@ -1,0 +1,87 @@
+/* ── Intro Overlay ──────────────────────────────────────────────────────────
+   Stacked-document model: .intro-wrapper holds .intro-panel (100vh) and the
+   landing page vertically. The wrapper translates -100vh on reveal, moving
+   both panels as one continuous document. Timing is driven by Web Animations
+   API in IntroOverlay/index.tsx. All classes prefixed .intro-* to prevent
+   collisions. DELETED: .intro-overlay, @keyframes intro-overlay-exit,
+   .intro-overlay--exit.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Shared wrapper: fixed above all content, stacks panels vertically.
+   JS sets transform + will-change before/after animation.
+   React removes this class on completion → returns to normal document flow. */
+.intro-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+}
+
+/* First panel: exactly one viewport tall, cream background, logo centered.
+   Viewport naturally clips anything below 100vh during the intro.
+   JS sets display:none in the cleanup rAF; React then removes it from DOM. */
+.intro-panel {
+  position: relative;
+  z-index: 200;
+  height: 100vh;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Logo starts invisible; opacity + transform driven by JS animate() */
+.intro-overlay__logo {
+  width: clamp(80px, 20vw, 200px);
+  height: auto;
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+/* Logo entrance: fade-in + subtle scale-up (referenced by Web Animations API) */
+@keyframes intro-logo-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Page keyframes ─────────────────────────────────────────────────────── */
+
+@keyframes chibi-float {
+  0% {
+    transform: translateY(0px) rotateZ(-1.5deg);
+  }
+  50% {
+    transform: translateY(-8px) rotateZ(1.5deg);
+  }
+  100% {
+    transform: translateY(0px) rotateZ(-1.5deg);
+  }
+}
+
+@keyframes bubble-float {
+  from {
+    transform: translateY(2px);
+  }
+  to {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes chibi-bob {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
