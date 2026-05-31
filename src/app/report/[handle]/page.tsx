@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
 import { normalizeReportHandle } from '@/lib/dummy/reportData';
-import Main from '@/components/report/sections/Main';
-import ContentPillars from '@/components/report/sections/ContentPillars';
-import ContentStrategy from '@/components/report/sections/ContentStrategy';
-import AudienceIntelligence from '@/components/report/sections/AudienceIntelligence';
-import HookFormulaScripts from '@/components/report/sections/HookFormulaScripts';
-import VideoBreakdownSection from '@/components/report/sections/VideoBreakdownSection';
+import Main from '@/components/report/sections/Main/Main';
+import ContentPillars from '@/components/report/sections/ContentPillars/ContentPillars';
+import ContentStrategy from '@/components/report/sections/ContentStrategy/ContentStrategy';
+import AudienceIntelligence from '@/components/report/sections/AudienceIntelligence/AudienceIntelligence';
+import HookFormulaScripts from '@/components/report/sections/HookFormulaScripts/HookFormulaScripts';
+import VideoBreakdownSection from '@/components/report/sections/VideoBreakdownSection/VideoBreakdownSection';
 
 interface ReportPageProps {
   params: Promise<{ handle: string }>;

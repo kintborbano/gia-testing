@@ -6,7 +6,7 @@ import {
   ThumbsDown,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { SectionLabel } from '@/components/report/primitives';
+import { SectionLabel } from '@/components/report/Primitives/Primitives';
 
 const audienceCards: { icon: LucideIcon; label: string; text: string }[] = [
   {

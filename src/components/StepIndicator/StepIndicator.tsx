@@ -1,4 +1,4 @@
-import type { ActionStep } from '../_hooks/useActionSteps';
+import type { ActionStep } from '@/hooks/useActionSteps';
 
 const STEPS: Array<{ number: ActionStep; label: string }> = [
   { number: 1, label: 'Submit' },

@@ -160,7 +160,7 @@ function ExpandedDetails({
                   key={comment}
                   className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700 italic"
                 >
-                  “{comment}”
+                  &quot;{comment}&quot;
                 </span>
               ))}
             </div>

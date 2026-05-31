@@ -1,4 +1,4 @@
-import { TechModal } from '@/components/TechModal';
+import { TechModal } from '@/components/TechModal/TechModal';
 import type { Tech } from './featureData';
 
 interface FeatureTechModalProps {

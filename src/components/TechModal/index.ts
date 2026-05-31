@@ -1,1 +1,0 @@
-export { TechModal } from './TechModal';

@@ -1,5 +1,3 @@
-// Shared presentational primitives for the report sections.
-
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="text-xs font-semibold tracking-widest text-[#8c1f2e] uppercase">

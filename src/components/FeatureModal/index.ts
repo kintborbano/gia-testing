@@ -1,1 +1,0 @@
-export { FeatureModal } from './FeatureModal';

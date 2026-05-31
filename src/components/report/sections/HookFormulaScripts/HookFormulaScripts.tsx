@@ -1,4 +1,4 @@
-import { SectionLabel } from '@/components/report/primitives';
+import { SectionLabel } from '@/components/report/Primitives/Primitives';
 
 const hookFormula =
   "The highest-performing videos like the untitled one (16.67% ER) and '#levisjeans #bruh' (13.12% ER) consistently use a close-up, direct eye contact shot of the creator, often with a relatable text overlay.";
@@ -55,7 +55,7 @@ export default function HookFormulaScripts(): React.ReactElement {
                 Say this:
               </p>
               <p className="text-sm leading-relaxed text-gray-800 italic">
-                “{script.say}”
+                &quot;{script.say}&quot;
               </p>
             </div>
             <div className="mt-4 space-y-1">

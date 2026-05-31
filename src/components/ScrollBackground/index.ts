@@ -1,1 +1,0 @@
-export { ScrollBackground } from './ScrollBackground';
