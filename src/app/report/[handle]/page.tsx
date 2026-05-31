@@ -1,28 +1,50 @@
 import { notFound } from 'next/navigation';
-import Gia from '@/components/report/Gia';
-import MainCard from '@/components/report/MainCard';
-import { getDummyReportByHandle } from '@/lib/dummy/reportData';
+import { normalizeReportHandle } from '@/lib/dummy/reportData';
+import Main from '@/components/report/sections/Main';
+import ContentPillars from '@/components/report/sections/ContentPillars';
+import ContentStrategy from '@/components/report/sections/ContentStrategy';
+import AudienceIntelligence from '@/components/report/sections/AudienceIntelligence';
+import HookFormulaScripts from '@/components/report/sections/HookFormulaScripts';
+import VideoBreakdownSection from '@/components/report/sections/VideoBreakdownSection';
 
 interface ReportPageProps {
-  params: Promise<{
-    handle: string;
-  }>;
+  params: Promise<{ handle: string }>;
 }
 
-export default async function ReportPage({ params }: ReportPageProps) {
-  const { handle } = await params;
-  const report = getDummyReportByHandle(handle);
+export default async function ReportPage({
+  params,
+}: ReportPageProps): Promise<React.ReactElement> {
+  const { handle: rawHandle } = await params;
+  const handle = normalizeReportHandle(rawHandle);
 
-  if (!report) {
+  if (!handle) {
     notFound();
   }
 
   return (
-    <main className="min-h-screen w-full bg-gray-50 px-4 py-12">
-      <div className="mx-auto max-w-4xl space-y-8">
-        <Gia />
-        <MainCard data={report} />
-      </div>
+    <main className="mx-auto max-w-3xl space-y-12 px-4 py-12 text-gray-900 sm:px-6">
+      <Main handle={handle} />
+      <ContentPillars />
+      <ContentStrategy />
+      <AudienceIntelligence />
+      <HookFormulaScripts />
+      <VideoBreakdownSection handle={handle} />
+
+      {/* FOOTER ACTIONS */}
+      <section className="flex flex-col justify-center gap-3 pt-4 sm:flex-row">
+        <button
+          type="button"
+          className="rounded-full bg-[#8c1f2e] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#751a26]"
+        >
+          Download PDF Report
+        </button>
+        <button
+          type="button"
+          className="rounded-full border border-gray-300 px-6 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-100"
+        >
+          Start Over
+        </button>
+      </section>
     </main>
   );
 }

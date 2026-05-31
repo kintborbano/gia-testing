@@ -1,6 +1,14 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
 export default function Action(): React.ReactElement {
+  const router = useRouter();
+  const [username, setUsername] = useState('');
+
+  const handle = username.replace(/^@/, '').trim();
+
   return (
     <section
       id="bg-stop-action"
@@ -20,15 +28,22 @@ export default function Action(): React.ReactElement {
             and tells you what your audience is actually asking for.
           </p>
           <p className="mt-6 font-sans text-[24px] leading-[1.25] font-bold tracking-[-0.12px]">
-            Paste your TikTok Link to try:
+            Enter your TikTok username to try:
           </p>
           <form
             className="relative flex w-[380px] max-w-full items-center"
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!handle) return;
+              router.push(`/report/${encodeURIComponent(handle)}`);
+            }}
           >
             <input
-              type="url"
-              aria-label="TikTok link"
+              type="text"
+              aria-label="TikTok username"
+              placeholder="@username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="h-[44px] w-full rounded-full border border-black bg-white px-5 font-sans text-[15px] text-black outline-none"
             />
             <button
