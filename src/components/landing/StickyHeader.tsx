@@ -46,15 +46,15 @@ export default function StickyHeader(): React.ReactElement {
           className="h-[42px] w-auto"
           priority
         />
-        <div className="flex h-[38px] w-[153px] items-center justify-center rounded-full border border-[#8c1f2e] bg-white">
+        <div className="flex h-[38px] w-auto items-center justify-center rounded-full border border-[#8c1f2e] bg-white px-5">
           <p className="flex items-center gap-1.5 font-sans text-[13px] tracking-[-0.26px] text-[#8c1f2e]">
             powered by
             <Image
-              src="/images/sofi logo.png"
+              src="/logos/sofi-ai-logo.svg"
               alt="SOFI AI"
-              width={1080}
-              height={1080}
-              className="h-[28px] w-auto"
+              width={1675}
+              height={489}
+              className="h-[15px] w-auto"
             />
           </p>
         </div>

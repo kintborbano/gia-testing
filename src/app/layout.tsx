@@ -11,6 +11,11 @@ const instrumentSans = localFont({
       style: 'normal',
     },
     {
+      path: '../../public/fonts/InstrumentSans-Medium.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
       path: '../../public/fonts/InstrumentSans-SemiBold.woff2',
       weight: '600',
       style: 'normal',
