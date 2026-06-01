@@ -4,7 +4,11 @@ import { useEffect } from 'react';
 import Lenis from 'lenis';
 import { setLenisInstance } from '@/stores/lenisStore';
 
-export function SmoothScroll({ children }: { children: React.ReactNode }) {
+export default function SmoothScroll({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   useEffect(() => {
     const lenis = new Lenis({
       autoRaf: true,

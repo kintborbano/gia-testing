@@ -1,7 +1,7 @@
 import StickyHeader from '@/components/landing/StickyHeader';
 import IntroOverlay from '@/components/landing/IntroOverlay';
-import { SmoothScroll } from '@/components/landing/SmoothScroll';
-import { ScrollBackground } from '@/components/landing/ScrollBackground';
+import SmoothScroll from '@/components/landing/SmoothScroll';
+import ScrollBackground from '@/components/landing/ScrollBackground';
 import Hero from '@/components/landing/Hero';
 import Features from '@/components/landing/Features/Features';
 import How from '@/components/landing/How';

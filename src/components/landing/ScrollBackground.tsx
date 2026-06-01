@@ -32,7 +32,7 @@ function toRgb([r, g, b]: [number, number, number]): string {
   return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
 }
 
-export function ScrollBackground(): React.ReactElement {
+export default function ScrollBackground(): React.ReactElement {
   const [color, setColor] = useState<string>(toRgb(STOPS[0].color));
   const rafRef = useRef<number | null>(null);
   const positionsRef = useRef<number[]>([]);

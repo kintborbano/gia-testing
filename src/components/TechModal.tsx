@@ -8,7 +8,7 @@ interface TechModalProps {
   onClose: () => void;
 }
 
-export function TechModal({
+export default function TechModal({
   label,
   description,
   onClose,
