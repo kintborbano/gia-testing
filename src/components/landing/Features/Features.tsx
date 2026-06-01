@@ -24,11 +24,15 @@ export default function Features(): React.ReactElement {
               id="features-headline"
               className="font-young-serif w-full text-[64px] leading-tight"
             >
-              your vision is great... but your strategy is just vibes.
+              part strategist. part analyst.
+              <br />
+              part brutally honest friend.
             </h2>
-            <p className="w-[652px] font-sans text-[20px] leading-normal">
-              Beyond data, GIA gives you the tea on your account, with receipts
-              to back it up, and ways to slay your next post.
+            <p className="w-[700px] font-sans text-[20px] leading-normal">
+              GIA reviews your TikTok account video by video, comment by
+              comment, then turns everything into a personalized growth report.
+              No generic AI prompts. No recycled creator advice. Just insights
+              pulled directly from your audience.
             </p>
           </div>
         </div>
