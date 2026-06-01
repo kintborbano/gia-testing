@@ -5,7 +5,7 @@ export const GIA_SLOT = {
   gridRow: 1,
   width: 613,
   height: 394,
-  marginLeft: 128,
+  marginLeft: 317,
   marginTop: 0,
 } as const;
 
@@ -18,7 +18,7 @@ export default function ChibiLaptopScene(): React.ReactElement {
         alt="GIA on Laptop"
         className="pointer-events-none h-full w-full object-contain"
         src={GIA_ON_LAPTOP}
-        style={{ transform: 'scale(1.18)' }}
+        style={{ transform: 'scale(1.4)' }}
       />
     </div>
   );

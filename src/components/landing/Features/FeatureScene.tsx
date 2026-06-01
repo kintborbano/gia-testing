@@ -12,6 +12,8 @@ type FloatingObjectData = {
   marginLeft: number;
   marginTop: number;
   alt: string;
+  // Horizontal nudge (px) for the label when the artwork isn't visually centered.
+  labelOffsetX?: number;
 };
 
 const FLOATING_OBJECTS: FloatingObjectData[] = [
@@ -21,40 +23,42 @@ const FLOATING_OBJECTS: FloatingObjectData[] = [
     marginLeft: 0,
     marginTop: 116,
     alt: 'Hook Scoring',
+    // Pencil pokes out on the right, so bias the label left onto the notepad.
+    labelOffsetX: -10,
   },
   {
     outerWidth: 117,
     outerHeight: 98,
-    marginLeft: 80,
-    marginTop: 7,
+    marginLeft: 1058,
+    marginTop: 166,
     alt: 'GIA Score',
   },
   {
     outerWidth: 125,
     outerHeight: 99,
-    marginLeft: 182,
+    marginLeft: 276,
     marginTop: 70,
     alt: 'Performance Patterns',
   },
   {
     outerWidth: 118,
     outerHeight: 107,
-    marginLeft: 596,
-    marginTop: 41,
+    marginLeft: 121,
+    marginTop: -30,
     alt: 'Shareable Story Card',
   },
   {
     outerWidth: 108,
     outerHeight: 107,
-    marginLeft: 706,
-    marginTop: 114,
+    marginLeft: 1123,
+    marginTop: 0,
     alt: 'Content Roadmap',
   },
   {
     outerWidth: 140,
     outerHeight: 105,
-    marginLeft: 744,
-    marginTop: 0,
+    marginLeft: 895,
+    marginTop: 41,
     alt: 'Comment Intelligence',
   },
 ];
@@ -65,8 +69,10 @@ function FloatingObject({
   marginLeft,
   marginTop,
   alt,
+  labelOffsetX = 0,
   animStyle,
 }: FloatingObjectData & { animStyle?: CSSProperties }) {
+  const [first, ...rest] = alt.split(' ');
   return (
     <div
       className="relative"
@@ -85,6 +91,13 @@ function FloatingObject({
         className="pointer-events-none h-full w-full object-contain"
         src={`/features/${encodeURIComponent(alt)}.png`}
       />
+      <div
+        className="font-pixelify pointer-events-none absolute top-full left-0 mt-3 w-full text-center leading-tight"
+        style={{ transform: `translateX(${labelOffsetX}px)` }}
+      >
+        <div>{first}</div>
+        <div>{rest.join(' ')}</div>
+      </div>
     </div>
   );
 }
