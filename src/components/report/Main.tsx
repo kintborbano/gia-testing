@@ -20,7 +20,7 @@ export default function Main({
       {/* INTRO */}
       <section className="flex flex-col items-center text-center">
         <Image
-          src="/logo.png"
+          src="/logos/gia-logo.svg"
           alt="GIA"
           width={689}
           height={480}

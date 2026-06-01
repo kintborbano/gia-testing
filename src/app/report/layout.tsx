@@ -10,7 +10,7 @@ export default function ReportLayout({
       <header className="flex items-center justify-center border-b border-black/10 bg-white px-6 py-3">
         <div className="flex items-center gap-3">
           <Image
-            src="/logo.png"
+            src="/logos/gia-logo.svg"
             alt="GIA"
             width={689}
             height={480}

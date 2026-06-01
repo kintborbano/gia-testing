@@ -1,4 +1,4 @@
-const GIA_ON_LAPTOP = '/features/gia-on-laptop.png';
+const GIA_ON_LAPTOP = '/images/gia-on-laptop.png';
 
 export const GIA_SLOT = {
   gridColumn: 1,

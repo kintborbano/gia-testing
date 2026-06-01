@@ -22,7 +22,7 @@ export default function IntroOverlay({ children }: Props): React.ReactElement {
           <Image
             ref={logoRef}
             id="intro-logo"
-            src="/logo.png"
+            src="/logos/gia-logo.svg"
             width={689}
             height={480}
             alt="GIA by SOFI AI"

@@ -89,7 +89,7 @@ function FloatingObject({
       <img
         alt={alt}
         className="pointer-events-none h-full w-full object-contain"
-        src={`/features/${encodeURIComponent(alt)}.png`}
+        src={`/images/${encodeURIComponent(alt)}.png`}
       />
       <div
         className="font-pixelify pointer-events-none absolute top-full left-0 mt-3 w-full text-center leading-tight"

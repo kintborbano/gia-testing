@@ -39,11 +39,11 @@ export default function StickyHeader(): React.ReactElement {
     >
       <div className="flex items-center gap-3">
         <Image
-          src="/logo.png"
+          src="/logos/gia-logo.svg"
           alt="GIA"
           width={689}
           height={480}
-          className="h-[42px] w-auto"
+          className="h-[44px] w-auto"
           priority
         />
         <div className="flex h-[38px] w-auto items-center justify-center rounded-full border border-[#8c1f2e] bg-white px-5">

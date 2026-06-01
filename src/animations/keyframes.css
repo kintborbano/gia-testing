@@ -33,7 +33,7 @@
 
 /* Logo starts invisible; opacity + transform driven by JS animate() */
 .intro-overlay__logo {
-  width: clamp(80px, 20vw, 200px);
+  width: clamp(160px, 35vw, 380px);
   height: auto;
   opacity: 0;
   will-change: opacity, transform;
