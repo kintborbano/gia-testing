@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactElement } from 'react';
-import SpeechBubble from '@/components/SpeechBubble/SpeechBubble';
+import SpeechBubble from '@/components/SpeechBubble';
 
 interface HeroBubblesProps {
   opacity: number;

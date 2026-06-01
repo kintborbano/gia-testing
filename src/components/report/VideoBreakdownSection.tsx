@@ -1,6 +1,6 @@
-import { SectionLabel } from '@/components/report/Primitives/Primitives';
-import VideoBreakdown from '@/components/report/VideoBreakdown/VideoBreakdown';
-import type { Video } from '@/components/report/VideoBreakdown/VideoBreakdown';
+import { SectionLabel } from '@/components/report/Primitives';
+import VideoBreakdown from '@/components/report/VideoBreakdown';
+import type { Video } from '@/components/report/VideoBreakdown';
 
 const videos: Video[] = [
   {

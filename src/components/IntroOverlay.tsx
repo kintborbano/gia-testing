@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useRef } from 'react';
-import { useIntroAnimation } from './useIntroAnimation';
+import { useIntroAnimation } from '@/hooks/useIntroAnimation';
 
 interface Props {
   children: React.ReactNode;

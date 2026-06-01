@@ -1,6 +1,6 @@
 'use client';
 
-import { useFeatureSectionAnimation } from './useFeatureSectionAnimation';
+import { useFeatureSectionAnimation } from '@/hooks/useFeatureSectionAnimation';
 import FeatureScene from './FeatureScene';
 import Action from './Action';
 

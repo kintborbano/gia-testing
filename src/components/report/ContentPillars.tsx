@@ -1,4 +1,4 @@
-import { SectionLabel } from '@/components/report/Primitives/Primitives';
+import { SectionLabel } from '@/components/report/Primitives';
 
 const contentPillars = [
   {

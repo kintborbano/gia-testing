@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { SectionLabel, Pill } from '@/components/report/Primitives/Primitives';
+import { SectionLabel, Pill } from '@/components/report/Primitives';
 
 const giaTakeHooks = [
   'relatable everyday experience',

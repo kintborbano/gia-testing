@@ -6,7 +6,7 @@ import {
   LOGO_ENTER_DURATION,
   LOGO_HOLD_DURATION,
   WRAPPER_EXIT_DURATION,
-} from './introTiming';
+} from '@/animations/introTiming';
 import { resizeLenis, startLenis } from './lenisControls';
 import { useIntroScrollLock } from './useIntroScrollLock';
 

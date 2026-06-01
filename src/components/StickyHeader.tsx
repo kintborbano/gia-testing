@@ -3,17 +3,17 @@
 import { useMemo, useSyncExternalStore } from 'react';
 import type { CSSProperties } from 'react';
 import Image from 'next/image';
-import { useScrollProgress } from '../../hooks/useScrollProgress';
+import { useScrollProgress } from '@/hooks/useScrollProgress';
 import {
   getHeaderHeight,
   getHeaderBorderOpacity,
   SCROLL_RANGE,
-} from '../../animations/headerAnimations';
+} from '@/animations/headerAnimations';
 import {
   getPageBackgroundServerSnapshot,
   getPageBackgroundSnapshot,
   subscribeToPageBackground,
-} from '../../hooks/pageBackgroundStore';
+} from '@/hooks/pageBackgroundStore';
 
 export default function StickyHeader(): React.ReactElement {
   const t = useScrollProgress(0, SCROLL_RANGE);

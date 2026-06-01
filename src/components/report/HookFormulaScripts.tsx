@@ -1,4 +1,4 @@
-import { SectionLabel } from '@/components/report/Primitives/Primitives';
+import { SectionLabel } from '@/components/report/Primitives';
 
 const hookFormula =
   "The highest-performing videos like the untitled one (16.67% ER) and '#levisjeans #bruh' (13.12% ER) consistently use a close-up, direct eye contact shot of the creator, often with a relatable text overlay.";

@@ -1,7 +1,4 @@
-import {
-  SectionLabel,
-  Bullet,
-} from '@/components/report/Primitives/Primitives';
+import { SectionLabel, Bullet } from '@/components/report/Primitives';
 
 const postingStrategy = [
   'Double down on relatable university student life content — videos focusing on this theme average 10.44% ER, significantly outperforming the overall average.',

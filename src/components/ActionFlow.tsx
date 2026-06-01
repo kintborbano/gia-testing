@@ -1,10 +1,10 @@
 'use client';
 
 import { useActionSteps } from '@/hooks/useActionSteps';
-import ProcessingStep from '@/components/ProcessingStep/ProcessingStep';
-import ReportStep from '@/components/ReportStep/ReportStep';
-import StepIndicator from '@/components/StepIndicator/StepIndicator';
-import TiktokInputStep from '@/components/TiktokInputStep/TiktokInputStep';
+import ProcessingStep from '@/components/ProcessingStep';
+import ReportStep from '@/components/ReportStep';
+import StepIndicator from '@/components/StepIndicator';
+import TiktokInputStep from '@/components/TiktokInputStep';
 
 export default function ActionFlow(): React.ReactElement {
   const {
