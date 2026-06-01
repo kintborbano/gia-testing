@@ -7,7 +7,7 @@ import {
   LOGO_HOLD_DURATION,
   WRAPPER_EXIT_DURATION,
 } from '@/animations/introTiming';
-import { resizeLenis, startLenis } from './lenisControls';
+import { resizeLenis, startLenis } from '@/lib/scroll/lenisControls';
 import { useIntroScrollLock } from './useIntroScrollLock';
 
 type IntroPhase = 'animating' | 'done';

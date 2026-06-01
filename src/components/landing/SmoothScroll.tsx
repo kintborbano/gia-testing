@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Lenis from 'lenis';
-import { setLenisInstance } from '@/hooks/lenisStore';
+import { setLenisInstance } from '@/stores/lenisStore';
 
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
   useEffect(() => {

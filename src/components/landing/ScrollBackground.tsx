@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { setPageBackgroundColor } from '@/hooks/pageBackgroundStore';
+import { setPageBackgroundColor } from '@/stores/pageBackgroundStore';
 
 type Stop = {
   anchorId: string;

@@ -13,7 +13,7 @@ import {
   getPageBackgroundServerSnapshot,
   getPageBackgroundSnapshot,
   subscribeToPageBackground,
-} from '@/hooks/pageBackgroundStore';
+} from '@/stores/pageBackgroundStore';
 
 export default function StickyHeader(): React.ReactElement {
   const t = useScrollProgress(0, SCROLL_RANGE);

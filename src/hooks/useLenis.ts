@@ -6,7 +6,7 @@ import {
   getLenisServerSnapshot,
   getLenisSnapshot,
   subscribeToLenis,
-} from './lenisStore';
+} from '@/stores/lenisStore';
 
 export function useLenis(): Lenis | null {
   return useSyncExternalStore(

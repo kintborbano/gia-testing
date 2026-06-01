@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
-import { lockIntroScroll } from './scrollLock';
+import { lockIntroScroll } from '@/lib/scroll/scrollLock';
 
 interface IntroScrollLock {
   releaseScrollLock: () => void;
