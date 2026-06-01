@@ -1,4 +1,4 @@
-import TechModal from '@/components/TechModal';
+import Modal from '@/components/ui/Modal';
 import type { Tech } from './featureData';
 
 interface FeatureTechModalProps {
@@ -15,8 +15,8 @@ export default function FeatureTechModal({
   }
 
   return (
-    <TechModal
-      label={activeTech.label}
+    <Modal
+      title={activeTech.label}
       description={activeTech.description}
       onClose={onClose}
     />
