@@ -12,6 +12,11 @@ const FRAME_START = 3000;
 const FRAME_W = 1200;
 const FRAME_H = 800;
 
+// Hold the poster frame for this slice of the section's progress before the
+// laptop starts scrubbing, so the animation eases in rather than starting the
+// instant the section appears.
+const LAPTOP_DELAY = 0.15;
+
 function framePath(i: number): string {
   return `/images/laptop-frames/final2_prob${FRAME_START + i}.webp`;
 }
@@ -104,12 +109,14 @@ export default function ChibiLaptopScene({
     return () => io.disconnect();
   }, []);
 
-  // Draw the frame matching the current scroll progress.
+  // Draw the frame matching the current scroll progress. The laptop holds its
+  // first frame through LAPTOP_DELAY, then scrubs across the remaining progress.
   useEffect(() => {
-    const index = Math.min(
-      FRAME_COUNT - 1,
-      Math.max(0, Math.round(animationProgress * (FRAME_COUNT - 1)))
+    const scrub = Math.min(
+      1,
+      Math.max(0, (animationProgress - LAPTOP_DELAY) / (1 - LAPTOP_DELAY))
     );
+    const index = Math.round(scrub * (FRAME_COUNT - 1));
     if (index === currentFrameRef.current) return;
     currentFrameRef.current = index;
     drawFrame(index);
