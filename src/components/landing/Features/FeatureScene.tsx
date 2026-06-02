@@ -119,7 +119,7 @@ export default function FeatureScene({
           placeItems: 'start',
         }}
       >
-        <ChibiLaptopScene />
+        <ChibiLaptopScene animationProgress={animationProgress} />
 
         {FLOATING_OBJECTS.map((obj, index) => {
           const origin = {
