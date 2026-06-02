@@ -3,6 +3,7 @@
 import HeroBubbles from '@/components/ui/HeroBubbles';
 import type { CSSProperties } from 'react';
 import { useScrollProgress } from '@/hooks/useScrollProgress';
+import { getLenisSnapshot } from '@/stores/lenisStore';
 import {
   SCROLL_RANGE,
   getLeftChibiStyle,
@@ -29,6 +30,18 @@ export default function Hero({
 }: HeroProps = {}): React.ReactElement {
   const t = useScrollProgress(0, SCROLL_RANGE);
   const bubbleOpacity = getSpeechBubbleOpacity(t);
+
+  const scrollToHow = (): void => {
+    const target = document.getElementById('bg-stop-how');
+    if (!target) return;
+
+    const lenis = getLenisSnapshot();
+    if (lenis) {
+      lenis.scrollTo(target, { offset: -HEADER_HEIGHT_LARGE });
+    } else {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <section
@@ -109,14 +122,15 @@ export default function Hero({
 
           {/* Design calls for Instrument Sans Bold (700); only 400/600 are loaded — falls back to 600 */}
           <div className="flex items-center justify-center gap-[34px]">
-            <button
-              type="button"
+            <a
+              href="/action"
               className="border-brand-primary text-brand-primary flex h-[60px] w-[266px] items-center justify-center rounded-[34px] border bg-white font-sans text-[16px] font-bold tracking-[-0.32px] shadow-[5px_5px_5px_0px_var(--brand-primary)]"
             >
               ANALYZE MY TIKTOK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→
-            </button>
+            </a>
             <button
               type="button"
+              onClick={scrollToHow}
               className="border-brand-primary bg-brand-primary flex h-[60px] w-[266px] items-center justify-center rounded-[34px] border font-sans text-[16px] font-bold tracking-[-0.32px] text-white"
             >
               SEE HOW IT WORKS
