@@ -8,7 +8,7 @@ import How from '@/components/landing/How';
 import Story from '@/components/landing/Story';
 import Pricing from '@/components/landing/Pricing';
 import FAQ from '@/components/landing/FAQ';
-import Comparison from '@/components/landing/Comparison';
+import CTA from '@/components/landing/CTA';
 import Footer from '@/components/landing/Footer';
 import { HEADER_HEIGHT_LARGE } from '@/animations/headerAnimations';
 
@@ -28,7 +28,7 @@ export default function Home(): React.ReactElement {
           <Story />
           <Pricing />
           <FAQ />
-          <Comparison />
+          <CTA />
           <Footer />
         </main>
       </SmoothScroll>

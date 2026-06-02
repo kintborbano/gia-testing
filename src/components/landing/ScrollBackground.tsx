@@ -16,7 +16,7 @@ const STOPS: Stop[] = [
   { anchorId: 'bg-stop-story', color: [254, 247, 221] },
   { anchorId: 'bg-stop-pricing', color: [254, 247, 221] },
   { anchorId: 'bg-stop-faq', color: [255, 255, 255] },
-  { anchorId: 'bg-stop-comparison', color: [254, 247, 221] },
+  { anchorId: 'bg-stop-cta', color: [255, 255, 255] },
   { anchorId: 'bg-stop-footer', color: [254, 247, 221] },
 ];
 
