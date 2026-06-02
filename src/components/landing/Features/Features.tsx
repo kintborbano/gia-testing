@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useFeatureSectionAnimation } from '@/hooks/useFeatureSectionAnimation';
 import FeatureScene from './FeatureScene';
 import Action from './Action';
@@ -7,6 +8,10 @@ import Action from './Action';
 export default function Features(): React.ReactElement {
   const { sectionRef, animationProgress, containerStyle } =
     useFeatureSectionAnimation();
+
+  // Hold the scene on its poster frame until every laptop frame is decoded, so
+  // the scroll-driven scrub never stutters on a synchronous image decode.
+  const [framesReady, setFramesReady] = useState(false);
 
   return (
     <>
@@ -38,7 +43,10 @@ export default function Features(): React.ReactElement {
         </div>
 
         <div style={containerStyle}>
-          <FeatureScene animationProgress={animationProgress} />
+          <FeatureScene
+            animationProgress={framesReady ? animationProgress : 0}
+            onFramesReady={() => setFramesReady(true)}
+          />
         </div>
       </section>
 

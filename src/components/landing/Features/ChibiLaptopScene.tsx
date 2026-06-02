@@ -5,10 +5,12 @@ import { useEffect, useRef, useState } from 'react';
 // Laptop animation frames (Kling export, background removed to transparent so
 // the feature icons can peek out around the laptop as they explode outward).
 // Files: public/images/laptop-frames/final2_prob3000.webp ... 3119.
+// Exported at display resolution (not the original 1764px) to keep per-frame
+// decode + draw cheap during the scroll scrub.
 const FRAME_COUNT = 120;
 const FRAME_START = 3000;
-const FRAME_W = 1764;
-const FRAME_H = 1176;
+const FRAME_W = 1200;
+const FRAME_H = 800;
 
 function framePath(i: number): string {
   return `/images/laptop-frames/final2_prob${FRAME_START + i}.webp`;
@@ -26,15 +28,25 @@ export const GIA_SLOT = {
 interface ChibiLaptopSceneProps {
   // 0 → 1 progress through the Features section.
   animationProgress: number;
+  // Called once every frame has been loaded AND decoded, so scrubbing through
+  // them never blocks the main thread on a synchronous decode.
+  onReady?: () => void;
 }
 
 export default function ChibiLaptopScene({
   animationProgress,
+  onReady,
 }: ChibiLaptopSceneProps): React.ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef<number>(-1);
-  const [ready, setReady] = useState(false);
+  const [posterReady, setPosterReady] = useState(false);
+
+  // Keep the latest onReady without re-running the loader effect.
+  const onReadyRef = useRef(onReady);
+  useEffect(() => {
+    onReadyRef.current = onReady;
+  }, [onReady]);
 
   const drawFrame = (index: number) => {
     const canvas = canvasRef.current;
@@ -46,7 +58,8 @@ export default function ChibiLaptopScene({
     ctx.drawImage(img, 0, 0, FRAME_W, FRAME_H);
   };
 
-  // Lazily preload the frame sequence once the laptop nears the viewport.
+  // Lazily preload + decode the frame sequence once the laptop nears the
+  // viewport. Decoding up front means drawImage during scroll never blocks.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -57,14 +70,31 @@ export default function ChibiLaptopScene({
         io.disconnect();
 
         const images: HTMLImageElement[] = [];
+        let decoded = 0;
+
+        const onDecoded = (i: number) => {
+          decoded += 1;
+          if (i === 0) {
+            setPosterReady(true);
+            drawFrame(0);
+          }
+          if (i === currentFrameRef.current) drawFrame(i);
+          if (decoded === FRAME_COUNT) onReadyRef.current?.();
+        };
+
         for (let i = 0; i < FRAME_COUNT; i++) {
           const img = new Image();
-          img.onload = () => {
-            if (i === 0) setReady(true);
-            if (i === currentFrameRef.current) drawFrame(i);
-          };
           img.src = framePath(i);
           images.push(img);
+          // decode() resolves once the bitmap is ready off the main thread.
+          // Fall back to load events if a browser rejects decode().
+          img.decode().then(
+            () => onDecoded(i),
+            () => {
+              if (img.complete) onDecoded(i);
+              else img.onload = () => onDecoded(i);
+            }
+          );
         }
         imagesRef.current = images;
       },
@@ -97,7 +127,7 @@ export default function ChibiLaptopScene({
         className="pointer-events-none h-full w-full object-contain"
         style={{
           transform: 'scale(1.4)',
-          opacity: ready ? 1 : 0,
+          opacity: posterReady ? 1 : 0,
           transition: 'opacity 0.3s ease',
         }}
       />

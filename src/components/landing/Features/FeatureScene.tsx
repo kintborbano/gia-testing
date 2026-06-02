@@ -104,10 +104,12 @@ function FloatingObject({
 
 interface FeatureSceneProps {
   animationProgress: number;
+  onFramesReady?: () => void;
 }
 
 export default function FeatureScene({
   animationProgress,
+  onFramesReady,
 }: FeatureSceneProps): React.ReactElement {
   return (
     <div className="flex h-full w-full items-center justify-center">
@@ -119,7 +121,10 @@ export default function FeatureScene({
           placeItems: 'start',
         }}
       >
-        <ChibiLaptopScene animationProgress={animationProgress} />
+        <ChibiLaptopScene
+          animationProgress={animationProgress}
+          onReady={onFramesReady}
+        />
 
         {FLOATING_OBJECTS.map((obj, index) => {
           const origin = {
