@@ -3,6 +3,7 @@
 import { useMemo, useSyncExternalStore } from 'react';
 import type { CSSProperties } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useScrollProgress } from '@/hooks/useScrollProgress';
 import {
   getHeaderHeight,
@@ -17,11 +18,15 @@ import {
 import PoweredByPill from '@/components/ui/PoweredByPill';
 
 const NAV_LINKS = [
-  { label: 'MEET GIA', href: '#features-section' },
-  { label: 'PRICING', href: '#bg-stop-pricing' },
-  { label: 'FAQs', href: '#bg-stop-faq' },
+  { label: 'MEET GIA', href: '/meet-gia' },
+  { label: 'PRICING', href: '/pricing' },
+  { label: 'FAQs', href: '/faq' },
+  // No dedicated About Us page yet — point at the footer for now.
   { label: 'ABOUT US', href: '#bg-stop-footer' },
 ] as const;
+
+const linkClassName =
+  'text-brand-primary font-sans text-[14px] font-medium tracking-[0.5px] hover:font-bold';
 
 export default function StickyHeader(): React.ReactElement {
   const t = useScrollProgress(0, SCROLL_RANGE);
@@ -45,7 +50,11 @@ export default function StickyHeader(): React.ReactElement {
       className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-6 transition-none will-change-[height,background,border-bottom] md:px-10"
       style={headerStyle}
     >
-      <div className="flex items-center gap-3">
+      <Link
+        href="/"
+        aria-label="Go to homepage"
+        className="flex items-center gap-3"
+      >
         <Image
           src="/logos/gia-logo.svg"
           alt="GIA"
@@ -55,19 +64,21 @@ export default function StickyHeader(): React.ReactElement {
           priority
         />
         <PoweredByPill size="sm" />
-      </div>
+      </Link>
       <nav className="hidden items-center gap-8 md:flex">
-        {NAV_LINKS.map(({ label, href }) => (
-          <a
-            key={label}
-            href={href}
-            className="text-brand-primary font-sans text-[14px] font-medium tracking-[0.5px] hover:font-bold"
-          >
-            {label}
-          </a>
-        ))}
+        {NAV_LINKS.map(({ label, href }) =>
+          href.startsWith('#') ? (
+            <a key={label} href={href} className={linkClassName}>
+              {label}
+            </a>
+          ) : (
+            <Link key={label} href={href} className={linkClassName}>
+              {label}
+            </Link>
+          )
+        )}
         <a
-          href="#bg-stop-cta"
+          href="#bg-stop-footer"
           className="bg-brand-primary flex items-center rounded-full px-5 py-2.5 font-sans text-[14px] font-medium tracking-[0.5px] text-white hover:font-bold"
         >
           GET IN TOUCH

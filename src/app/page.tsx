@@ -5,8 +5,6 @@ import ScrollBackground from '@/components/landing/ScrollBackground';
 import Hero from '@/components/landing/Hero';
 import Features from '@/components/landing/Features/Features';
 import How from '@/components/landing/How';
-import Pricing from '@/components/landing/Pricing';
-import FAQ from '@/components/landing/FAQ';
 import CTA from '@/components/landing/CTA';
 import Footer from '@/components/landing/Footer';
 import { HEADER_HEIGHT_LARGE } from '@/animations/headerAnimations';
@@ -24,8 +22,6 @@ export default function Home(): React.ReactElement {
           <Hero />
           <Features />
           <How />
-          <Pricing />
-          <FAQ />
           <CTA />
           <Footer />
         </main>

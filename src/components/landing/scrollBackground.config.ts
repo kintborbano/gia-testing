@@ -83,8 +83,6 @@ export const STOPS: ScrollStop[] = [
   { anchorId: 'features-section', color: 'cream' },
   { anchorId: 'bg-stop-action', color: 'white' },
   { anchorId: 'bg-stop-how', color: 'white' },
-  { anchorId: 'bg-stop-pricing', color: 'cream' },
-  { anchorId: 'bg-stop-faq', color: 'white' },
   { anchorId: 'bg-stop-cta', color: 'white' },
   { anchorId: 'bg-stop-footer', color: 'cream' },
 ];

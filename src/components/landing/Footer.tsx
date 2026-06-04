@@ -1,13 +1,14 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import PoweredByPill from '@/components/ui/PoweredByPill';
 
 const NAV_LINKS = [
-  { label: 'MEET GIA', href: '#bg-stop-hero' },
-  { label: 'GIA IN ACTION', href: '#bg-stop-action' },
-  { label: 'HOW GIA WORKS', href: '#bg-stop-how' },
-  { label: 'PRICING', href: '#bg-stop-pricing' },
-  { label: 'FAQs', href: '#bg-stop-faq' },
-  { label: 'ABOUT US', href: '#bg-stop-cta' },
+  { label: 'MEET GIA', href: '/meet-gia' },
+  { label: 'GIA IN ACTION', href: '/#bg-stop-action' },
+  { label: 'HOW GIA WORKS', href: '/#bg-stop-how' },
+  { label: 'PRICING', href: '/pricing' },
+  { label: 'FAQs', href: '/faq' },
+  { label: 'ABOUT US', href: '/#bg-stop-cta' },
 ];
 
 export default function Footer(): React.ReactElement {
@@ -58,13 +59,13 @@ export default function Footer(): React.ReactElement {
             Navigate
           </p>
           {NAV_LINKS.map((link) => (
-            <a
+            <Link
               key={link.label}
               href={link.href}
               className="font-sans text-[16px] leading-[1.45] font-medium tracking-[-0.08px] transition-opacity hover:opacity-70"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
       </div>
