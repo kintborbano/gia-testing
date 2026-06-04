@@ -16,9 +16,9 @@ export default function Footer(): React.ReactElement {
   return (
     <footer
       id="bg-stop-footer"
-      className="flex w-full justify-center px-16 pb-[120px]"
+      className="flex w-full justify-center px-5 pb-20 sm:px-8 md:px-16 md:pb-[120px]"
     >
-      <div className="text-brand-primary flex w-[1056px] max-w-full flex-col gap-[80px] py-20 md:flex-row md:justify-between md:gap-[60px]">
+      <div className="text-brand-primary flex w-[1056px] max-w-full flex-col gap-[60px] py-16 md:flex-row md:justify-between md:gap-[60px] md:py-20">
         {/* Lead-magnet column */}
         <form className="flex w-[480px] max-w-full flex-col gap-[18px]">
           <div className="flex items-center gap-3">

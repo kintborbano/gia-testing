@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useSyncExternalStore } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import type { CSSProperties } from 'react';
+import { Menu, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useScrollProgress } from '@/hooks/useScrollProgress';
@@ -31,6 +32,7 @@ const linkClassName =
 
 export default function StickyHeader(): React.ReactElement {
   const t = useScrollProgress(0, SCROLL_RANGE);
+  const [menuOpen, setMenuOpen] = useState(false);
   const pageBg = useSyncExternalStore(
     subscribeToPageBackground,
     getPageBackgroundSnapshot,
@@ -48,24 +50,27 @@ export default function StickyHeader(): React.ReactElement {
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-6 transition-none will-change-[height,background,border-bottom] md:px-10"
+      className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-5 transition-none will-change-[height,background,border-bottom] sm:px-6 md:px-10"
       style={headerStyle}
     >
       <Link
         href="/"
         aria-label="Go to homepage"
-        className="flex items-center gap-3"
+        className="flex items-center gap-2 sm:gap-3"
+        onClick={() => setMenuOpen(false)}
       >
         <Image
           src="/logos/gia-logo.svg"
           alt="GIA"
           width={689}
           height={480}
-          className="mt-2 h-[40px] w-auto"
+          className="mt-2 h-[34px] w-auto sm:h-[40px]"
           priority
         />
         <PoweredByPill size="sm" />
       </Link>
+
+      {/* Desktop nav */}
       <nav className="hidden items-center gap-8 md:flex">
         {NAV_LINKS.map(({ label, href }) =>
           href.startsWith('#') ? (
@@ -82,6 +87,55 @@ export default function StickyHeader(): React.ReactElement {
           GET IN TOUCH
         </Button>
       </nav>
+
+      {/* Mobile menu toggle */}
+      <button
+        type="button"
+        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((open) => !open)}
+        className="text-brand-primary -mr-1 grid size-10 place-items-center md:hidden"
+      >
+        {menuOpen ? <X size={26} /> : <Menu size={26} />}
+      </button>
+
+      {/* Mobile menu panel */}
+      {menuOpen && (
+        <nav
+          className="absolute inset-x-0 top-full flex flex-col gap-1 border-b border-black/10 px-5 pt-2 pb-6 shadow-lg sm:px-6 md:hidden"
+          style={{ background: pageBg }}
+        >
+          {NAV_LINKS.map(({ label, href }) =>
+            href.startsWith('#') ? (
+              <a
+                key={label}
+                href={href}
+                className={`${linkClassName} py-3`}
+                onClick={() => setMenuOpen(false)}
+              >
+                {label}
+              </a>
+            ) : (
+              <Link
+                key={label}
+                href={href}
+                className={`${linkClassName} py-3`}
+                onClick={() => setMenuOpen(false)}
+              >
+                {label}
+              </Link>
+            )
+          )}
+          <Button
+            href="#bg-stop-footer"
+            variant="filled"
+            size="default"
+            className="mt-3 w-full"
+          >
+            GET IN TOUCH
+          </Button>
+        </nav>
+      )}
     </header>
   );
 }

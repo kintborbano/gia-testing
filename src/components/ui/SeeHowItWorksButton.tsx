@@ -21,7 +21,7 @@ export default function SeeHowItWorksButton({
       onClick={onClick}
       variant="filled"
       size="lg"
-      className={`w-[266px] ${className}`}
+      className={`w-full sm:w-[266px] ${className}`}
     >
       SEE HOW IT WORKS
     </Button>

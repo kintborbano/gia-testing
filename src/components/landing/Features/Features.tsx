@@ -20,20 +20,20 @@ export default function Features(): React.ReactElement {
         ref={sectionRef}
         className="relative flex min-h-[260vh] w-full flex-col items-center"
       >
-        <div className="flex w-[1152px] max-w-full flex-col items-center justify-center px-16 py-10">
+        <div className="flex w-[1152px] max-w-full flex-col items-center justify-center px-5 py-10 sm:px-8 md:px-16">
           <div className="flex flex-col items-center gap-6 text-center text-black">
-            <p className="font-sans text-[18px] font-semibold tracking-[-0.09px]">
+            <p className="font-sans text-[16px] font-semibold tracking-[-0.09px] md:text-[18px]">
               MEET GIA
             </p>
             <h2
               id="features-headline"
-              className="font-young-serif w-full text-[64px] leading-tight"
+              className="font-young-serif w-full text-[36px] leading-tight sm:text-[48px] md:text-[64px]"
             >
               part strategist. part analyst.
               <br />
               part brutally honest friend.
             </h2>
-            <p className="w-[700px] font-sans text-[20px] leading-normal">
+            <p className="w-full max-w-[700px] font-sans text-[16px] leading-normal md:text-[20px]">
               GIA reviews your TikTok account video by video, comment by
               comment, then turns everything into a personalized growth report.
               No generic AI prompts. No recycled creator advice. Just insights

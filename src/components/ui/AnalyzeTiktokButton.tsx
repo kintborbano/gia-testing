@@ -27,7 +27,7 @@ export default function AnalyzeTiktokButton({
       variant="outlined"
       size={variant === 'hero' ? 'lg' : 'default'}
       withArrow
-      className={`${variant === 'hero' ? 'w-[266px]' : ''} ${className}`}
+      className={`${variant === 'hero' ? 'w-full sm:w-[266px]' : ''} ${className}`}
     >
       ANALYZE MY TIKTOK
     </Button>

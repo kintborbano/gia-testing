@@ -37,16 +37,16 @@ export default function FAQ(): React.ReactElement {
   return (
     <section
       id="bg-stop-faq"
-      className="flex w-full flex-col items-center px-16"
+      className="flex w-full flex-col items-center px-5 sm:px-8 md:px-16"
     >
-      <div className="flex w-[1152px] max-w-full flex-col items-center gap-6 py-20 text-center text-[#8c1f2e]">
+      <div className="flex w-[1152px] max-w-full flex-col items-center gap-6 py-16 text-center text-[#8c1f2e] md:py-20">
         <p className="font-sans text-[18px] font-bold tracking-[-0.09px]">
           FAQ
         </p>
-        <h2 className="font-young-serif w-full text-[56px] leading-[1.1] tracking-[-1.12px]">
+        <h2 className="font-young-serif w-full text-[32px] leading-[1.1] tracking-[-1.12px] sm:text-[44px] md:text-[56px]">
           frequently asked questions.
         </h2>
-        <p className="w-[480px] max-w-full font-sans text-[24px] leading-[1.25] font-medium tracking-[-0.12px]">
+        <p className="w-[480px] max-w-full font-sans text-[18px] leading-[1.3] font-medium tracking-[-0.12px] md:text-[24px] md:leading-[1.25]">
           The stuff people ask before they hit subscribe.
         </p>
 

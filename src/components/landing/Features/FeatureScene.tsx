@@ -114,7 +114,7 @@ export default function FeatureScene({
   return (
     <div className="flex h-full w-full items-center justify-center">
       <div
-        className="relative inline-grid leading-[0]"
+        className="relative inline-grid scale-[0.3] leading-[0] sm:scale-[0.5] md:scale-[0.62] lg:scale-[0.82] xl:scale-100"
         style={{
           gridTemplateColumns: 'max-content',
           gridTemplateRows: 'max-content',
