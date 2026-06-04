@@ -5,6 +5,19 @@ type AnalyzeTiktokButtonProps = {
   /** Extra classes (e.g. size overrides) merged after the defaults. */
   className?: string;
   href?: string;
+  /**
+   * Visual style. `hero` is the large outlined pill with an animated arrow;
+   * `cta` is the compact pill with a brand-colored drop shadow.
+   */
+  variant?: 'hero' | 'cta';
+};
+
+const VARIANT_CLASSES: Record<
+  NonNullable<AnalyzeTiktokButtonProps['variant']>,
+  string
+> = {
+  hero: 'h-[60px] w-[266px] rounded-[34px] text-[16px] tracking-[-0.32px]',
+  cta: 'h-[44px] w-[196px] rounded-[25px] text-[12px] tracking-[-0.24px]',
 };
 
 /**
@@ -14,11 +27,12 @@ type AnalyzeTiktokButtonProps = {
 export default function AnalyzeTiktokButton({
   className = '',
   href = '/action',
+  variant = 'hero',
 }: AnalyzeTiktokButtonProps): ReactElement {
   return (
     <a
       href={href}
-      className={`group border-brand-primary text-brand-primary flex h-[60px] w-[266px] items-center justify-center rounded-[34px] border bg-white font-sans text-[16px] font-bold tracking-[-0.32px] ${className}`}
+      className={`group border-brand-primary text-brand-primary flex items-center justify-center border bg-white font-sans font-bold ${VARIANT_CLASSES[variant]} ${className}`}
     >
       ANALYZE MY TIKTOK
       <ArrowRight

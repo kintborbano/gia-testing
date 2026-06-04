@@ -1,3 +1,5 @@
+import AnalyzeTiktokButton from '@/components/ui/AnalyzeTiktokButton';
+
 export default function CTA(): React.ReactElement {
   return (
     <section
@@ -22,12 +24,7 @@ export default function CTA(): React.ReactElement {
           <p className="w-[504px] font-sans text-[20px] leading-[1.45] font-medium tracking-[-0.1px]">
             Stop guessing. Start posting with evidence.
           </p>
-          <button
-            type="button"
-            className="border-brand-primary text-brand-primary flex h-[44px] w-[196px] items-center justify-center rounded-[25px] border bg-white font-sans text-[12px] font-bold tracking-[-0.24px] shadow-[4px_4px_4px_0px_var(--brand-primary)]"
-          >
-            ANALYZE MY TIKTOK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→
-          </button>
+          <AnalyzeTiktokButton variant="cta" />
         </div>
       </div>
     </section>
