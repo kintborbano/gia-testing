@@ -21,15 +21,6 @@ function framePath(i: number): string {
   return `/images/laptop-frames/final2_prob${FRAME_START + i}.webp`;
 }
 
-export const GIA_SLOT = {
-  gridColumn: 1,
-  gridRow: 1,
-  width: 613,
-  height: 394,
-  marginLeft: 317,
-  marginTop: 0,
-} as const;
-
 interface ChibiLaptopSceneProps {
   // 0 → 1 progress through the Features section.
   animationProgress: number;
@@ -123,17 +114,18 @@ export default function ChibiLaptopScene({
   }, [animationProgress]);
 
   return (
-    // zIndex keeps the laptop above the feature icons so they stay hidden
-    // behind it until they explode outward.
-    <div className="relative" style={{ ...GIA_SLOT, zIndex: 10 }}>
+    // Fluid box that fills its grid cell; aspect ratio matches the frame art.
+    // The canvas is scaled up so the laptop reads large while its transparent
+    // margins let the surrounding feature icons sit close to it. overflow is
+    // clipped so the scaled art never pushes past the cell (no page overflow).
+    <div className="relative aspect-[3/2] w-full overflow-hidden">
       <canvas
         ref={canvasRef}
         width={FRAME_W}
         height={FRAME_H}
         aria-label="GIA on Laptop"
-        className="pointer-events-none h-full w-full object-contain"
+        className="pointer-events-none absolute inset-0 h-full w-full scale-[1.15] object-contain md:scale-[1.3]"
         style={{
-          transform: 'scale(1.4)',
           opacity: posterReady ? 1 : 0,
           transition: 'opacity 0.3s ease',
         }}

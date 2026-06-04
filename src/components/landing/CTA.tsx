@@ -7,7 +7,7 @@ export default function CTA(): React.ReactElement {
       className="flex w-full flex-col items-center justify-center px-5 sm:px-8 md:px-16"
     >
       <div className="flex w-full max-w-[1152px] flex-col items-center justify-center gap-8 py-12 md:h-[478px] md:flex-row md:py-10">
-        <div className="flex w-full max-w-[487px] shrink-0 flex-col items-center justify-center md:h-[622px] md:items-start md:px-[30px]">
+        <div className="flex w-full max-w-[487px] flex-col items-center justify-center md:h-[622px] md:min-w-0 md:flex-1 md:items-start md:px-[30px]">
           <div className="relative aspect-[342/336] w-full overflow-hidden">
             <img
               alt="GIA holding a phone on a ringlight"
@@ -17,7 +17,7 @@ export default function CTA(): React.ReactElement {
           </div>
         </div>
 
-        <div className="text-brand-primary flex w-full max-w-[603px] shrink-0 flex-col items-center justify-center gap-6 text-center md:items-start md:text-left">
+        <div className="text-brand-primary flex w-full max-w-[603px] flex-col items-center justify-center gap-6 text-center md:min-w-0 md:flex-1 md:items-start md:text-left">
           <h2 className="font-young-serif w-full max-w-[574px] text-[32px] leading-[1.1] tracking-[-1.12px] sm:text-[44px] md:text-[56px]">
             ready to know what your audience actually wants?
           </h2>

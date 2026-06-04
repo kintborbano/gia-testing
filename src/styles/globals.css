@@ -55,3 +55,38 @@ body {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
+
+/*
+ * Floating-features layout. Both Figma views (tablet ring + mobile 3x2 grid)
+ * are the same six cells re-templated at one breakpoint — see FeatureScene.
+ *
+ * < md: a 3-column / 2-row grid of features stacked above a full-width laptop.
+ * >= md: the laptop becomes the centre column and the six features wrap around
+ *        it (three down the left, three down the right) — the "ring".
+ */
+.features-grid {
+  display: grid;
+  position: relative;
+  width: 100%;
+  column-gap: 1rem;
+  row-gap: 2rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas:
+    'hook    perf    score'
+    'comment roadmap story'
+    'laptop  laptop  laptop';
+  place-items: center;
+}
+
+@media (min-width: 768px) {
+  .features-grid {
+    column-gap: 0;
+    row-gap: 3.5rem;
+    align-items: center;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'perf    laptop roadmap'
+      'comment laptop score'
+      'hook    laptop story';
+  }
+}
