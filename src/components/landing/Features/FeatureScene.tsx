@@ -6,51 +6,80 @@ import { getFloatingObjectStyle } from '@/animations/laptopAnimations';
 import type { FloatingObjectOrigin } from '@/animations/laptopAnimations';
 import ChibiLaptopScene from './ChibiLaptopScene';
 
+export type FeatureLayout = 'stack' | 'ring' | 'scatter';
+
 type Feature = {
-  /** Maps to a named cell in the `.features-grid` template (see globals.css). */
+  /** Maps to a named cell in the grid templates (see globals.css). */
   area: 'hook' | 'perf' | 'score' | 'comment' | 'roadmap' | 'story';
   /** Doubles as the label and the `/images/<label>.png` filename. */
   label: string;
   /** Horizontal nudge (px) for the label when the artwork isn't centered. */
   labelOffsetX?: number;
+  /** Desktop "scatter" position — top-left corner as a % of the scene box,
+   *  taken from Figma 61:1563 (illustration 962x357, laptop centred). */
+  scatter: { left: number; top: number };
 };
 
-// Order controls the explode stagger (index → delay). Left column first, then
-// right column, so the burst reads outward-symmetric on the desktop ring.
+// Order controls the explode stagger (index -> delay): left side first, then
+// right, so the burst reads outward-symmetric.
 const FEATURES: Feature[] = [
-  { area: 'perf', label: 'Performance Patterns' },
-  { area: 'comment', label: 'Comment Intelligence' },
-  { area: 'hook', label: 'Hook Scoring', labelOffsetX: -6 },
-  { area: 'roadmap', label: 'Content Roadmap' },
-  { area: 'score', label: 'GIA Score' },
-  { area: 'story', label: 'Shareable Story Card' },
+  {
+    area: 'hook',
+    label: 'Hook Scoring',
+    labelOffsetX: -6,
+    scatter: { left: 0, top: 11.5 },
+  },
+  {
+    area: 'perf',
+    label: 'Performance Patterns',
+    scatter: { left: 22.7, top: 9.3 },
+  },
+  {
+    area: 'comment',
+    label: 'Comment Intelligence',
+    scatter: { left: 10.2, top: 40.9 },
+  },
+  {
+    area: 'roadmap',
+    label: 'Content Roadmap',
+    scatter: { left: 69.3, top: 9.3 },
+  },
+  {
+    area: 'story',
+    label: 'Shareable Story Card',
+    scatter: { left: 89.4, top: 8.6 },
+  },
+  { area: 'score', label: 'GIA Score', scatter: { left: 79, top: 43.9 } },
 ];
+
+// Desktop scene proportions + laptop placement (from the same Figma frame).
+const SCENE_ASPECT = 962 / 357;
+const SCATTER_LAPTOP = { left: 22.2, width: 55.5 };
 
 interface FeatureSceneProps {
   animationProgress: number;
-  /** When true (md+), icons explode out from behind the laptop on scroll.
-   *  When false (mobile), they sit statically in the 3x2 grid. */
-  explode: boolean;
+  layout: FeatureLayout;
   onFramesReady?: () => void;
 }
 
 export default function FeatureScene({
   animationProgress,
-  explode,
+  layout,
   onFramesReady,
 }: FeatureSceneProps): React.ReactElement {
-  const gridRef = useRef<HTMLDivElement>(null);
   const laptopRef = useRef<HTMLDivElement>(null);
   const featureRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [origins, setOrigins] = useState<FloatingObjectOrigin[]>([]);
 
-  // Measure each feature cell's offset back to the laptop centre so the explode
+  const explode = layout !== 'stack';
+  const scatter = layout === 'scatter';
+
+  // Measure each feature's offset back to the laptop centre so the explode
   // starts from behind the laptop. offsetLeft/Top are layout positions (they
-  // ignore the explode transform), and the grid is the offset parent, so these
-  // stay correct as the fluid columns resize. Re-measured on resize.
+  // ignore the explode transform), and the scene is the offset parent, so these
+  // stay correct across the fluid grid and the absolute scatter. Re-measured on
+  // resize and whenever the layout mode changes.
   useLayoutEffect(() => {
-    // Origins are only read while exploding; when not, leave them stale (unused)
-    // rather than synchronously resetting state inside the effect body.
     if (!explode) return;
 
     const measure = (): void => {
@@ -73,15 +102,31 @@ export default function FeatureScene({
     measure();
     window.addEventListener('resize', measure, { passive: true });
     return () => window.removeEventListener('resize', measure);
-  }, [explode]);
+  }, [explode, layout]);
+
+  const sceneClass = scatter
+    ? 'relative w-full'
+    : `features-grid features-grid--${layout}`;
+  const sceneStyle: CSSProperties = scatter
+    ? { aspectRatio: SCENE_ASPECT }
+    : {};
 
   return (
     <div className="mx-auto w-full max-w-[1040px]">
-      <div ref={gridRef} className="features-grid">
+      <div className={sceneClass} style={sceneStyle}>
         <div
           ref={laptopRef}
           className="relative z-10 w-full"
-          style={{ gridArea: 'laptop' }}
+          style={
+            scatter
+              ? {
+                  position: 'absolute',
+                  left: `${SCATTER_LAPTOP.left}%`,
+                  top: 0,
+                  width: `${SCATTER_LAPTOP.width}%`,
+                }
+              : { gridArea: 'laptop' }
+          }
         >
           <ChibiLaptopScene
             animationProgress={animationProgress}
@@ -91,13 +136,20 @@ export default function FeatureScene({
 
         {FEATURES.map((feature, index) => {
           const [first, ...rest] = feature.label.split(' ');
-          const animStyle: CSSProperties = explode
+          const animStyle = explode
             ? getFloatingObjectStyle(
                 animationProgress,
                 index,
                 origins[index] ?? { x: 0, y: 0 }
               )
             : {};
+          const placement: CSSProperties = scatter
+            ? {
+                position: 'absolute',
+                left: `${feature.scatter.left}%`,
+                top: `${feature.scatter.top}%`,
+              }
+            : { gridArea: feature.area };
           return (
             <div
               key={feature.area}
@@ -105,11 +157,11 @@ export default function FeatureScene({
                 featureRefs.current[index] = el;
               }}
               className="relative flex flex-col items-center"
-              style={{ gridArea: feature.area, ...animStyle }}
+              style={{ ...placement, ...animStyle }}
             >
               <img
                 alt={feature.label}
-                className="pointer-events-none h-auto w-[78px] object-contain sm:w-[92px] md:w-[88px] lg:w-[100px] xl:w-[112px]"
+                className="pointer-events-none h-auto w-[78px] object-contain sm:w-[92px] md:w-[88px] lg:w-[96px] xl:w-[108px]"
                 src={`/images/${encodeURIComponent(feature.label)}.png`}
               />
               <div

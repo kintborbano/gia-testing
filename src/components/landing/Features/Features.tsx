@@ -32,7 +32,10 @@ function Headline(): React.ReactElement {
 
 export default function Features(): React.ReactElement {
   // Desktop-first so the server HTML and the common case skip the re-render.
+  // md+ gets the sticky scroll-explode; lg+ swaps the tablet "ring" for the
+  // wider desktop "scatter" arc (Figma 61:1563).
   const isDesktop = useMediaQuery('(min-width: 768px)', true);
+  const isWide = useMediaQuery('(min-width: 1024px)', true);
   const { sectionRef, animationProgress, containerStyle } =
     useFeatureSectionAnimation();
 
@@ -49,7 +52,7 @@ export default function Features(): React.ReactElement {
           id="features-section"
           className="flex w-full flex-col items-center gap-12 px-5 py-12 sm:px-8"
         >
-          <FeatureScene animationProgress={1} explode={false} />
+          <FeatureScene animationProgress={1} layout="stack" />
           <Headline />
         </section>
         <Action />
@@ -74,7 +77,7 @@ export default function Features(): React.ReactElement {
           <div className="flex h-full w-full items-center justify-center px-8">
             <FeatureScene
               animationProgress={framesReady ? animationProgress : 0}
-              explode
+              layout={isWide ? 'scatter' : 'ring'}
               onFramesReady={() => setFramesReady(true)}
             />
           </div>
