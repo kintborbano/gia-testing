@@ -1,6 +1,8 @@
 'use client';
 
 import HeroBubbles from '@/components/ui/HeroBubbles';
+import AnalyzeTiktokButton from '@/components/ui/AnalyzeTiktokButton';
+import SeeHowItWorksButton from '@/components/ui/SeeHowItWorksButton';
 import type { CSSProperties } from 'react';
 import { useScrollProgress } from '@/hooks/useScrollProgress';
 import { getLenisSnapshot } from '@/stores/lenisStore';
@@ -122,19 +124,8 @@ export default function Hero({
 
           {/* Design calls for Instrument Sans Bold (700); only 400/600 are loaded — falls back to 600 */}
           <div className="flex items-center justify-center gap-[34px]">
-            <a
-              href="/action"
-              className="border-brand-primary text-brand-primary flex h-[60px] w-[266px] items-center justify-center rounded-[34px] border bg-white font-sans text-[16px] font-bold tracking-[-0.32px] shadow-[5px_5px_5px_0px_var(--brand-primary)]"
-            >
-              ANALYZE MY TIKTOK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→
-            </a>
-            <button
-              type="button"
-              onClick={scrollToHow}
-              className="border-brand-primary bg-brand-primary flex h-[60px] w-[266px] items-center justify-center rounded-[34px] border font-sans text-[16px] font-bold tracking-[-0.32px] text-white"
-            >
-              SEE HOW IT WORKS
-            </button>
+            <AnalyzeTiktokButton />
+            <SeeHowItWorksButton onClick={scrollToHow} />
           </div>
 
           <p className="font-sans text-[14px] leading-[1.4] tracking-[-0.08px]">
