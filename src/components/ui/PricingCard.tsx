@@ -1,3 +1,5 @@
+import Button from './Button';
+
 interface PricingCardProps {
   tier: string;
   price: string;
@@ -45,12 +47,9 @@ export default function PricingCard({
         ))}
       </ul>
 
-      <button
-        type="button"
-        className="h-[44px] rounded-full border border-[#8c1f2e] bg-[#8c1f2e] font-sans text-[15px] font-bold tracking-[-0.3px] text-white"
-      >
+      <Button type="button" variant="filled" className="w-full">
         Choose Plan
-      </button>
+      </Button>
     </div>
   );
 }

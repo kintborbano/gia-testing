@@ -1,28 +1,20 @@
-import { ArrowRight } from 'lucide-react';
 import type { ReactElement } from 'react';
+import Button from './Button';
 
 type AnalyzeTiktokButtonProps = {
   /** Extra classes (e.g. size overrides) merged after the defaults. */
   className?: string;
   href?: string;
   /**
-   * Visual style. `hero` is the large outlined pill with an animated arrow;
-   * `cta` is the compact pill with a brand-colored drop shadow.
+   * `hero` is the large pill used in the hero; `cta` is the default-sized pill
+   * used in the lower CTA section. Both are outlined with an animated arrow.
    */
   variant?: 'hero' | 'cta';
 };
 
-const VARIANT_CLASSES: Record<
-  NonNullable<AnalyzeTiktokButtonProps['variant']>,
-  string
-> = {
-  hero: 'h-[60px] w-[266px] rounded-[34px] text-[16px] tracking-[-0.32px]',
-  cta: 'h-[44px] w-[196px] rounded-[25px] text-[12px] tracking-[-0.24px]',
-};
-
 /**
  * Primary "analyze" CTA — outlined pill. Hovering rotates the arrow to point
- * up-right (north-east).
+ * up-right (north-east). Thin wrapper over the shared {@link Button}.
  */
 export default function AnalyzeTiktokButton({
   className = '',
@@ -30,15 +22,14 @@ export default function AnalyzeTiktokButton({
   variant = 'hero',
 }: AnalyzeTiktokButtonProps): ReactElement {
   return (
-    <a
+    <Button
       href={href}
-      className={`group border-brand-primary text-brand-primary flex items-center justify-center border bg-white font-sans font-bold ${VARIANT_CLASSES[variant]} ${className}`}
+      variant="outlined"
+      size={variant === 'hero' ? 'lg' : 'default'}
+      withArrow
+      className={`${variant === 'hero' ? 'w-[266px]' : ''} ${className}`}
     >
       ANALYZE MY TIKTOK
-      <ArrowRight
-        aria-hidden
-        className="ml-[14px] h-[18px] w-[18px] transition-transform duration-200 ease-out group-hover:-rotate-45"
-      />
-    </a>
+    </Button>
   );
 }

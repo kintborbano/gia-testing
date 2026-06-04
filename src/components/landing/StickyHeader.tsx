@@ -16,6 +16,7 @@ import {
   subscribeToPageBackground,
 } from '@/stores/pageBackgroundStore';
 import PoweredByPill from '@/components/ui/PoweredByPill';
+import Button from '@/components/ui/Button';
 
 const NAV_LINKS = [
   { label: 'MEET GIA', href: '/meet-gia' },
@@ -77,12 +78,9 @@ export default function StickyHeader(): React.ReactElement {
             </Link>
           )
         )}
-        <a
-          href="#bg-stop-footer"
-          className="bg-brand-primary flex items-center rounded-full px-5 py-2.5 font-sans text-[14px] font-medium tracking-[0.5px] text-white hover:font-bold"
-        >
+        <Button href="#bg-stop-footer" variant="filled" size="default">
           GET IN TOUCH
-        </a>
+        </Button>
       </nav>
     </header>
   );

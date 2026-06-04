@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react';
+import Button from './Button';
 
 type SeeHowItWorksButtonProps = {
   onClick?: () => void;
@@ -7,20 +8,22 @@ type SeeHowItWorksButtonProps = {
 };
 
 /**
- * Secondary "see how it works" CTA — filled brand-primary pill. Hovering
- * inverts it to a white fill with brand-primary text.
+ * Secondary "see how it works" CTA — filled brand pill that inverts to a white
+ * fill on hover. Thin wrapper over the shared {@link Button}.
  */
 export default function SeeHowItWorksButton({
   onClick,
   className = '',
 }: SeeHowItWorksButtonProps): ReactElement {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
-      className={`border-brand-primary bg-brand-primary hover:text-brand-primary flex h-[60px] w-[266px] items-center justify-center rounded-[34px] border font-sans text-[16px] font-bold tracking-[-0.32px] text-white transition-[background-color,color] duration-200 ease-out hover:bg-white ${className}`}
+      variant="filled"
+      size="lg"
+      className={`w-[266px] ${className}`}
     >
       SEE HOW IT WORKS
-    </button>
+    </Button>
   );
 }
