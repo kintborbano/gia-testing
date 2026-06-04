@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import PoweredByPill from '@/components/ui/PoweredByPill';
 
 const NAV_LINKS = [
   { label: 'MEET GIA', href: '#bg-stop-hero' },
@@ -26,18 +27,7 @@ export default function Footer(): React.ReactElement {
               height={480}
               className="h-[44px] w-auto"
             />
-            <div className="border-brand-primary flex h-[38px] items-center justify-center rounded-full border bg-white px-5">
-              <p className="text-brand-primary flex items-center gap-1.5 font-sans text-[13px] tracking-[-0.26px]">
-                powered by
-                <Image
-                  src="/logos/sofi-ai-logo.svg"
-                  alt="SOFI AI"
-                  width={1675}
-                  height={489}
-                  className="h-[15px] w-auto"
-                />
-              </p>
-            </div>
+            <PoweredByPill />
           </div>
 
           <p className="font-sans text-[16px] leading-[1.45] font-semibold tracking-[-0.08px]">
