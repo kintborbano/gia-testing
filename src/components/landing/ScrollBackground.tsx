@@ -2,23 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { setPageBackgroundColor } from '@/stores/pageBackgroundStore';
+import {
+  COLORS,
+  STOPS,
+  DEFAULT_ALIGN,
+  DEFAULT_FADE,
+  type ScrollStop,
+} from './scrollBackground.config';
 
-type Stop = {
-  anchorId: string;
-  color: [number, number, number];
-};
-
-const STOPS: Stop[] = [
-  { anchorId: 'bg-stop-hero', color: [255, 255, 255] },
-  { anchorId: 'features-section', color: [254, 247, 221] },
-  { anchorId: 'bg-stop-action', color: [255, 255, 255] },
-  { anchorId: 'bg-stop-how', color: [255, 255, 255] },
-  { anchorId: 'bg-stop-story', color: [254, 247, 221] },
-  { anchorId: 'bg-stop-pricing', color: [254, 247, 221] },
-  { anchorId: 'bg-stop-faq', color: [255, 255, 255] },
-  { anchorId: 'bg-stop-cta', color: [255, 255, 255] },
-  { anchorId: 'bg-stop-footer', color: [254, 247, 221] },
-];
+type Rgb = [number, number, number];
 
 function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
@@ -28,12 +20,34 @@ function clamp01(v: number): number {
   return Math.max(0, Math.min(1, v));
 }
 
-function toRgb([r, g, b]: [number, number, number]): string {
+function toRgb([r, g, b]: Rgb): string {
   return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
 }
 
+/** Resolve a stop's `color` (palette name or raw hex) to an [r, g, b] tuple. */
+function resolveColor(color: ScrollStop['color']): Rgb {
+  const hex = (
+    color in COLORS ? COLORS[color as keyof typeof COLORS] : color
+  ).replace('#', '');
+  const full =
+    hex.length === 3
+      ? hex
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : hex;
+  return [
+    parseInt(full.slice(0, 2), 16),
+    parseInt(full.slice(2, 4), 16),
+    parseInt(full.slice(4, 6), 16),
+  ];
+}
+
+// Resolve the palette once — the config is static.
+const RGB_STOPS: Rgb[] = STOPS.map((s) => resolveColor(s.color));
+
 export default function ScrollBackground(): React.ReactElement {
-  const [color, setColor] = useState<string>(toRgb(STOPS[0].color));
+  const [color, setColor] = useState<string>(toRgb(RGB_STOPS[0]));
   const rafRef = useRef<number | null>(null);
   const positionsRef = useRef<number[]>([]);
 
@@ -44,7 +58,13 @@ export default function ScrollBackground(): React.ReactElement {
         const el = document.getElementById(stop.anchorId);
         if (!el) return Number.NaN;
         const rect = el.getBoundingClientRect();
-        return rect.top + window.scrollY + rect.height / 2 - vh / 2;
+        const align = stop.align ?? DEFAULT_ALIGN;
+        const offset = (stop.offsetVh ?? 0) * vh;
+        // Scroll position at which this stop's trigger point reaches the
+        // middle of the viewport.
+        return (
+          rect.top + window.scrollY + rect.height * align - vh / 2 + offset
+        );
       });
     };
 
@@ -73,7 +93,7 @@ export default function ScrollBackground(): React.ReactElement {
       if (segIndex === -1) {
         for (let i = positions.length - 1; i >= 0; i--) {
           if (Number.isFinite(positions[i])) {
-            publish(toRgb(STOPS[i].color));
+            publish(toRgb(RGB_STOPS[i]));
             return;
           }
         }
@@ -82,10 +102,19 @@ export default function ScrollBackground(): React.ReactElement {
 
       const start = positions[segIndex];
       const end = positions[segIndex + 1];
-      const range = end - start;
-      const t = range > 0 ? clamp01((y - start) / range) : 0;
-      const a = STOPS[segIndex].color;
-      const b = STOPS[segIndex + 1].color;
+      const gap = end - start;
+
+      // `fade` (on the destination stop) sets what fraction of the gap the
+      // transition occupies, ending exactly at the destination. fade = 1 fades
+      // across the whole gap; smaller values hold, then fade fast at the end.
+      const fade = clamp01(STOPS[segIndex + 1].fade ?? DEFAULT_FADE);
+      const fadeStart = end - gap * fade;
+      const fadeRange = end - fadeStart;
+      const t =
+        fadeRange > 0 ? clamp01((y - fadeStart) / fadeRange) : y >= end ? 1 : 0;
+
+      const a = RGB_STOPS[segIndex];
+      const b = RGB_STOPS[segIndex + 1];
       publish(
         toRgb([lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)])
       );
