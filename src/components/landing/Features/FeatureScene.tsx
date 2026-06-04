@@ -6,18 +6,21 @@ import { getFloatingObjectStyle } from '@/animations/laptopAnimations';
 import type { FloatingObjectOrigin } from '@/animations/laptopAnimations';
 import ChibiLaptopScene from './ChibiLaptopScene';
 
-export type FeatureLayout = 'stack' | 'ring' | 'scatter';
+export type FeatureLayout = 'mobile' | 'tablet' | 'desktop';
+
+type ScatterPos = { left: number; top: number };
 
 type Feature = {
-  /** Maps to a named cell in the grid templates (see globals.css). */
+  /** Maps to a named cell in the mobile grid template (see globals.css). */
   area: 'hook' | 'perf' | 'score' | 'comment' | 'roadmap' | 'story';
   /** Doubles as the label and the `/images/<label>.png` filename. */
   label: string;
   /** Horizontal nudge (px) for the label when the artwork isn't centered. */
   labelOffsetX?: number;
-  /** Desktop "scatter" position — top-left corner as a % of the scene box,
-   *  taken from Figma 61:1563 (illustration 962x357, laptop centred). */
-  scatter: { left: number; top: number };
+  /** Absolute "scatter" positions — top-left corner as a % of the scene box.
+   *  tablet from Figma 61:1676 (arc), desktop from 61:1563 (flat). */
+  tablet: ScatterPos;
+  desktop: ScatterPos;
 };
 
 // Order controls the explode stagger (index -> delay): left side first, then
@@ -27,34 +30,50 @@ const FEATURES: Feature[] = [
     area: 'hook',
     label: 'Hook Scoring',
     labelOffsetX: -6,
-    scatter: { left: 0, top: 11.5 },
+    tablet: { left: 0, top: 55 },
+    desktop: { left: 0, top: 11.5 },
   },
   {
     area: 'perf',
     label: 'Performance Patterns',
-    scatter: { left: 22.7, top: 9.3 },
+    tablet: { left: 28.3, top: 1.3 },
+    desktop: { left: 22.7, top: 9.3 },
   },
   {
     area: 'comment',
     label: 'Comment Intelligence',
-    scatter: { left: 10.2, top: 40.9 },
+    tablet: { left: 6.4, top: 21.7 },
+    desktop: { left: 10.2, top: 40.9 },
   },
   {
     area: 'roadmap',
     label: 'Content Roadmap',
-    scatter: { left: 69.3, top: 9.3 },
+    tablet: { left: 54.4, top: 0 },
+    desktop: { left: 69.3, top: 9.3 },
   },
   {
     area: 'story',
     label: 'Shareable Story Card',
-    scatter: { left: 89.4, top: 8.6 },
+    tablet: { left: 82.8, top: 53.9 },
+    desktop: { left: 89.4, top: 8.6 },
   },
-  { area: 'score', label: 'GIA Score', scatter: { left: 79, top: 43.9 } },
+  {
+    area: 'score',
+    label: 'GIA Score',
+    tablet: { left: 76.6, top: 23.3 },
+    desktop: { left: 79, top: 43.9 },
+  },
 ];
 
-// Desktop scene proportions + laptop placement (from the same Figma frame).
-const SCENE_ASPECT = 962 / 357;
-const SCATTER_LAPTOP = { left: 22.2, width: 55.5 };
+// Per-breakpoint scene proportions + laptop placement (% of the scene box),
+// each taken from its Figma frame. height comes from the laptop's 3:2 aspect.
+const SCENES: Record<
+  'tablet' | 'desktop',
+  { aspect: number; laptop: { left: number; top: number; width: number } }
+> = {
+  tablet: { aspect: 681 / 553, laptop: { left: 1.4, top: 26.2, width: 89.7 } },
+  desktop: { aspect: 962 / 357, laptop: { left: 22.2, top: 0, width: 55.5 } },
+};
 
 interface FeatureSceneProps {
   animationProgress: number;
@@ -71,8 +90,8 @@ export default function FeatureScene({
   const featureRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [origins, setOrigins] = useState<FloatingObjectOrigin[]>([]);
 
-  const explode = layout !== 'stack';
-  const scatter = layout === 'scatter';
+  const explode = layout !== 'mobile';
+  const scene = layout === 'mobile' ? null : SCENES[layout];
 
   // Measure each feature's offset back to the laptop centre so the explode
   // starts from behind the laptop. offsetLeft/Top are layout positions (they
@@ -104,12 +123,10 @@ export default function FeatureScene({
     return () => window.removeEventListener('resize', measure);
   }, [explode, layout]);
 
-  const sceneClass = scatter
+  const sceneClass = scene
     ? 'relative w-full'
-    : `features-grid features-grid--${layout}`;
-  const sceneStyle: CSSProperties = scatter
-    ? { aspectRatio: SCENE_ASPECT }
-    : {};
+    : 'features-grid features-grid--stack';
+  const sceneStyle: CSSProperties = scene ? { aspectRatio: scene.aspect } : {};
 
   return (
     <div className="mx-auto w-full max-w-[1040px]">
@@ -118,12 +135,12 @@ export default function FeatureScene({
           ref={laptopRef}
           className="relative z-10 w-full"
           style={
-            scatter
+            scene
               ? {
                   position: 'absolute',
-                  left: `${SCATTER_LAPTOP.left}%`,
-                  top: 0,
-                  width: `${SCATTER_LAPTOP.width}%`,
+                  left: `${scene.laptop.left}%`,
+                  top: `${scene.laptop.top}%`,
+                  width: `${scene.laptop.width}%`,
                 }
               : { gridArea: 'laptop' }
           }
@@ -143,12 +160,9 @@ export default function FeatureScene({
                 origins[index] ?? { x: 0, y: 0 }
               )
             : {};
-          const placement: CSSProperties = scatter
-            ? {
-                position: 'absolute',
-                left: `${feature.scatter.left}%`,
-                top: `${feature.scatter.top}%`,
-              }
+          const pos = layout === 'mobile' ? null : feature[layout];
+          const placement: CSSProperties = pos
+            ? { position: 'absolute', left: `${pos.left}%`, top: `${pos.top}%` }
             : { gridArea: feature.area };
           return (
             <div

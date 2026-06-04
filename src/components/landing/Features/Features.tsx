@@ -52,7 +52,7 @@ export default function Features(): React.ReactElement {
           id="features-section"
           className="flex w-full flex-col items-center gap-12 px-5 py-12 sm:px-8"
         >
-          <FeatureScene animationProgress={1} layout="stack" />
+          <FeatureScene animationProgress={1} layout="mobile" />
           <Headline />
         </section>
         <Action />
@@ -77,7 +77,7 @@ export default function Features(): React.ReactElement {
           <div className="flex h-full w-full items-center justify-center px-8">
             <FeatureScene
               animationProgress={framesReady ? animationProgress : 0}
-              layout={isWide ? 'scatter' : 'ring'}
+              layout={isWide ? 'desktop' : 'tablet'}
               onFramesReady={() => setFramesReady(true)}
             />
           </div>

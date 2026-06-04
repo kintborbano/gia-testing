@@ -58,12 +58,14 @@ body {
 
 /*
  * Floating-features layout. The same six cells are placed three ways, one per
- * Figma frame — FeatureScene picks the mode by breakpoint (see its `mode` prop):
+ * Figma frame — FeatureScene picks the mode by breakpoint (its `layout` prop):
  *
- *  stack (mobile, 61:1789): 3x2 grid of features above a full-width laptop.
- *  ring  (tablet, 61:1676): laptop as the centre column, three features each side.
- *  scatter (desktop, 61:1563): a flat staggered arc — handled with absolute
- *          percentage positions in FeatureScene, not here.
+ *  mobile  (61:1789): the 3x2 grid below — features above a full-width laptop.
+ *  tablet  (61:1676): an arc that fans out around the laptop.
+ *  desktop (61:1563): a flat staggered arc.
+ *
+ * Only mobile uses this grid; tablet/desktop use absolute percentage positions
+ * in FeatureScene.
  */
 .features-grid {
   display: grid;
@@ -80,15 +82,4 @@ body {
     'hook    perf    score'
     'comment roadmap story'
     'laptop  laptop  laptop';
-}
-
-.features-grid--ring {
-  column-gap: 0;
-  row-gap: 3.5rem;
-  align-items: center;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2.1fr) minmax(0, 1fr);
-  grid-template-areas:
-    'perf    laptop roadmap'
-    'comment laptop score'
-    'hook    laptop story';
 }
