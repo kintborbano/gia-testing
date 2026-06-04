@@ -14,6 +14,14 @@ import {
   getPageBackgroundSnapshot,
   subscribeToPageBackground,
 } from '@/stores/pageBackgroundStore';
+import PoweredByPill from '@/components/ui/PoweredByPill';
+
+const NAV_LINKS = [
+  { label: 'MEET GIA', href: '#features-section' },
+  { label: 'PRICING', href: '#bg-stop-pricing' },
+  { label: 'FAQs', href: '#bg-stop-faq' },
+  { label: 'ABOUT US', href: '#bg-stop-footer' },
+] as const;
 
 export default function StickyHeader(): React.ReactElement {
   const t = useScrollProgress(0, SCROLL_RANGE);
@@ -34,7 +42,7 @@ export default function StickyHeader(): React.ReactElement {
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-[100] flex items-center justify-center px-6 transition-none will-change-[height,background,border-bottom]"
+      className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-6 transition-none will-change-[height,background,border-bottom] md:px-10"
       style={headerStyle}
     >
       <div className="flex items-center gap-3">
@@ -43,22 +51,28 @@ export default function StickyHeader(): React.ReactElement {
           alt="GIA"
           width={689}
           height={480}
-          className="mt-2 h-[44px] w-auto"
+          className="mt-2 h-[40px] w-auto"
           priority
         />
-        <div className="flex h-[38px] w-auto items-center justify-center rounded-full border border-[#8c1f2e] bg-white px-5">
-          <p className="flex items-center gap-1.5 font-sans text-[13px] tracking-[-0.26px] text-[#8c1f2e]">
-            powered by
-            <Image
-              src="/logos/sofi-ai-logo.svg"
-              alt="SOFI AI"
-              width={1675}
-              height={489}
-              className="h-[15px] w-auto"
-            />
-          </p>
-        </div>
+        <PoweredByPill size="sm" />
       </div>
+      <nav className="hidden items-center gap-8 md:flex">
+        {NAV_LINKS.map(({ label, href }) => (
+          <a
+            key={label}
+            href={href}
+            className="text-brand-primary font-sans text-[14px] font-medium tracking-[0.5px] hover:font-bold"
+          >
+            {label}
+          </a>
+        ))}
+        <a
+          href="#bg-stop-cta"
+          className="bg-brand-primary flex items-center rounded-full px-5 py-2.5 font-sans text-[14px] font-medium tracking-[0.5px] text-white hover:font-bold"
+        >
+          GET IN TOUCH
+        </a>
+      </nav>
     </header>
   );
 }
