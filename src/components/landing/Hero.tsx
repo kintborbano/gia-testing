@@ -126,11 +126,6 @@ export default function Hero({
             <AnalyzeTiktokButton />
             <SeeHowItWorksButton onClick={scrollToHow} />
           </div>
-
-          <p className="font-sans text-[13px] leading-[1.4] tracking-[-0.08px] sm:text-[14px]">
-            used by creators, founders, students, freelancers, and people
-            secretly stalking their own account from a burner account.
-          </p>
         </div>
       </div>
 

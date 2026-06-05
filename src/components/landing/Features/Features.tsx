@@ -69,12 +69,8 @@ export default function Features(): React.ReactElement {
         ref={sectionRef}
         className="relative flex min-h-[260vh] w-full flex-col items-center"
       >
-        <div className="flex w-[1152px] max-w-full flex-col items-center justify-center px-8 py-10 md:px-16">
-          <Headline />
-        </div>
-
         <div style={containerStyle}>
-          <div className="flex h-full w-full items-center justify-center px-8">
+          <div className="flex h-full w-full items-start justify-center px-8 pt-[8vh]">
             <FeatureScene
               animationProgress={framesReady ? animationProgress : 0}
               layout={isWide ? 'desktop' : 'tablet'}
@@ -83,6 +79,10 @@ export default function Features(): React.ReactElement {
           </div>
         </div>
       </section>
+
+      <div className="mx-auto flex w-[1152px] max-w-full flex-col items-center justify-center px-8 py-10 md:px-16">
+        <Headline />
+      </div>
 
       <Action />
     </>
