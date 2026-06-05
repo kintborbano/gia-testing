@@ -1,12 +1,22 @@
-import Image from 'next/image';
+'use client';
+
+import { useRef } from 'react';
+import { useSectionProgress } from '@/hooks/useSectionProgress';
+import ActionLaptop from './ActionLaptop';
 
 export default function Action(): React.ReactElement {
+  const sectionRef = useRef<HTMLElement>(null);
+  const progress = useSectionProgress(sectionRef);
+
   return (
+    // Tall section so there is scroll distance to scrub through; the inner
+    // content pins while the laptop opens, then releases as the section exits.
     <section
+      ref={sectionRef}
       id="bg-stop-action"
-      className="flex w-full flex-col items-center bg-[#8c1f2e] px-5 py-16 sm:px-8 md:px-16 md:py-20"
+      className="relative h-[250vh] w-full bg-[#8c1f2e]"
     >
-      <div className="flex w-full flex-col items-center gap-6 text-center text-white">
+      <div className="sticky top-0 flex h-screen w-full flex-col items-center justify-center gap-6 px-5 text-center text-white sm:px-8 md:px-16">
         <p className="font-sans text-[15px] font-bold tracking-[-0.075px]">
           GIA IN ACTION
         </p>
@@ -21,13 +31,7 @@ export default function Action(): React.ReactElement {
           GIA tells you why it happened.
         </p>
         <div className="mt-4 flex w-full items-center justify-center">
-          <Image
-            src="/images/laptop-frame.png"
-            alt="GIA in action"
-            width={1100}
-            height={801}
-            className="max-w-full"
-          />
+          <ActionLaptop animationProgress={progress} />
         </div>
       </div>
     </section>
