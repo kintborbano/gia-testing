@@ -28,7 +28,7 @@ export default function Hero(): React.ReactElement {
         className="relative z-10 flex w-[1152px] max-w-full flex-col items-center justify-center py-10"
         style={{ marginBottom: HEADER_HEIGHT_LARGE }}
       >
-        <div className="text-brand-primary flex w-full flex-col items-center justify-center gap-6 text-center sm:gap-8 md:gap-10">
+        <div className="text-brand-primary flex w-full flex-col items-center justify-center gap-8 text-center sm:gap-11 md:gap-14">
           <h1 className="font-itc-garamond text-[50px] leading-[1.1] tracking-[-1.12px] text-[#151515] sm:text-[68px] md:text-[86px]">
             your{' '}
             <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
@@ -36,7 +36,11 @@ export default function Hero(): React.ReactElement {
             </span>{' '}
             finally has
             <br />
-            someone watching...
+            someone watching
+            <span aria-hidden="true">
+              .<span className="ellipsis-dot-2">.</span>
+              <span className="ellipsis-dot-3">.</span>
+            </span>
           </h1>
           <p className="font-sans text-[16px] leading-[1.3] font-normal tracking-[-0.12px] text-[#151515] sm:text-[18px] md:text-[20px] md:leading-[1.25]">
             GIA watches your content, reads your comments,

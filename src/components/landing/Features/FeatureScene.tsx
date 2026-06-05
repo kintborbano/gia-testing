@@ -72,7 +72,9 @@ const SCENES: Record<
   { aspect: number; laptop: { left: number; top: number; width: number } }
 > = {
   tablet: { aspect: 681 / 553, laptop: { left: 5.3, top: 26.2, width: 82 } },
-  desktop: { aspect: 962 / 357, laptop: { left: 22.2, top: 0, width: 55.5 } },
+  // Gia enlarged on desktop: width drives her size; aspect stays 150/width so
+  // she keeps filling the box vertically, and left re-centres as (100-width)/2.
+  desktop: { aspect: 150 / 56, laptop: { left: 22, top: 0, width: 56 } },
 };
 
 interface FeatureSceneProps {
@@ -129,7 +131,7 @@ export default function FeatureScene({
   const sceneStyle: CSSProperties = scene ? { aspectRatio: scene.aspect } : {};
 
   return (
-    <div className="mx-auto w-full max-w-[1040px] lg:max-w-[1180px]">
+    <div className="mx-auto w-full max-w-[1040px] lg:max-w-[1210px]">
       <div className={sceneClass} style={sceneStyle}>
         <div
           ref={laptopRef}
@@ -176,11 +178,11 @@ export default function FeatureScene({
             >
               <img
                 alt={feature.label}
-                className="pointer-events-none h-auto w-[78px] object-contain sm:w-[92px] md:w-[104px] lg:w-[112px] xl:w-[124px]"
+                className="pointer-events-none h-auto w-[78px] object-contain sm:w-[92px] md:w-[104px] lg:w-[120px] xl:w-[136px]"
                 src={`/images/${encodeURIComponent(feature.label)}.png`}
               />
               <div
-                className="font-pixelify pointer-events-none mt-2 text-center text-[10px] leading-tight sm:text-[11px] md:text-[12px]"
+                className="font-pixelify pointer-events-none mt-2 text-center text-[10px] leading-tight sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px]"
                 style={{
                   transform: `translateX(${feature.labelOffsetX ?? 0}px)`,
                 }}

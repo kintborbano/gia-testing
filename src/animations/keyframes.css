@@ -85,3 +85,34 @@
     transform: translateY(0px);
   }
 }
+
+/* Hero headline trailing ellipsis: cycles "." → ".." → "..." → repeat.
+   The first dot is always shown; dots 2 and 3 fade in on a staggered loop.
+   They keep their space while hidden (opacity, not display) so the centered
+   headline never shifts width. */
+.ellipsis-dot-2 {
+  animation: ellipsis-dot-2 1.5s steps(1, end) infinite;
+}
+.ellipsis-dot-3 {
+  animation: ellipsis-dot-3 1.5s steps(1, end) infinite;
+}
+@keyframes ellipsis-dot-2 {
+  0%,
+  33% {
+    opacity: 0;
+  }
+  34%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes ellipsis-dot-3 {
+  0%,
+  66% {
+    opacity: 0;
+  }
+  67%,
+  100% {
+    opacity: 1;
+  }
+}

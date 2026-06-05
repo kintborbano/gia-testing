@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useScrollProgress } from '@/hooks/useScrollProgress';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
+import { useInSection } from '@/hooks/useInSection';
 import { getHeaderHeight, SCROLL_RANGE } from '@/animations/headerAnimations';
 import {
   getPageBackgroundServerSnapshot,
@@ -30,8 +31,11 @@ const linkClassName =
 export default function StickyHeader(): React.ReactElement {
   const t = useScrollProgress(0, SCROLL_RANGE);
   const [menuOpen, setMenuOpen] = useState(false);
+  // While the Features scroll-scene owns the top of the viewport, keep the
+  // header hidden even when scrolling up — it only reappears in other sections.
+  const inFeatures = useInSection('features-section');
   // Keep the header visible while the mobile menu is open.
-  const hidden = useScrollDirection() && !menuOpen;
+  const hidden = (useScrollDirection() || inFeatures) && !menuOpen;
   const pageBg = useSyncExternalStore(
     subscribeToPageBackground,
     getPageBackgroundSnapshot,
