@@ -8,7 +8,7 @@ type BaseProps = {
   children: ReactNode;
   /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. */
   variant?: ButtonVariant;
-  /** sm 38px/13px · default 44px/14px · lg 60px/16px. */
+  /** sm 38px/13px · default 48px/14px · lg 60px/16px. */
   size?: ButtonSize;
   /** Appends an arrow that rotates north-east on hover. */
   withArrow?: boolean;
@@ -35,7 +35,7 @@ const BASE =
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
   sm: 'h-[38px] gap-2 rounded-[25px] px-5 text-[13px]',
-  default: 'h-[44px] gap-2.5 rounded-[25px] px-6 text-[14px]',
+  default: 'h-[48px] gap-2.5 rounded-[25px] px-6 text-[14px]',
   lg: 'h-[60px] gap-[14px] rounded-[34px] px-8 text-[16px]',
 };
 

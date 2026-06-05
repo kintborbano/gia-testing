@@ -8,19 +8,31 @@ import Action from './Action';
 
 function Headline(): React.ReactElement {
   return (
-    <div className="flex flex-col items-center gap-6 text-center text-black">
+    <div className="flex flex-col items-center gap-8 text-center text-black sm:gap-11 md:gap-14">
       <p className="font-sans text-[16px] font-semibold tracking-[-0.09px] md:text-[18px]">
         MEET GIA
       </p>
       <h2
         id="features-headline"
-        className="font-young-serif w-full text-[36px] leading-tight sm:text-[48px] md:text-[64px]"
+        className="font-itc-garamond w-full text-[50px] leading-[1.1] tracking-[-1.12px] text-[#151515] sm:text-[68px] md:text-[86px]"
       >
-        part strategist. part analyst.
+        part{' '}
+        <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
+          strategist
+        </span>
+        . part{' '}
+        <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
+          analyst
+        </span>
+        .
         <br />
-        part brutally honest friend.
+        part brutally{' '}
+        <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
+          honest
+        </span>{' '}
+        friend.
       </h2>
-      <p className="w-full max-w-[700px] font-sans text-[16px] leading-normal md:text-[20px]">
+      <p className="w-full max-w-[700px] font-sans text-[16px] leading-[1.3] font-normal tracking-[-0.12px] text-[#151515] md:text-[20px] md:leading-[1.25]">
         GIA reviews your TikTok account video by video, comment by comment, then
         turns everything into a personalized growth report. No generic AI
         prompts. No recycled creator advice. Just insights pulled directly from

@@ -27,8 +27,8 @@ html::-webkit-scrollbar {
   --white: #ffffff;
   --brand-primary: #8c1f2e;
   --brand-primary-transparent: #8c1f2e80;
-  --brand-secondary: #c9920a;
-  --brand-secondary-transparent: #c9920a80;
+  --brand-secondary: #eed03a;
+  --brand-secondary-transparent: #eed03a80;
 }
 
 @theme inline {

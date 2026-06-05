@@ -17,11 +17,18 @@ export default function CTA(): React.ReactElement {
           </div>
         </div>
 
-        <div className="text-brand-primary flex w-full max-w-[603px] flex-col items-center justify-center gap-6 text-center md:min-w-0 md:flex-1 md:items-start md:text-left">
-          <h2 className="font-young-serif w-full max-w-[574px] text-[32px] leading-[1.1] tracking-[-1.12px] sm:text-[44px] md:text-[56px]">
-            ready to know what your audience actually wants?
+        <div className="text-brand-primary flex w-full max-w-[603px] flex-col items-center justify-center gap-5 text-center sm:gap-6 md:min-w-0 md:flex-1 md:items-start md:gap-7 md:text-left">
+          <h2 className="font-itc-garamond w-full max-w-[574px] text-[40px] leading-[1.1] tracking-[-1px] text-[#151515] sm:text-[52px] md:text-[64px]">
+            ready to know what your{' '}
+            <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
+              audience
+            </span>{' '}
+            <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
+              actually
+            </span>{' '}
+            wants?
           </h2>
-          <p className="w-full max-w-[504px] font-sans text-[16px] leading-[1.45] font-medium tracking-[-0.1px] md:text-[20px]">
+          <p className="w-full max-w-[504px] font-sans text-[16px] leading-[1.3] font-normal tracking-[-0.12px] text-[#151515] md:text-[20px] md:leading-[1.25]">
             Stop guessing. Start posting with evidence.
           </p>
           <AnalyzeTiktokButton variant="cta" className="w-full sm:w-auto" />
