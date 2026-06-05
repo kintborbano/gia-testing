@@ -1,22 +1,50 @@
 'use client';
 
-import { useRef } from 'react';
-import { useSectionProgress } from '@/hooks/useSectionProgress';
+import { useEffect, useRef, useState } from 'react';
 import ActionLaptop from './ActionLaptop';
 
 export default function Action(): React.ReactElement {
-  const sectionRef = useRef<HTMLElement>(null);
-  const progress = useSectionProgress(sectionRef);
+  const laptopRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
+  const [progress, setProgress] = useState(0);
+
+  // Drive the open off the laptop's travel through the viewport (no pinning, so
+  // the page keeps scrolling). 0 = laptop's top at the viewport bottom, 1 = its
+  // bottom at the viewport top, 0.5 = laptop centred — so the open is timed to
+  // when it is actually on screen.
+  useEffect(() => {
+    const update = () => {
+      rafRef.current = null;
+      const el = laptopRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const p = (vh - rect.top) / (vh + rect.height);
+      setProgress(Math.max(0, Math.min(1, p)));
+    };
+    const onScroll = () => {
+      if (rafRef.current !== null) return;
+      rafRef.current = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
 
   return (
-    // Tall section so there is scroll distance to scrub through; the inner
-    // content pins while the laptop opens, then releases as the section exits.
+    // Normal-flow section: the page keeps scrolling while the laptop scrubs open
+    // as it passes through the viewport.
     <section
-      ref={sectionRef}
       id="bg-stop-action"
-      className="relative h-[250vh] w-full bg-[#8c1f2e]"
+      className="flex w-full flex-col items-center bg-[#8c1f2e] px-5 py-24 text-center text-white sm:px-8 md:px-16 md:py-32"
     >
-      <div className="sticky top-0 flex h-screen w-full flex-col items-center justify-center gap-6 px-5 text-center text-white sm:px-8 md:px-16">
+      <div className="flex w-full flex-col items-center gap-6">
         <p className="font-sans text-[15px] font-bold tracking-[-0.075px]">
           GIA IN ACTION
         </p>
@@ -30,7 +58,10 @@ export default function Action(): React.ReactElement {
           <br />
           GIA tells you why it happened.
         </p>
-        <div className="mt-4 flex w-full items-center justify-center">
+        <div
+          ref={laptopRef}
+          className="mt-4 flex w-full items-center justify-center"
+        >
           <ActionLaptop animationProgress={progress} />
         </div>
       </div>
