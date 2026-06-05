@@ -1,38 +1,11 @@
 'use client';
 
-import HeroBubbles from '@/components/ui/HeroBubbles';
 import AnalyzeTiktokButton from '@/components/ui/AnalyzeTiktokButton';
 import SeeHowItWorksButton from '@/components/ui/SeeHowItWorksButton';
-import type { CSSProperties } from 'react';
-import { useScrollProgress } from '@/hooks/useScrollProgress';
 import { getLenisSnapshot } from '@/stores/lenisStore';
-import {
-  SCROLL_RANGE,
-  getLeftChibiStyle,
-  getRightChibiStyle,
-  getSpeechBubbleOpacity,
-} from '@/animations/chibiAnimations';
 import { HEADER_HEIGHT_LARGE } from '@/animations/headerAnimations';
 
-const FLOAT_BASE: CSSProperties = {
-  animationName: 'chibi-float',
-  animationDuration: '2s',
-  animationTimingFunction: 'ease-in-out',
-  animationIterationCount: 'infinite',
-  animationDirection: 'alternate',
-  willChange: 'transform',
-};
-
-type HeroProps = {
-  showBubbles?: boolean;
-};
-
-export default function Hero({
-  showBubbles = true,
-}: HeroProps = {}): React.ReactElement {
-  const t = useScrollProgress(0, SCROLL_RANGE);
-  const bubbleOpacity = getSpeechBubbleOpacity(t);
-
+export default function Hero(): React.ReactElement {
   const scrollToHow = (): void => {
     const target = document.getElementById('bg-stop-how');
     if (!target) return;
@@ -51,60 +24,6 @@ export default function Hero({
       className="relative flex items-center justify-center overflow-hidden px-5 sm:px-8 md:px-16"
       style={{ minHeight: `calc(100vh - ${HEADER_HEIGHT_LARGE}px)` }}
     >
-      {/* Left chibi — hidden for now */}
-      {false && (
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: '50%',
-            width: 280,
-            marginTop: -210,
-            zIndex: 20,
-          }}
-        >
-          <div style={getLeftChibiStyle(t)}>
-            <div style={{ ...FLOAT_BASE, animationDelay: '0s' }}>
-              <div
-                style={{
-                  width: 280,
-                  height: 420,
-                  background: '#8c1f2e',
-                  borderRadius: 16,
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Right chibi — hidden for now */}
-      {false && (
-        <div
-          style={{
-            position: 'absolute',
-            right: 0,
-            top: '50%',
-            width: 280,
-            marginTop: -210,
-            zIndex: 20,
-          }}
-        >
-          <div style={getRightChibiStyle(t)}>
-            <div style={{ ...FLOAT_BASE, animationDelay: '0.3s' }}>
-              <div
-                style={{
-                  width: 280,
-                  height: 420,
-                  background: '#fef7dd',
-                  borderRadius: 16,
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
       <div
         className="relative z-10 flex w-[1152px] max-w-full flex-col items-center justify-center py-10"
         style={{ marginBottom: HEADER_HEIGHT_LARGE }}
@@ -128,8 +47,6 @@ export default function Hero({
           </div>
         </div>
       </div>
-
-      {false && showBubbles && <HeroBubbles opacity={bubbleOpacity} />}
     </section>
   );
 }
