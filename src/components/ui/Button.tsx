@@ -1,12 +1,12 @@
 import { ArrowRight } from 'lucide-react';
 import type { ReactElement, ReactNode } from 'react';
 
-export type ButtonVariant = 'filled' | 'filledStatic' | 'outlined';
+export type ButtonVariant = 'filled' | 'filledStatic' | 'outlined' | 'onBrand';
 export type ButtonSize = 'sm' | 'default' | 'lg';
 
 type BaseProps = {
   children: ReactNode;
-  /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. */
+  /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. `onBrand` = white fill with brand text for use on a brand-colored surface; warms to cream on hover so it never blends in. */
   variant?: ButtonVariant;
   /** sm 38px/13px · default 48px/14px · lg 60px/16px. */
   size?: ButtonSize;
@@ -51,6 +51,8 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   filledStatic: 'border-brand-primary bg-brand-primary text-white',
   outlined:
     'border-brand-primary bg-white text-brand-primary hover:bg-brand-primary hover:text-white',
+  onBrand:
+    'border-white bg-white text-brand-primary hover:border-black hover:bg-black hover:text-white',
 };
 
 /**

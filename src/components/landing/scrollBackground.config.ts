@@ -84,7 +84,7 @@ export const STOPS: ScrollStop[] = [
   { anchorId: 'bg-stop-action', color: 'white' },
   { anchorId: 'bg-stop-how', color: 'white' },
   { anchorId: 'bg-stop-cta', color: 'white' },
-  { anchorId: 'bg-stop-footer', color: 'cream' },
+  { anchorId: 'bg-stop-footer', color: 'white' },
 ];
 
 /** Default trigger alignment when a stop doesn't set its own `align`. */

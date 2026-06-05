@@ -1,5 +1,3 @@
-import AnalyzeTiktokButton from '@/components/ui/AnalyzeTiktokButton';
-
 export default function CTA(): React.ReactElement {
   return (
     <section
@@ -31,7 +29,6 @@ export default function CTA(): React.ReactElement {
           <p className="w-full max-w-[504px] font-sans text-[16px] leading-[1.3] font-normal tracking-[-0.12px] text-[#151515] md:text-[20px] md:leading-[1.25]">
             Stop guessing. Start posting with evidence.
           </p>
-          <AnalyzeTiktokButton variant="cta" className="w-full sm:w-auto" />
         </div>
       </div>
     </section>

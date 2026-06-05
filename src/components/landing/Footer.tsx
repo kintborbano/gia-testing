@@ -1,6 +1,4 @@
-import Image from 'next/image';
 import Link from 'next/link';
-import PoweredByPill from '@/components/ui/PoweredByPill';
 import Button from '@/components/ui/Button';
 
 const NAV_LINKS = [
@@ -12,65 +10,103 @@ const NAV_LINKS = [
   { label: 'ABOUT US', href: '/#bg-stop-cta' },
 ];
 
+const LEGAL_LINKS = [
+  { label: 'Privacy Policy', href: '/privacy' },
+  { label: 'Terms of Use', href: '/terms' },
+];
+
 export default function Footer(): React.ReactElement {
   return (
     <footer
       id="bg-stop-footer"
-      className="flex w-full justify-center px-5 pb-28 sm:px-8 md:px-16 md:pb-[160px]"
+      className="flex w-full justify-center px-5 pt-10 pb-12 sm:px-8 md:px-16 md:pt-16 md:pb-20"
     >
-      <div className="text-brand-primary flex w-[1056px] max-w-full flex-col gap-[60px] py-16 md:flex-row md:justify-between md:gap-[60px] md:py-20">
-        {/* Lead-magnet column */}
-        <form className="flex w-[480px] max-w-full flex-col gap-[18px]">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/logos/gia-logo.svg"
-              alt="GIA"
-              width={689}
-              height={480}
-              className="h-[48px] w-auto"
+      {/* Enclosing maroon panel — generous internal padding so the contents
+          never crowd the rounded edges. */}
+      <div className="bg-brand-primary flex w-[1152px] max-w-full flex-col gap-16 rounded-[32px] p-8 text-white sm:p-12 md:gap-24 md:rounded-[44px] md:p-16">
+        {/* Top row: lead-magnet (left) + navigation (right) */}
+        <div className="flex flex-col gap-12 md:flex-row md:justify-between md:gap-16">
+          {/* Lead-magnet column */}
+          <form className="flex w-[480px] max-w-full flex-col gap-[18px]">
+            <p className="font-sans text-[22px] leading-[1.35] font-semibold tracking-[-0.11px]">
+              Not ready yet?
+            </p>
+            <p className="font-sans text-[14px] leading-[1.5] tracking-[-0.07px]">
+              Get the Superpower Code: a free creator guide on understanding
+              audience psychology, content signals, and growth patterns.
+            </p>
+
+            <input
+              type="email"
+              name="email"
+              placeholder="user@mail.com"
+              className="text-brand-primary placeholder:text-brand-primary/50 h-[44px] w-full rounded-[25px] border border-white bg-white px-5 font-sans text-[14px] tracking-[-0.28px]"
             />
-            <PoweredByPill />
-          </div>
-
-          <p className="font-sans text-[22px] leading-[1.35] font-semibold tracking-[-0.11px]">
-            Not ready yet?
-          </p>
-          <p className="font-sans text-[14px] leading-[1.5] tracking-[-0.07px]">
-            Get the Superpower Code: a free creator guide on understanding
-            audience psychology, content signals, and growth patterns.
-          </p>
-
-          <input
-            type="email"
-            name="email"
-            placeholder="user@mail.com"
-            className="border-brand-primary text-brand-primary placeholder:text-brand-primary/50 h-[44px] w-full rounded-[25px] border bg-white px-5 font-sans text-[14px] tracking-[-0.28px]"
-          />
-          <Button
-            type="submit"
-            variant="filled"
-            size="default"
-            className="w-[210px]"
-          >
-            SEND ME THE GUIDE
-          </Button>
-        </form>
-
-        {/* Navigate column */}
-        <nav className="flex w-[200px] flex-col gap-3">
-          <p className="pb-3 font-sans text-[18px] font-bold tracking-[-0.09px]">
-            Navigate
-          </p>
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="font-sans text-[16px] leading-[1.45] font-medium tracking-[-0.08px] transition-opacity hover:opacity-70"
+            <Button
+              type="submit"
+              variant="onBrand"
+              size="default"
+              className="w-[210px]"
             >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+              SEND ME THE GUIDE
+            </Button>
+          </form>
+
+          {/* Navigate column */}
+          <nav className="flex w-[200px] flex-col gap-3 md:items-end md:text-right">
+            <p className="pb-3 font-sans text-[18px] font-bold tracking-[-0.09px]">
+              Navigate
+            </p>
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="font-sans text-[16px] leading-[1.45] font-medium tracking-[-0.08px] transition-opacity hover:opacity-70"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        {/* Bottom row: logo (left) + legal & attribution (right) */}
+        <div className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between md:gap-16">
+          {/* GIA logo — masked so the maroon-fill SVG reads as cream on the
+              maroon panel. */}
+          <div
+            role="img"
+            aria-label="GIA"
+            className="h-[88px] w-[166px] shrink-0 bg-white md:h-[104px] md:w-[196px]"
+            style={{
+              WebkitMaskImage: 'url(/logos/gia-logo.svg)',
+              maskImage: 'url(/logos/gia-logo.svg)',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'left center',
+              maskPosition: 'left center',
+              WebkitMaskSize: 'contain',
+              maskSize: 'contain',
+            }}
+          />
+
+          {/* Copyright + legal links on one row, spaced apart */}
+          <div className="flex flex-wrap items-center gap-x-10 gap-y-2.5 md:justify-end">
+            <p className="font-sans text-[13px] leading-[1.5] tracking-[-0.065px] text-white/80">
+              © 2026 GIA. All rights reserved. · Powered by SOFI
+            </p>
+            <div className="flex items-center gap-6">
+              {LEGAL_LINKS.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="font-sans text-[13px] leading-[1.5] tracking-[-0.065px] text-white/80 transition-opacity hover:opacity-100"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </footer>
   );
