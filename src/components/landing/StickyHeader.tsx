@@ -6,6 +6,7 @@ import { Menu, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useScrollProgress } from '@/hooks/useScrollProgress';
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 import {
   getHeaderHeight,
   getHeaderBorderOpacity,
@@ -33,6 +34,8 @@ const linkClassName =
 export default function StickyHeader(): React.ReactElement {
   const t = useScrollProgress(0, SCROLL_RANGE);
   const [menuOpen, setMenuOpen] = useState(false);
+  // Keep the header visible while the mobile menu is open.
+  const hidden = useScrollDirection() && !menuOpen;
   const pageBg = useSyncExternalStore(
     subscribeToPageBackground,
     getPageBackgroundSnapshot,
@@ -44,13 +47,15 @@ export default function StickyHeader(): React.ReactElement {
       height: `${getHeaderHeight(t)}px`,
       background: pageBg,
       borderBottom: `1px solid rgba(0, 0, 0, ${getHeaderBorderOpacity(t)})`,
+      transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
+      transition: 'transform 350ms ease',
     }),
-    [t, pageBg]
+    [t, pageBg, hidden]
   );
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-5 transition-none will-change-[height,background,border-bottom] sm:px-6 md:px-10"
+      className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-5 transition-none will-change-[height,background,border-bottom,transform] sm:px-6 md:px-10"
       style={headerStyle}
     >
       <Link

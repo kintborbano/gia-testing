@@ -116,8 +116,9 @@ export default function Hero({
             someone watching...
           </h1>
           <p className="font-sans text-[16px] leading-[1.3] font-medium tracking-[-0.12px] sm:text-[18px] md:text-[20px] md:leading-[1.25]">
-            GIA watches your content, reads your comments, studies your
-            patterns, and tells you exactly what to post next.
+            GIA watches your content, reads your comments,
+            <br />
+            studies your patterns, and tells you exactly what to post next.
           </p>
 
           {/* Design calls for Instrument Sans Bold (700); only 400/600 are loaded — falls back to 600 */}
