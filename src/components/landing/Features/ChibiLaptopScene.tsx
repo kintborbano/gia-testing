@@ -5,8 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 // Laptop animation frames (Kling export, background removed to transparent so
 // the feature icons can peek out around the laptop as they explode outward).
 // Files: public/images/laptop-frames/final2_prob3000.webp ... 3119.
-// Exported at display resolution (not the original 1764px) to keep per-frame
-// decode + draw cheap during the scroll scrub.
 const FRAME_COUNT = 120;
 const FRAME_START = 3000;
 const FRAME_W = 1200;
@@ -17,22 +15,58 @@ const FRAME_H = 800;
 // instant the section appears.
 const LAPTOP_DELAY = 0.15;
 
+// GIA + desk are centred in the art and span ~79% of its height with even
+// transparent margins, so the laptop is scaled up from the centre to crop those
+// margins and fill the box. Capped (~1.25): any larger clips her head / the desk.
+const FILL = 'scale-[1.24] object-contain';
+
 function framePath(i: number): string {
   return `/images/laptop-frames/final2_prob${FRAME_START + i}.webp`;
 }
 
 interface ChibiLaptopSceneProps {
-  // 0 → 1 progress through the Features section.
+  // Tablet/desktop scrub the frame sequence as the section scrolls; mobile (no
+  // scroll animation) shows a single still instead.
+  animated: boolean;
+  // 0 → 1 progress through the Features section (used by the animated variant).
   animationProgress: number;
-  // Called once every frame has been loaded AND decoded, so scrubbing through
-  // them never blocks the main thread on a synchronous decode.
+  // Called once every frame has loaded + decoded (animated variant only).
   onReady?: () => void;
 }
 
 export default function ChibiLaptopScene({
+  animated,
   animationProgress,
   onReady,
 }: ChibiLaptopSceneProps): React.ReactElement {
+  return animated ? (
+    <AnimatedLaptop animationProgress={animationProgress} onReady={onReady} />
+  ) : (
+    <StaticLaptop />
+  );
+}
+
+// Mobile: a single still (gia-on-laptop.png, 1536x1024 / 3:2).
+function StaticLaptop(): React.ReactElement {
+  return (
+    <div className="relative aspect-[3/2] w-full overflow-hidden">
+      <img
+        src="/images/gia-on-laptop.png"
+        alt="GIA on Laptop"
+        className={`pointer-events-none absolute inset-0 h-full w-full ${FILL}`}
+      />
+    </div>
+  );
+}
+
+// Tablet/desktop: scrub the 120-frame sequence so the laptop animates in.
+function AnimatedLaptop({
+  animationProgress,
+  onReady,
+}: {
+  animationProgress: number;
+  onReady?: () => void;
+}): React.ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef<number>(-1);
@@ -114,19 +148,13 @@ export default function ChibiLaptopScene({
   }, [animationProgress]);
 
   return (
-    // Fluid box that fills its grid cell; aspect ratio matches the frame art.
-    // The canvas is scaled up so the laptop reads large while its transparent
-    // margins let the surrounding feature icons sit close to it; overflow is
-    // clipped so the scaled (transparent) edges never widen the page. GIA +
-    // desk span ~76% of the frame height, so the scale is capped (~1.2) and
-    // applied from the centre — any larger crops her head or the desk.
     <div className="relative aspect-[3/2] w-full overflow-hidden">
       <canvas
         ref={canvasRef}
         width={FRAME_W}
         height={FRAME_H}
         aria-label="GIA on Laptop"
-        className="pointer-events-none absolute inset-0 h-full w-full scale-[1.1] object-contain md:scale-[1.2]"
+        className={`pointer-events-none absolute inset-0 h-full w-full ${FILL}`}
         style={{
           opacity: posterReady ? 1 : 0,
           transition: 'opacity 0.3s ease',

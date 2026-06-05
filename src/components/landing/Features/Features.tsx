@@ -39,8 +39,8 @@ export default function Features(): React.ReactElement {
   const { sectionRef, animationProgress, containerStyle } =
     useFeatureSectionAnimation();
 
-  // Hold the scene on its poster frame until every laptop frame is decoded, so
-  // the scroll-driven scrub never stutters on a synchronous image decode.
+  // Hold the explode at frame 0 until every laptop frame has decoded, so the
+  // scroll-driven scrub never stutters on a synchronous decode (animated views).
   const [framesReady, setFramesReady] = useState(false);
 
   // Mobile (Figma 61:1789): a static 3x2 feature grid above a full-width
@@ -60,8 +60,8 @@ export default function Features(): React.ReactElement {
     );
   }
 
-  // Desktop / tablet (Figma 61:1676): the headline, then a sticky scene where
-  // the laptop scrubs in and the six features explode out into the ring.
+  // Desktop / tablet: the headline, then a sticky scene where the six features
+  // explode out around the laptop as you scroll (tablet arc / desktop scatter).
   return (
     <>
       <section

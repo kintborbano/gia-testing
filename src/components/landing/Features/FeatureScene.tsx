@@ -71,7 +71,7 @@ const SCENES: Record<
   'tablet' | 'desktop',
   { aspect: number; laptop: { left: number; top: number; width: number } }
 > = {
-  tablet: { aspect: 681 / 553, laptop: { left: 1.4, top: 26.2, width: 89.7 } },
+  tablet: { aspect: 681 / 553, laptop: { left: 5.3, top: 26.2, width: 82 } },
   desktop: { aspect: 962 / 357, laptop: { left: 22.2, top: 0, width: 55.5 } },
 };
 
@@ -129,7 +129,7 @@ export default function FeatureScene({
   const sceneStyle: CSSProperties = scene ? { aspectRatio: scene.aspect } : {};
 
   return (
-    <div className="mx-auto w-full max-w-[1040px]">
+    <div className="mx-auto w-full max-w-[1040px] lg:max-w-[1180px]">
       <div className={sceneClass} style={sceneStyle}>
         <div
           ref={laptopRef}
@@ -146,6 +146,7 @@ export default function FeatureScene({
           }
         >
           <ChibiLaptopScene
+            animated={explode}
             animationProgress={animationProgress}
             onReady={onFramesReady}
           />
@@ -175,7 +176,7 @@ export default function FeatureScene({
             >
               <img
                 alt={feature.label}
-                className="pointer-events-none h-auto w-[78px] object-contain sm:w-[92px] md:w-[88px] lg:w-[96px] xl:w-[108px]"
+                className="pointer-events-none h-auto w-[78px] object-contain sm:w-[92px] md:w-[104px] lg:w-[112px] xl:w-[124px]"
                 src={`/images/${encodeURIComponent(feature.label)}.png`}
               />
               <div
