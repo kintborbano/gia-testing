@@ -24,12 +24,12 @@ export default function AnalyzeTiktokButton({
   return (
     <Button
       href={href}
-      variant="outlined"
+      variant="filledStatic"
       size={variant === 'hero' ? 'lg' : 'default'}
       withArrow
-      className={`${variant === 'hero' ? 'w-full sm:w-[266px]' : ''} ${className}`}
+      className={`whitespace-nowrap ${className}`}
     >
-      ANALYZE MY TIKTOK
+      Analyze my TikTok
     </Button>
   );
 }

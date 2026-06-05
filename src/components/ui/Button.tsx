@@ -1,12 +1,12 @@
 import { ArrowRight } from 'lucide-react';
 import type { ReactElement, ReactNode } from 'react';
 
-export type ButtonVariant = 'filled' | 'outlined';
+export type ButtonVariant = 'filled' | 'filledStatic' | 'outlined';
 export type ButtonSize = 'sm' | 'default' | 'lg';
 
 type BaseProps = {
   children: ReactNode;
-  /** `filled` = brand fill, inverts on hover. `outlined` = white fill, inverts on hover. */
+  /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. */
   variant?: ButtonVariant;
   /** sm 38px/13px · default 44px/14px · lg 60px/16px. */
   size?: ButtonSize;
@@ -31,7 +31,7 @@ type ButtonAsButton = BaseProps & {
 export type ButtonProps = ButtonAsLink | ButtonAsButton;
 
 const BASE =
-  'group inline-flex shrink-0 items-center justify-center border font-sans font-bold tracking-[-0.02em] transition-[background-color,color] duration-200 ease-out';
+  'group inline-flex shrink-0 items-center justify-center border font-sans font-bold tracking-[-0.02em] transition-[background-color,color,box-shadow] duration-200 ease-out';
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
   sm: 'h-[38px] gap-2 rounded-[25px] px-5 text-[13px]',
@@ -42,12 +42,13 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
 const ARROW_SIZE: Record<ButtonSize, string> = {
   sm: 'h-[16px] w-[16px]',
   default: 'h-[16px] w-[16px]',
-  lg: 'h-[18px] w-[18px]',
+  lg: 'h-[20px] w-[20px]',
 };
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   filled:
     'border-brand-primary bg-brand-primary text-white hover:bg-white hover:text-brand-primary',
+  filledStatic: 'border-brand-primary bg-brand-primary text-white',
   outlined:
     'border-brand-primary bg-white text-brand-primary hover:bg-brand-primary hover:text-white',
 };

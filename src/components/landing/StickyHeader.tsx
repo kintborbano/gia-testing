@@ -7,11 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useScrollProgress } from '@/hooks/useScrollProgress';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
-import {
-  getHeaderHeight,
-  getHeaderBorderOpacity,
-  SCROLL_RANGE,
-} from '@/animations/headerAnimations';
+import { getHeaderHeight, SCROLL_RANGE } from '@/animations/headerAnimations';
 import {
   getPageBackgroundServerSnapshot,
   getPageBackgroundSnapshot,
@@ -46,7 +42,6 @@ export default function StickyHeader(): React.ReactElement {
     () => ({
       height: `${getHeaderHeight(t)}px`,
       background: pageBg,
-      borderBottom: `1px solid rgba(0, 0, 0, ${getHeaderBorderOpacity(t)})`,
       transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
       transition: 'transform 350ms ease',
     }),
@@ -55,7 +50,7 @@ export default function StickyHeader(): React.ReactElement {
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-5 transition-none will-change-[height,background,border-bottom,transform] sm:px-6 md:px-10"
+      className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-5 transition-none will-change-[height,background,transform] sm:px-6 md:px-10"
       style={headerStyle}
     >
       <Link

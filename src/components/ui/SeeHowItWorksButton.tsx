@@ -1,5 +1,4 @@
 import type { ReactElement } from 'react';
-import Button from './Button';
 
 type SeeHowItWorksButtonProps = {
   onClick?: () => void;
@@ -8,22 +7,19 @@ type SeeHowItWorksButtonProps = {
 };
 
 /**
- * Secondary "see how it works" CTA — filled brand pill that inverts to a white
- * fill on hover. Thin wrapper over the shared {@link Button}.
+ * Secondary "see how it works" CTA — plain underlined text link, no pill.
  */
 export default function SeeHowItWorksButton({
   onClick,
   className = '',
 }: SeeHowItWorksButtonProps): ReactElement {
   return (
-    <Button
+    <button
       type="button"
       onClick={onClick}
-      variant="filled"
-      size="lg"
-      className={`w-full sm:w-[266px] ${className}`}
+      className={`text-brand-primary font-sans text-[16px] font-bold tracking-[-0.02em] underline underline-offset-4 transition-opacity duration-200 ease-out hover:opacity-70 ${className}`}
     >
-      SEE HOW IT WORKS
-    </Button>
+      See how it works
+    </button>
   );
 }

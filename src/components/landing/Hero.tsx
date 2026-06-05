@@ -38,14 +38,14 @@ export default function Hero(): React.ReactElement {
             <br />
             someone watching...
           </h1>
-          <p className="font-sans text-[16px] leading-[1.3] font-medium tracking-[-0.12px] sm:text-[18px] md:text-[20px] md:leading-[1.25]">
+          <p className="font-sans text-[16px] leading-[1.3] font-medium tracking-[-0.12px] text-[#151515] sm:text-[18px] md:text-[20px] md:leading-[1.25]">
             GIA watches your content, reads your comments,
             <br />
             studies your patterns, and tells you exactly what to post next.
           </p>
 
           {/* Design calls for Instrument Sans Bold (700); only 400/600 are loaded — falls back to 600 */}
-          <div className="flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row sm:gap-[34px]">
+          <div className="mt-4 flex w-auto flex-row items-center justify-center gap-4 sm:mt-6 sm:gap-[34px] md:mt-8">
             <AnalyzeTiktokButton />
             <SeeHowItWorksButton onClick={scrollToHow} />
           </div>
