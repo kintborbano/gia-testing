@@ -116,15 +116,17 @@ export default function ChibiLaptopScene({
   return (
     // Fluid box that fills its grid cell; aspect ratio matches the frame art.
     // The canvas is scaled up so the laptop reads large while its transparent
-    // margins let the surrounding feature icons sit close to it. overflow is
-    // clipped so the scaled art never pushes past the cell (no page overflow).
+    // margins let the surrounding feature icons sit close to it; overflow is
+    // clipped so the scaled (transparent) edges never widen the page. GIA +
+    // desk span ~76% of the frame height, so the scale is capped (~1.2) and
+    // applied from the centre — any larger crops her head or the desk.
     <div className="relative aspect-[3/2] w-full overflow-hidden">
       <canvas
         ref={canvasRef}
         width={FRAME_W}
         height={FRAME_H}
         aria-label="GIA on Laptop"
-        className="pointer-events-none absolute inset-0 h-full w-full scale-[1.15] object-contain md:scale-[1.3]"
+        className="pointer-events-none absolute inset-0 h-full w-full scale-[1.1] object-contain md:scale-[1.2]"
         style={{
           opacity: posterReady ? 1 : 0,
           transition: 'opacity 0.3s ease',
