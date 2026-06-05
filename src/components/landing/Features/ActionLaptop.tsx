@@ -10,6 +10,12 @@ const FRAME_COUNT = 39;
 const FRAME_W = 1280;
 const FRAME_H = 720;
 
+// Keep the laptop closed until halfway through the section, then open it fast
+// over a short slice of progress so the open state is the highlight and the
+// whole open finishes well before the section scrolls away (i.e. stays seen).
+const OPEN_START = 0.5;
+const OPEN_DURATION = 0.2;
+
 function framePath(i: number): string {
   return `/images/action-frames/laptop${String(i).padStart(2, '0')}.webp`;
 }
@@ -77,12 +83,14 @@ export default function ActionLaptop({
     return () => io.disconnect();
   }, []);
 
-  // Draw the frame matching the current scroll progress.
+  // Draw the frame for the current scroll progress: closed until OPEN_START,
+  // then a fast open across OPEN_DURATION, then held open for the rest.
   useEffect(() => {
-    const index = Math.min(
-      FRAME_COUNT - 1,
-      Math.max(0, Math.round(animationProgress * (FRAME_COUNT - 1)))
+    const scrub = Math.min(
+      1,
+      Math.max(0, (animationProgress - OPEN_START) / OPEN_DURATION)
     );
+    const index = Math.round(scrub * (FRAME_COUNT - 1));
     if (index === currentFrameRef.current) return;
     currentFrameRef.current = index;
     drawFrame(index);
