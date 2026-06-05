@@ -42,6 +42,8 @@ html::-webkit-scrollbar {
   --color-brand-secondary-transparent: var(--brand-secondary-transparent);
   --font-sans: var(--font-instrument-sans);
   --font-young-serif: var(--font-young-serif);
+  --font-itc-garamond: var(--font-itc-garamond);
+  --font-itc-garamond-narrow-italic: var(--font-itc-garamond-narrow-italic);
   --font-pixelify: 'Pixelify Sans', sans-serif;
 }
 

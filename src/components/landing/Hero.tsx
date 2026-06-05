@@ -29,8 +29,12 @@ export default function Hero(): React.ReactElement {
         style={{ marginBottom: HEADER_HEIGHT_LARGE }}
       >
         <div className="text-brand-primary flex w-full flex-col items-center justify-center gap-6 text-center sm:gap-8 md:gap-10">
-          <h1 className="font-young-serif text-[34px] leading-[1.1] tracking-[-1.12px] sm:text-[44px] md:text-[56px]">
-            your tiktok finally has
+          <h1 className="font-itc-garamond text-[50px] leading-[1.1] tracking-[-1.12px] text-[#151515] sm:text-[68px] md:text-[86px]">
+            your{' '}
+            <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
+              tiktok
+            </span>{' '}
+            finally has
             <br />
             someone watching...
           </h1>
