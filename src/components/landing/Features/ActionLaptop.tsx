@@ -94,7 +94,7 @@ export default function ActionLaptop({
       width={FRAME_W}
       height={FRAME_H}
       aria-label="GIA in action"
-      className="h-auto w-full max-w-[1100px]"
+      className="h-auto max-h-[50vh] w-full max-w-[1000px] object-contain"
       style={{ opacity: posterReady ? 1 : 0, transition: 'opacity 0.3s ease' }}
     />
   );
