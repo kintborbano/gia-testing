@@ -17,7 +17,7 @@ import PoweredByPill from '@/components/ui/PoweredByPill';
 import Button from '@/components/ui/Button';
 
 const NAV_LINKS = [
-  { label: 'MEET GIA', href: '/meet-gia' },
+  { label: 'PRODUCT', href: '/meet-gia' },
   { label: 'PRICING', href: '/pricing' },
   { label: 'FAQs', href: '/faq' },
   // No dedicated About Us page yet — point at the footer for now.
@@ -83,8 +83,8 @@ export default function StickyHeader(): React.ReactElement {
             </Link>
           )
         )}
-        <Button href="#bg-stop-footer" variant="filled" size="default">
-          GET IN TOUCH
+        <Button href="/action" variant="filled" size="default">
+          ANALYZE MY TIKTOK
         </Button>
       </nav>
 
@@ -127,12 +127,12 @@ export default function StickyHeader(): React.ReactElement {
             )
           )}
           <Button
-            href="#bg-stop-footer"
+            href="/action"
             variant="filled"
             size="default"
             className="mt-3 w-full"
           >
-            GET IN TOUCH
+            ANALYZE MY TIKTOK
           </Button>
         </nav>
       )}
