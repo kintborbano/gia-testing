@@ -3,17 +3,17 @@
 import { useMemo, useState, useSyncExternalStore } from 'react';
 import type { CSSProperties } from 'react';
 import { Menu, X } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useScrollProgress } from '@/hooks/useScrollProgress';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useInSection } from '@/hooks/useInSection';
 import { getHeaderHeight, SCROLL_RANGE } from '@/animations/headerAnimations';
 import {
-  getPageBackgroundServerSnapshot,
-  getPageBackgroundSnapshot,
-  subscribeToPageBackground,
+  getPageColorsServerSnapshot,
+  getPageColorsSnapshot,
+  subscribeToPageColors,
 } from '@/stores/pageBackgroundStore';
+import GiaLogo from '@/components/ui/GiaLogo';
 import PoweredByPill from '@/components/ui/PoweredByPill';
 import Button from '@/components/ui/Button';
 
@@ -25,8 +25,10 @@ const NAV_LINKS = [
   { label: 'ABOUT US', href: '#bg-stop-footer' },
 ] as const;
 
+// Color is intentionally omitted — links inherit the header's `currentColor`
+// so they tint with the active section's foreground.
 const linkClassName =
-  'text-brand-primary font-sans text-[14px] font-medium tracking-[0.5px] hover:font-bold';
+  'font-sans text-[14px] font-medium tracking-[0.5px] hover:font-bold';
 
 export default function StickyHeader(): React.ReactElement {
   const t = useScrollProgress(0, SCROLL_RANGE);
@@ -36,20 +38,26 @@ export default function StickyHeader(): React.ReactElement {
   const inFeatures = useInSection('features-section');
   // Keep the header visible while the mobile menu is open.
   const hidden = (useScrollDirection() || inFeatures) && !menuOpen;
-  const pageBg = useSyncExternalStore(
-    subscribeToPageBackground,
-    getPageBackgroundSnapshot,
-    getPageBackgroundServerSnapshot
+  const { background: pageBg, foreground: pageFg } = useSyncExternalStore(
+    subscribeToPageColors,
+    getPageColorsSnapshot,
+    getPageColorsServerSnapshot
   );
 
   const headerStyle = useMemo<CSSProperties>(
-    () => ({
-      height: `${getHeaderHeight(t)}px`,
-      background: pageBg,
-      transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
-      transition: 'transform 350ms ease',
-    }),
-    [t, pageBg, hidden]
+    () =>
+      ({
+        height: `${getHeaderHeight(t)}px`,
+        background: pageBg,
+        // Drives `currentColor` for the nav text, menu icon, and GIA logo.
+        color: pageFg,
+        // Exposed to the adaptive CTA button so it tracks the section palette.
+        '--page-bg': pageBg,
+        '--page-fg': pageFg,
+        transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
+        transition: 'transform 350ms ease',
+      }) as CSSProperties,
+    [t, pageBg, pageFg, hidden]
   );
 
   return (
@@ -63,14 +71,7 @@ export default function StickyHeader(): React.ReactElement {
         className="flex items-center gap-2 sm:gap-3"
         onClick={() => setMenuOpen(false)}
       >
-        <Image
-          src="/logos/gia-logo.svg"
-          alt="GIA"
-          width={689}
-          height={480}
-          className="mt-2 h-[34px] w-auto sm:h-[40px]"
-          priority
-        />
+        <GiaLogo className="mt-2 h-[34px] w-auto sm:h-[40px]" />
         <PoweredByPill size="sm" />
       </Link>
 
@@ -87,7 +88,7 @@ export default function StickyHeader(): React.ReactElement {
             </Link>
           )
         )}
-        <Button href="/action" variant="filled" size="default">
+        <Button href="/action" variant="adaptive" size="default">
           ANALYZE MY TIKTOK
         </Button>
       </nav>
@@ -98,7 +99,7 @@ export default function StickyHeader(): React.ReactElement {
         aria-label={menuOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((open) => !open)}
-        className="text-brand-primary -mr-1 grid size-10 place-items-center md:hidden"
+        className="-mr-1 grid size-10 place-items-center md:hidden"
       >
         {menuOpen ? <X size={26} /> : <Menu size={26} />}
       </button>
@@ -132,7 +133,7 @@ export default function StickyHeader(): React.ReactElement {
           )}
           <Button
             href="/action"
-            variant="filled"
+            variant="adaptive"
             size="default"
             className="mt-3 w-full"
           >
