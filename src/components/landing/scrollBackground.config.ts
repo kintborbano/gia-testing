@@ -2,16 +2,24 @@
  * ─────────────────────────────────────────────────────────────────────────
  *  SCROLL BACKGROUND CONFIG
  * ─────────────────────────────────────────────────────────────────────────
- *  This is the single place to control the page's scroll-driven background.
- *  Edit the values here — you should never need to touch ScrollBackground.tsx.
+ *  This drives TWO things as you scroll, from one list of stops:
  *
- *  HOW IT WORKS, IN ONE SENTENCE:
- *  As you scroll, the background fills the screen with one color and smoothly
- *  fades to the next color as you pass between two "stops" below.
+ *   1. THE STICKY HEADER's palette — its background + text/logo color adopt
+ *      each section's `color` / `foreground` so it melts into the section it
+ *      sits over. This uses EVERY stop below.
+ *
+ *   2. THE REAL PAGE BACKGROUND — the fixed fill behind the whole page. This
+ *      only paints the FIRST transition (hero → features); past the features
+ *      section it simply holds cream. Every later section paints its own
+ *      background, so the page background never needs to go maroon/black/etc.
+ *
+ *  In short: `color` is the HEADER's background per section; only the hero and
+ *  features stops also paint the real page background. See ScrollBackground.tsx
+ *  (`PAINTS_REAL_BG`) for where that split is applied.
  *
  *  Each STOP ties a section on the page (by its `anchorId`) to a `color`.
- *  Tweak the three optional knobs — `align`, `offsetVh`, `fade` — to control
- *  WHERE a color triggers and HOW FAST it fades in.
+ *  Tweak the optional knobs — `align`, `offsetVh`, `fade` — to control WHERE a
+ *  color triggers and HOW FAST it fades in.
  * ─────────────────────────────────────────────────────────────────────────
  */
 
@@ -36,18 +44,19 @@ export type ScrollStop = {
    */
   anchorId: string;
 
-  /** Palette key (e.g. 'cream') or a raw hex string (e.g. '#ffcc00'). */
+  /**
+   * The HEADER background over this section (palette key or raw hex). The hero
+   * and features stops additionally paint this as the real page background; for
+   * every later stop this only tints the sticky header.
+   */
   color: ColorName | (string & {});
 
   /**
    * FOREGROUND color the header adopts over this stop — its nav text, menu
-   * icon, and the GIA logo all tint to this. Like `color`, it lerps between
-   * stops, so the header's contents fade in step with the background instead
-   * of snapping. Palette key or raw hex. Defaults to maroon (`DEFAULT_FOREGROUND`).
-   *
-   * Pick a color with enough CONTRAST against this stop's `color` to stay
-   * legible — foreground should oppose the background, not match it. On a dark
-   * section, set this to a light color (e.g. 'white' or 'cream').
+   * icon, and the GIA logo all tint to this. Palette key or raw hex. Defaults
+   * to maroon (`DEFAULT_FOREGROUND`). Pick a color with enough CONTRAST against
+   * this stop's `color` to stay legible — on a dark section, set this to a
+   * light color (e.g. 'white' or 'cream').
    */
   foreground?: ColorName | (string & {});
 
@@ -75,30 +84,42 @@ export type ScrollStop = {
    *   1   = fade gradually across the whole gap (default, slowest/smoothest)
    *   0.3 = hold the previous color, then fade quickly over the last 30%
    *   0   = instant snap, no fade
-   * Smaller = snappier/faster transition that happens later.
+   * The dark-section stops use `0` so the header flips crisply at the seam; the
+   * features stop fades gradually so the real white→cream page background eases
+   * in instead of snapping.
    */
   fade?: number;
 };
 
 /**
- * The stops, IN PAGE ORDER (top to bottom). Reorder, add, or remove freely.
- *
- *  - To change a section's color: edit its `color`.
- *  - To move where a color kicks in: add `align` and/or `offsetVh`.
- *  - To change fade speed: add `fade`.
+ * The stops, IN PAGE ORDER (top to bottom).
  *
  * NOTE: every `anchorId` must exist on the page. A stop whose element isn't
  * rendered is skipped, which can cause the surrounding fade to snap — so only
  * list sections that are actually mounted.
  */
 export const STOPS: ScrollStop[] = [
+  // ─ Painted as the REAL page background ─────────────────────────────────
   { anchorId: 'bg-stop-hero', color: 'white' },
-  { anchorId: 'features-section', color: 'cream' },
-  // The Action and How sections paint their OWN dark backgrounds, so the header
-  // matches them here. `align: 0` + `offsetVh: 0.5` ties "fully arrived" to the
-  // moment the section's top reaches the header (top of viewport); the small
-  // `fade` makes the header flip crisply at that seam instead of bleeding the
-  // dark color up over the lighter section above it.
+  // White → cream as you cross from the hero into the features section. The
+  // features section is min-h-[260vh] (a sticky scroll-scrub), so the default
+  // `align: 0.5` would put "fully cream" deep in its MIDDLE and smear the blend
+  // across the whole hero. Anchor the trigger to the section TOP and use a
+  // gradual `fade` so the cream holds white through most of the hero, then
+  // eases in over the ~half-screen approach to the seam.
+  {
+    anchorId: 'features-section',
+    color: 'cream',
+    align: 0,
+    offsetVh: 0.5,
+    fade: 0.55,
+  },
+
+  // ─ Header palette only (real page background holds cream below here) ────
+  // The Action and How sections paint their OWN dark backgrounds; the header
+  // matches them by flipping its palette crisply at each seam (`fade: 0`).
+  // `align: 0` + `offsetVh: 0.5` ties the flip to the moment the section's top
+  // reaches the header (top of viewport).
   {
     anchorId: 'bg-stop-action',
     color: 'maroon',
@@ -115,8 +136,8 @@ export const STOPS: ScrollStop[] = [
     offsetVh: 0.5,
     fade: 0,
   },
-  // Back to the light page background — flip from black to white as the CTA's
-  // top reaches the header, using the same crisp-seam tuning.
+  // Back to a light header — flips from black to white as the CTA's top reaches
+  // the header.
   {
     anchorId: 'bg-stop-cta',
     color: 'white',
@@ -127,21 +148,25 @@ export const STOPS: ScrollStop[] = [
   { anchorId: 'bg-stop-footer', color: 'white' },
 ];
 
+/**
+ * How many leading stops paint the REAL page background. Stops beyond this only
+ * retint the sticky header — the page background holds the last painted color
+ * (cream). Currently the hero (white) and features (cream) stops.
+ */
+export const REAL_BG_STOP_COUNT = 2;
+
 /** Default trigger alignment when a stop doesn't set its own `align`. */
 export const DEFAULT_ALIGN = 0.5;
 
 /**
  * Default fade fraction when a stop doesn't set its own `fade`.
- * `0` = instant snap (no blend) — the background and header flip to the new
- * color at the seam instead of fading gradually. Raise toward `1` to bring back
- * a smooth cross-fade.
+ * `1` = a smooth cross-fade across the whole gap between stops. Lower toward
+ * `0` to snap instead.
  */
-export const DEFAULT_FADE = 0;
+export const DEFAULT_FADE = 1;
 
 /**
  * Default header foreground (brand maroon) when a stop doesn't set its own
- * `foreground`. Every current stop is a light background, so this keeps the
- * header's text and logo in maroon throughout — change a stop's `foreground`
- * the moment you introduce a darker section.
+ * `foreground`. Keeps the header's text and logo maroon over light sections.
  */
 export const DEFAULT_FOREGROUND = 'maroon';

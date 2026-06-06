@@ -5,6 +5,7 @@ import { setPageColors } from '@/stores/pageBackgroundStore';
 import {
   COLORS,
   STOPS,
+  REAL_BG_STOP_COUNT,
   DEFAULT_ALIGN,
   DEFAULT_FADE,
   DEFAULT_FOREGROUND,
@@ -49,6 +50,12 @@ const RGB_STOPS: Rgb[] = STOPS.map((s) => resolveColor(s.color));
 const RGB_FG_STOPS: Rgb[] = STOPS.map((s) =>
   resolveColor(s.foreground ?? DEFAULT_FOREGROUND)
 );
+// The real page background follows only the leading stops (hero → features);
+// past them it holds the last painted color (cream) while the header keeps
+// adopting later sections from the store. A segment `i` blends stops i and i+1,
+// so the last real-bg segment is the one ending on the last real-bg stop.
+const LAST_REAL_BG_SEG = REAL_BG_STOP_COUNT - 2;
+const REAL_BG_HOLD = toRgb(RGB_STOPS[REAL_BG_STOP_COUNT - 1]);
 
 export default function ScrollBackground(): React.ReactElement {
   const [color, setColor] = useState<string>(toRgb(RGB_STOPS[0]));
@@ -92,15 +99,18 @@ export default function ScrollBackground(): React.ReactElement {
         }
       }
 
-      const publish = (background: string, foreground: string) => {
-        setColor(background);
-        setPageColors({ background, foreground });
+      // The store drives the HEADER palette (background + foreground) and uses
+      // every stop. The fixed div paints the REAL page background, which only
+      // follows the leading hero→features transition and then holds cream.
+      const publish = (headerBg: string, headerFg: string, realBg: string) => {
+        setColor(realBg);
+        setPageColors({ background: headerBg, foreground: headerFg });
       };
 
       if (segIndex === -1) {
         for (let i = positions.length - 1; i >= 0; i--) {
           if (Number.isFinite(positions[i])) {
-            publish(toRgb(RGB_STOPS[i]), toRgb(RGB_FG_STOPS[i]));
+            publish(toRgb(RGB_STOPS[i]), toRgb(RGB_FG_STOPS[i]), REAL_BG_HOLD);
             return;
           }
         }
@@ -110,11 +120,12 @@ export default function ScrollBackground(): React.ReactElement {
       const start = positions[segIndex];
       const end = positions[segIndex + 1];
       const gap = end - start;
+      const destStop = STOPS[segIndex + 1];
 
       // `fade` (on the destination stop) sets what fraction of the gap the
       // transition occupies, ending exactly at the destination. fade = 1 fades
       // across the whole gap; smaller values hold, then fade fast at the end.
-      const fade = clamp01(STOPS[segIndex + 1].fade ?? DEFAULT_FADE);
+      const fade = clamp01(destStop.fade ?? DEFAULT_FADE);
       const fadeStart = end - gap * fade;
       const fadeRange = end - fadeStart;
       const t =
@@ -124,14 +135,22 @@ export default function ScrollBackground(): React.ReactElement {
       const b = RGB_STOPS[segIndex + 1];
       const fa = RGB_FG_STOPS[segIndex];
       const fb = RGB_FG_STOPS[segIndex + 1];
-      publish(
-        toRgb([lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)]),
-        toRgb([
-          lerp(fa[0], fb[0], t),
-          lerp(fa[1], fb[1], t),
-          lerp(fa[2], fb[2], t),
-        ])
-      );
+      const headerBg = toRgb([
+        lerp(a[0], b[0], t),
+        lerp(a[1], b[1], t),
+        lerp(a[2], b[2], t),
+      ]);
+      const headerFg = toRgb([
+        lerp(fa[0], fb[0], t),
+        lerp(fa[1], fb[1], t),
+        lerp(fa[2], fb[2], t),
+      ]);
+
+      // In the leading hero→features segment the real background tracks the
+      // header (white→cream); past it, hold cream.
+      const realBg = segIndex <= LAST_REAL_BG_SEG ? headerBg : REAL_BG_HOLD;
+
+      publish(headerBg, headerFg, realBg);
     };
 
     const onScroll = () => {
