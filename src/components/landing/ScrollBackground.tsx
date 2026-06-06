@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { setPageBackgroundColor } from '@/stores/pageBackgroundStore';
+import { setPageColors } from '@/stores/pageBackgroundStore';
 import {
   COLORS,
   STOPS,
   DEFAULT_ALIGN,
   DEFAULT_FADE,
+  DEFAULT_FOREGROUND,
   type ScrollStop,
 } from './scrollBackground.config';
 
@@ -45,16 +46,24 @@ function resolveColor(color: ScrollStop['color']): Rgb {
 
 // Resolve the palette once — the config is static.
 const RGB_STOPS: Rgb[] = STOPS.map((s) => resolveColor(s.color));
+const RGB_FG_STOPS: Rgb[] = STOPS.map((s) =>
+  resolveColor(s.foreground ?? DEFAULT_FOREGROUND)
+);
 
 export default function ScrollBackground(): React.ReactElement {
   const [color, setColor] = useState<string>(toRgb(RGB_STOPS[0]));
   const rafRef = useRef<number | null>(null);
-  const positionsRef = useRef<number[]>([]);
 
   useEffect(() => {
-    const measure = () => {
+    // Compute every stop's trigger scroll position fresh on each frame. Doing
+    // this per-frame (rather than caching on mount) keeps the seams accurate
+    // even after late layout shifts — custom font swaps and image loads push
+    // sections downward, and a cached position would fire the color snap at the
+    // wrong scroll depth. Six getBoundingClientRect reads per frame is cheap.
+    const measure = (): number[] => {
       const vh = window.innerHeight;
-      positionsRef.current = STOPS.map((stop) => {
+      const y = window.scrollY;
+      return STOPS.map((stop) => {
         const el = document.getElementById(stop.anchorId);
         if (!el) return Number.NaN;
         const rect = el.getBoundingClientRect();
@@ -62,15 +71,13 @@ export default function ScrollBackground(): React.ReactElement {
         const offset = (stop.offsetVh ?? 0) * vh;
         // Scroll position at which this stop's trigger point reaches the
         // middle of the viewport.
-        return (
-          rect.top + window.scrollY + rect.height * align - vh / 2 + offset
-        );
+        return rect.top + y + rect.height * align - vh / 2 + offset;
       });
     };
 
     const update = () => {
       rafRef.current = null;
-      const positions = positionsRef.current;
+      const positions = measure();
       if (positions.length === 0) return;
 
       const y = window.scrollY;
@@ -85,15 +92,15 @@ export default function ScrollBackground(): React.ReactElement {
         }
       }
 
-      const publish = (rgb: string) => {
-        setColor(rgb);
-        setPageBackgroundColor(rgb);
+      const publish = (background: string, foreground: string) => {
+        setColor(background);
+        setPageColors({ background, foreground });
       };
 
       if (segIndex === -1) {
         for (let i = positions.length - 1; i >= 0; i--) {
           if (Number.isFinite(positions[i])) {
-            publish(toRgb(RGB_STOPS[i]));
+            publish(toRgb(RGB_STOPS[i]), toRgb(RGB_FG_STOPS[i]));
             return;
           }
         }
@@ -115,8 +122,15 @@ export default function ScrollBackground(): React.ReactElement {
 
       const a = RGB_STOPS[segIndex];
       const b = RGB_STOPS[segIndex + 1];
+      const fa = RGB_FG_STOPS[segIndex];
+      const fb = RGB_FG_STOPS[segIndex + 1];
       publish(
-        toRgb([lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)])
+        toRgb([lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)]),
+        toRgb([
+          lerp(fa[0], fb[0], t),
+          lerp(fa[1], fb[1], t),
+          lerp(fa[2], fb[2], t),
+        ])
       );
     };
 
@@ -125,18 +139,12 @@ export default function ScrollBackground(): React.ReactElement {
       rafRef.current = requestAnimationFrame(update);
     };
 
-    const onResize = () => {
-      measure();
-      onScroll();
-    };
-
-    measure();
     update();
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize);
+    window.addEventListener('resize', onScroll);
     return () => {
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
+      window.removeEventListener('resize', onScroll);
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
   }, []);

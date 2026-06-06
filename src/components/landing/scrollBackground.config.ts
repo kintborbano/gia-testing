@@ -23,6 +23,7 @@
 export const COLORS = {
   white: '#ffffff',
   cream: '#fef7dd',
+  maroon: '#8c1f2e',
 } as const;
 
 export type ColorName = keyof typeof COLORS;
@@ -37,6 +38,18 @@ export type ScrollStop = {
 
   /** Palette key (e.g. 'cream') or a raw hex string (e.g. '#ffcc00'). */
   color: ColorName | (string & {});
+
+  /**
+   * FOREGROUND color the header adopts over this stop — its nav text, menu
+   * icon, and the GIA logo all tint to this. Like `color`, it lerps between
+   * stops, so the header's contents fade in step with the background instead
+   * of snapping. Palette key or raw hex. Defaults to maroon (`DEFAULT_FOREGROUND`).
+   *
+   * Pick a color with enough CONTRAST against this stop's `color` to stay
+   * legible — foreground should oppose the background, not match it. On a dark
+   * section, set this to a light color (e.g. 'white' or 'cream').
+   */
+  foreground?: ColorName | (string & {});
 
   /**
    * WHERE on the anchor element the trigger point sits, 0–1:
@@ -81,14 +94,54 @@ export type ScrollStop = {
 export const STOPS: ScrollStop[] = [
   { anchorId: 'bg-stop-hero', color: 'white' },
   { anchorId: 'features-section', color: 'cream' },
-  { anchorId: 'bg-stop-action', color: 'white' },
-  { anchorId: 'bg-stop-how', color: 'white' },
-  { anchorId: 'bg-stop-cta', color: 'white' },
+  // The Action and How sections paint their OWN dark backgrounds, so the header
+  // matches them here. `align: 0` + `offsetVh: 0.5` ties "fully arrived" to the
+  // moment the section's top reaches the header (top of viewport); the small
+  // `fade` makes the header flip crisply at that seam instead of bleeding the
+  // dark color up over the lighter section above it.
+  {
+    anchorId: 'bg-stop-action',
+    color: 'maroon',
+    foreground: 'white',
+    align: 0,
+    offsetVh: 0.5,
+    fade: 0,
+  },
+  {
+    anchorId: 'bg-stop-how',
+    color: '#000000',
+    foreground: 'cream',
+    align: 0,
+    offsetVh: 0.5,
+    fade: 0,
+  },
+  // Back to the light page background — flip from black to white as the CTA's
+  // top reaches the header, using the same crisp-seam tuning.
+  {
+    anchorId: 'bg-stop-cta',
+    color: 'white',
+    align: 0,
+    offsetVh: 0.5,
+    fade: 0,
+  },
   { anchorId: 'bg-stop-footer', color: 'white' },
 ];
 
 /** Default trigger alignment when a stop doesn't set its own `align`. */
 export const DEFAULT_ALIGN = 0.5;
 
-/** Default fade fraction when a stop doesn't set its own `fade`. */
-export const DEFAULT_FADE = 1;
+/**
+ * Default fade fraction when a stop doesn't set its own `fade`.
+ * `0` = instant snap (no blend) — the background and header flip to the new
+ * color at the seam instead of fading gradually. Raise toward `1` to bring back
+ * a smooth cross-fade.
+ */
+export const DEFAULT_FADE = 0;
+
+/**
+ * Default header foreground (brand maroon) when a stop doesn't set its own
+ * `foreground`. Every current stop is a light background, so this keeps the
+ * header's text and logo in maroon throughout — change a stop's `foreground`
+ * the moment you introduce a darker section.
+ */
+export const DEFAULT_FOREGROUND = 'maroon';

@@ -2,7 +2,7 @@ export default function CTA(): React.ReactElement {
   return (
     <section
       id="bg-stop-cta"
-      className="flex w-full flex-col items-center justify-center px-5 sm:px-8 md:px-16"
+      className="flex w-full flex-col items-center justify-center bg-white px-5 sm:px-8 md:px-16"
     >
       <div className="flex w-full max-w-[1152px] flex-col items-center justify-center gap-8 py-12 md:h-[478px] md:flex-row md:py-10">
         <div className="flex w-full max-w-[487px] flex-col items-center justify-center md:h-[622px] md:min-w-0 md:flex-1 md:items-start md:px-[30px]">

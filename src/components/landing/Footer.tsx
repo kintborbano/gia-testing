@@ -19,7 +19,7 @@ export default function Footer(): React.ReactElement {
   return (
     <footer
       id="bg-stop-footer"
-      className="flex w-full justify-center px-5 pt-10 pb-12 sm:px-8 md:px-16 md:pt-16 md:pb-20"
+      className="flex w-full justify-center bg-white px-5 pt-10 pb-12 sm:px-8 md:px-16 md:pt-16 md:pb-20"
     >
       {/* Enclosing maroon panel — generous internal padding so the contents
           never crowd the rounded edges. */}
