@@ -202,7 +202,7 @@ export default function FeatureScene({
                   setSelectedArea(feature.area);
                 }
               }}
-              className="group relative flex cursor-pointer flex-col items-center rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[#c2992e]"
+              className="group relative flex cursor-pointer flex-col items-center rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[#8c1f2e]"
               style={{ ...placement, ...animStyle }}
             >
               <img
@@ -214,7 +214,7 @@ export default function FeatureScene({
               />
               <div
                 className={`font-pixelify pointer-events-none mt-2 text-center text-[10px] leading-tight transition-colors duration-200 sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] ${
-                  isSelected ? 'text-brand-secondary' : ''
+                  isSelected ? 'text-brand-primary' : ''
                 }`}
                 style={{
                   transform: `translateX(${feature.labelOffsetX ?? 0}px)`,
@@ -231,9 +231,9 @@ export default function FeatureScene({
       {/* Description for the selected feature, anchored below the Gia laptop. */}
       <div
         aria-live="polite"
-        className="mx-auto mt-6 w-full max-w-[560px] rounded-[15px] border-[3px] border-[#c2992e] bg-[#fef7dd] px-7 py-6 text-center shadow-[inset_0_0_0_2px_#1a1208,inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_#8a6a1c] md:mt-10"
+        className="mx-auto mt-7 w-full max-w-[680px] rounded-[15px] border-[3px] border-[#c2992e] bg-[#fef7dd] px-12 py-7 text-center shadow-[inset_0_0_0_2px_#1a1208,inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_#8a6a1c] md:mt-9"
       >
-        <p className="font-pixelify text-[16px] tracking-[0.3px] text-[#c2992e] md:text-[18px]">
+        <p className="font-pixelify text-[22px] tracking-[0.3px] text-[#8c1f2e] md:text-[26px]">
           {selected.label}
         </p>
         <p className="mt-2 font-sans text-[14px] leading-[1.45] tracking-[-0.2px] text-[#1a1208] md:text-[15px]">
