@@ -43,6 +43,26 @@ export function getLaptopStyle(t2: number): CSSProperties {
   return { transform: `translateX(${tx}vw)`, willChange: 'transform' };
 }
 
+// Description card enters once the gia image has settled and the icons are
+// mostly out, so it reads as the last beat of the same scroll sequence.
+const DESC_CARD_START = 0.6;
+const DESC_CARD_END = 0.95;
+const DESC_CARD_SLIDE = 240;
+
+/**
+ * Description card: slides straight up into place from far below as scroll
+ * progresses, sliding back down on scroll-up. No fade — it just travels up.
+ * Driven by the same progress as the gia character so the two animate
+ * together. Fully reversible.
+ */
+export function getDescriptionCardStyle(t2: number): CSSProperties {
+  const eased = easeOutCubic(phaseProgress(t2, DESC_CARD_START, DESC_CARD_END));
+  return {
+    transform: `translateY(${lerp(DESC_CARD_SLIDE, 0, eased)}px)`,
+    willChange: 'transform',
+  };
+}
+
 /**
  * Staggered floating object: starts collapsed at the center of the gia image
  * (translated by `origin`, scaled down, hidden) and explodes out to its resting

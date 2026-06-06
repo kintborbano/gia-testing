@@ -2,7 +2,10 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { getFloatingObjectStyle } from '@/animations/laptopAnimations';
+import {
+  getDescriptionCardStyle,
+  getFloatingObjectStyle,
+} from '@/animations/laptopAnimations';
 import type { FloatingObjectOrigin } from '@/animations/laptopAnimations';
 import ChibiLaptopScene from './ChibiLaptopScene';
 
@@ -228,10 +231,13 @@ export default function FeatureScene({
         })}
       </div>
 
-      {/* Description for the selected feature, anchored below the Gia laptop. */}
+      {/* Description for the selected feature, anchored below the Gia laptop.
+          On desktop/tablet it slides up + fades in with the same scroll
+          progress that drives the Gia character (reverses on scroll-up). */}
       <div
         aria-live="polite"
         className="mx-auto mt-7 w-full max-w-[680px] rounded-[15px] border-[3px] border-[#c2992e] bg-[#fef7dd] px-12 py-7 text-center shadow-[inset_0_0_0_2px_#1a1208,inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_#8a6a1c] md:mt-9"
+        style={explode ? getDescriptionCardStyle(animationProgress) : undefined}
       >
         <p className="font-pixelify text-[22px] tracking-[0.3px] text-[#8c1f2e] md:text-[26px]">
           {selected.label}
