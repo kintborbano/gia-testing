@@ -15,6 +15,8 @@ type Feature = {
   area: 'hook' | 'perf' | 'score' | 'comment' | 'roadmap' | 'story';
   /** Doubles as the label and the `/images/<label>.png` filename. */
   label: string;
+  /** Shown in the description card when this feature is selected. */
+  description: string;
   /** Horizontal nudge (px) for the label when the artwork isn't centered. */
   labelOffsetX?: number;
   /** Absolute "scatter" positions — top-left corner as a % of the scene box.
@@ -29,6 +31,8 @@ const FEATURES: Feature[] = [
   {
     area: 'hook',
     label: 'Hook Scoring',
+    description:
+      'GIA rates the first three seconds of every video on its power to stop the scroll — showing you which hooks earned the watch and which lost it.',
     labelOffsetX: -6,
     tablet: { left: 0, top: 55 },
     desktop: { left: 0, top: 11.5 },
@@ -36,30 +40,40 @@ const FEATURES: Feature[] = [
   {
     area: 'perf',
     label: 'Performance Patterns',
+    description:
+      'She maps what your best posts have in common — formats, lengths, topics, posting times — so you can repeat what already works instead of guessing.',
     tablet: { left: 28.3, top: 1.3 },
     desktop: { left: 22.7, top: 9.3 },
   },
   {
     area: 'comment',
     label: 'Comment Intelligence',
+    description:
+      'GIA reads your comments the way a strategist would, surfacing the questions, objections, and cravings your audience keeps repeating.',
     tablet: { left: 6.4, top: 21.7 },
     desktop: { left: 10.2, top: 40.9 },
   },
   {
     area: 'roadmap',
     label: 'Content Roadmap',
+    description:
+      'A week-by-week plan of what to post next, built from your own data — no blank-page guessing, just the next best move.',
     tablet: { left: 54.4, top: 0 },
     desktop: { left: 69.3, top: 9.3 },
   },
   {
     area: 'story',
     label: 'Shareable Story Card',
+    description:
+      'A polished, screenshot-ready summary of your growth wins, designed to drop straight into your Stories.',
     tablet: { left: 82.8, top: 53.9 },
     desktop: { left: 89.4, top: 8.6 },
   },
   {
     area: 'score',
     label: 'GIA Score',
+    description:
+      'One honest number that captures your account’s overall health — plus the specific levers that will move it up the fastest.',
     tablet: { left: 76.6, top: 23.3 },
     desktop: { left: 79, top: 43.9 },
   },
@@ -91,6 +105,9 @@ export default function FeatureScene({
   const laptopRef = useRef<HTMLDivElement>(null);
   const featureRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [origins, setOrigins] = useState<FloatingObjectOrigin[]>([]);
+  // First feature (Hook Scoring) is shown by default so the card is never empty.
+  const [selectedArea, setSelectedArea] = useState<Feature['area']>('hook');
+  const selected = FEATURES.find((f) => f.area === selectedArea) ?? FEATURES[0];
 
   const explode = layout !== 'mobile';
   const scene = layout === 'mobile' ? null : SCENES[layout];
@@ -135,7 +152,7 @@ export default function FeatureScene({
       <div className={sceneClass} style={sceneStyle}>
         <div
           ref={laptopRef}
-          className="relative z-10 w-full"
+          className="pointer-events-none relative z-10 w-full"
           style={
             scene
               ? {
@@ -167,22 +184,38 @@ export default function FeatureScene({
           const placement: CSSProperties = pos
             ? { position: 'absolute', left: `${pos.left}%`, top: `${pos.top}%` }
             : { gridArea: feature.area };
+          const isSelected = feature.area === selectedArea;
           return (
             <div
               key={feature.area}
               ref={(el) => {
                 featureRefs.current[index] = el;
               }}
-              className="relative flex flex-col items-center"
+              role="button"
+              tabIndex={0}
+              aria-pressed={isSelected}
+              aria-label={feature.label}
+              onClick={() => setSelectedArea(feature.area)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSelectedArea(feature.area);
+                }
+              }}
+              className="group relative flex cursor-pointer flex-col items-center rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[#c2992e]"
               style={{ ...placement, ...animStyle }}
             >
               <img
                 alt={feature.label}
-                className="pointer-events-none h-auto w-[78px] object-contain sm:w-[92px] md:w-[104px] lg:w-[120px] xl:w-[136px]"
+                className={`pointer-events-none h-auto w-[78px] object-contain transition-transform duration-200 group-hover:scale-105 sm:w-[92px] md:w-[104px] lg:w-[120px] xl:w-[136px] ${
+                  isSelected ? 'scale-110' : ''
+                }`}
                 src={`/images/${encodeURIComponent(feature.label)}.png`}
               />
               <div
-                className="font-pixelify pointer-events-none mt-2 text-center text-[10px] leading-tight sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px]"
+                className={`font-pixelify pointer-events-none mt-2 text-center text-[10px] leading-tight transition-colors duration-200 sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] ${
+                  isSelected ? 'text-brand-secondary' : ''
+                }`}
                 style={{
                   transform: `translateX(${feature.labelOffsetX ?? 0}px)`,
                 }}
@@ -193,6 +226,19 @@ export default function FeatureScene({
             </div>
           );
         })}
+      </div>
+
+      {/* Description for the selected feature, anchored below the Gia laptop. */}
+      <div
+        aria-live="polite"
+        className="mx-auto mt-6 w-full max-w-[560px] rounded-[15px] border-[3px] border-[#c2992e] bg-[#fef7dd] px-7 py-6 text-center shadow-[inset_0_0_0_2px_#1a1208,inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_#8a6a1c] md:mt-10"
+      >
+        <p className="font-pixelify text-[16px] tracking-[0.3px] text-[#c2992e] md:text-[18px]">
+          {selected.label}
+        </p>
+        <p className="mt-2 font-sans text-[14px] leading-[1.45] tracking-[-0.2px] text-[#1a1208] md:text-[15px]">
+          {selected.description}
+        </p>
       </div>
     </div>
   );

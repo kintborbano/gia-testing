@@ -36,6 +36,9 @@ export default function StickyHeader(): React.ReactElement {
   // While the Features scroll-scene owns the top of the viewport, keep the
   // header hidden even when scrolling up — it only reappears in other sections.
   const inFeatures = useInSection('features-section');
+  // The How section is black with gold accents — switch the SOFI pill to its
+  // dark/gold tone only while the header sits over it.
+  const inHow = useInSection('bg-stop-how');
   // Keep the header visible while the mobile menu is open.
   const hidden = (useScrollDirection() || inFeatures) && !menuOpen;
   const { background: pageBg, foreground: pageFg } = useSyncExternalStore(
@@ -72,7 +75,7 @@ export default function StickyHeader(): React.ReactElement {
         onClick={() => setMenuOpen(false)}
       >
         <GiaLogo className="mt-2 h-[34px] w-auto sm:h-[40px]" />
-        <PoweredByPill size="sm" />
+        <PoweredByPill size="sm" tone={inHow ? 'onDark' : 'default'} />
       </Link>
 
       {/* Desktop nav */}

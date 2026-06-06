@@ -79,7 +79,7 @@ export default function Features(): React.ReactElement {
       <section
         id="features-section"
         ref={sectionRef}
-        className="relative flex min-h-[260vh] w-full flex-col items-center"
+        className="relative flex min-h-[260vh] w-full flex-col items-center bg-red-600"
       >
         <div style={containerStyle}>
           <div className="flex h-full w-full items-start justify-center px-8 pt-[6vh]">
