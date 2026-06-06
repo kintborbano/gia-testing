@@ -115,7 +115,7 @@ function StepCard({
         height={420}
         className="size-[65px] shrink-0"
       />
-      <p className="font-young-serif text-[31px] tracking-[-1.5px] text-[#1a1208]">
+      <p className="font-young-serif text-center text-[31px] tracking-[-1.5px] text-[#1a1208]">
         {step.title}
       </p>
       <p

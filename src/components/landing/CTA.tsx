@@ -1,3 +1,4 @@
+import AnalyzeTiktokButton from '@/components/ui/AnalyzeTiktokButton';
 import PeaceScrubber from './PeaceScrubber';
 
 export default function CTA(): React.ReactElement {
@@ -6,8 +7,8 @@ export default function CTA(): React.ReactElement {
       id="bg-stop-cta"
       className="flex w-full flex-col items-center justify-center bg-white px-5 sm:px-8 md:px-16"
     >
-      <div className="flex w-full max-w-[1152px] flex-col items-center justify-center gap-8 py-12 md:h-[478px] md:flex-row md:py-10">
-        <div className="flex w-full max-w-[640px] flex-col items-center justify-center md:h-[622px] md:min-w-0 md:flex-[1.3] md:items-start">
+      <div className="flex w-full max-w-[1152px] flex-col items-center justify-center gap-8 pt-20 pb-12 md:h-[478px] md:flex-row md:pt-24 md:pb-10">
+        <div className="flex w-full max-w-[640px] flex-col items-center justify-center md:h-[622px] md:min-w-0 md:flex-[1.5] md:items-start">
           <PeaceScrubber />
         </div>
 
@@ -25,6 +26,7 @@ export default function CTA(): React.ReactElement {
           <p className="w-full max-w-[504px] font-sans text-[16px] leading-[1.3] font-normal tracking-[-0.12px] text-[#151515] md:text-[20px] md:leading-[1.25]">
             Stop guessing. Start posting with evidence.
           </p>
+          <AnalyzeTiktokButton variant="cta" />
         </div>
       </div>
     </section>
