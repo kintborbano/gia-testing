@@ -12,7 +12,10 @@ export default function Hero(): React.ReactElement {
 
     const lenis = getLenisSnapshot();
     if (lenis) {
-      lenis.scrollTo(target, { offset: -HEADER_HEIGHT_LARGE });
+      // Land How flush at the top of the viewport. No header offset: arriving
+      // here means scrolling down, which hides the sticky header — reserving
+      // space for it would leave a gap exposing the previous (Action) section.
+      lenis.scrollTo(target);
     } else {
       target.scrollIntoView({ behavior: 'smooth' });
     }
