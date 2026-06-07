@@ -2,21 +2,22 @@
 
 import { useEffect, useRef } from 'react';
 
-// Two-part loader animation, drawn to a canvas:
-//   1. intro (logo drop) plays once   -> public/images/loader-intro/frameNN.webp
-//   2. loop repeats while the page is loading -> public/images/loader-loop/frameNN.webp
+// Two-part loader animation, drawn to a canvas. NOTE: the source folder names
+// are reversed relative to playback role —
+//   1. intro plays once   -> public/images/loader-loop/frameNN.webp
+//   2. loop repeats while the page is loading -> public/images/loader-intro/frameNN.webp
 // Frames are 600x600 transparent (shown on the white intro panel).
-const INTRO_COUNT = 85;
-const LOOP_COUNT = 28;
+const INTRO_COUNT = 28;
+const LOOP_COUNT = 85;
 const FPS = 30;
 const FRAME_MS = 1000 / FPS;
 const FRAME_W = 600;
 const FRAME_H = 600;
 
 const introPath = (i: number) =>
-  `/images/loader-intro/frame${String(i).padStart(2, '0')}.webp`;
-const loopPath = (i: number) =>
   `/images/loader-loop/frame${String(i).padStart(2, '0')}.webp`;
+const loopPath = (i: number) =>
+  `/images/loader-intro/frame${String(i).padStart(2, '0')}.webp`;
 
 interface Props {
   // True once the site is prepared. The loop keeps running until this flips.
