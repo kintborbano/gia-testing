@@ -18,7 +18,7 @@ import PoweredByPill from '@/components/ui/PoweredByPill';
 import Button from '@/components/ui/Button';
 
 const NAV_LINKS = [
-  { label: 'PRODUCT', href: '/meet-gia' },
+  { label: 'PRODUCT', href: '#features-section' },
   { label: 'PRICING', href: '/pricing' },
   { label: 'FAQs', href: '/faq' },
   // No dedicated About Us page yet — point at the footer for now.
