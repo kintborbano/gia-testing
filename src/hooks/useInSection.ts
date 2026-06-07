@@ -3,40 +3,31 @@ import { useEffect, useState } from 'react';
 /**
  * Tracks whether the top edge of the viewport currently sits within the element
  * with the given id. Used to suppress the sticky header while a section "owns"
- * the top of the screen (e.g. the Features scroll-scene). rAF-throttled.
+ * the top of the screen (e.g. the Features scroll-scene).
+ *
+ * Backed by an IntersectionObserver rather than a per-frame scroll handler: the
+ * `bottom: -99%` root margin collapses the detection root to a thin band at the
+ * very top of the viewport, so the observer fires (and we re-render) only when
+ * the section crosses that band — never every scroll frame, and with no
+ * getBoundingClientRect of our own.
  */
 export function useInSection(id: string): boolean {
   const [inside, setInside] = useState(false);
 
   useEffect(() => {
-    let rafId: number | null = null;
+    const el = document.getElementById(id);
+    // Sections are server-rendered, so the element is present; if it somehow
+    // isn't, leave `inside` at its default (false) rather than re-rendering.
+    if (!el) return;
 
-    const measure = () => {
-      rafId = null;
-      const el = document.getElementById(id);
-      if (!el) {
-        setInside(false);
-        return;
-      }
-      const rect = el.getBoundingClientRect();
-      // The viewport's top edge (y = 0) falls between the section's top and
-      // bottom — i.e. the section is covering the top of the screen.
-      setInside(rect.top <= 0 && rect.bottom > 0);
-    };
-
-    const onScroll = () => {
-      if (rafId !== null) return;
-      rafId = requestAnimationFrame(measure);
-    };
-
-    measure();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-      if (rafId !== null) cancelAnimationFrame(rafId);
-    };
+    const io = new IntersectionObserver(
+      ([entry]) => setInside(entry.isIntersecting),
+      // Thin band at the top edge (1% of viewport height keeps the intersection
+      // area non-zero so the toggle is reliable across browsers).
+      { rootMargin: '0px 0px -99% 0px', threshold: 0 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, [id]);
 
   return inside;

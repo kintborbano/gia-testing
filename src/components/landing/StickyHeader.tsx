@@ -1,13 +1,18 @@
 'use client';
 
-import { useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type { CSSProperties } from 'react';
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
-import { useScrollProgress } from '@/hooks/useScrollProgress';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useInSection } from '@/hooks/useInSection';
-import { getHeaderHeight, SCROLL_RANGE } from '@/animations/headerAnimations';
+import { subscribeScroll } from '@/lib/scroll/scrollTicker';
+import { getLenisSnapshot } from '@/stores/lenisStore';
+import {
+  HEADER_HEIGHT_LARGE,
+  HEIGHT_SMALL,
+  SCROLL_RANGE,
+} from '@/animations/headerAnimations';
 import {
   getPageColorsServerSnapshot,
   getPageColorsSnapshot,
@@ -17,13 +22,21 @@ import GiaLogo from '@/components/ui/GiaLogo';
 import PoweredByPill from '@/components/ui/PoweredByPill';
 import Button from '@/components/ui/Button';
 
-const NAV_LINKS = [
-  { label: 'PRODUCT', href: '#features-section' },
+type NavLink = {
+  label: string;
+  href: string;
+  /** Extra distance past a hash target to land on, in viewport heights. */
+  scrollOffsetVh?: number;
+};
+
+const NAV_LINKS: readonly NavLink[] = [
+  // features-section is a ~260vh sticky scroll-scrub; landing at its very top
+  // shows the unflattering first frame, so nudge past it by part of a viewport.
+  { label: 'PRODUCT', href: '#features-section', scrollOffsetVh: 1.6 },
   { label: 'PRICING', href: '/pricing' },
   { label: 'FAQs', href: '/faq' },
-  // No dedicated About Us page yet — point at the footer for now.
-  { label: 'ABOUT US', href: '#bg-stop-footer' },
-] as const;
+  { label: 'ABOUT US', href: '/about' },
+];
 
 // Color is intentionally omitted — links inherit the header's `currentColor`
 // so they tint with the active section's foreground.
@@ -36,16 +49,41 @@ function NavItem({
   href,
   label,
   className = '',
+  scrollOffsetVh = 0,
   onClick,
 }: {
   href: string;
   label: string;
   className?: string;
+  /** Extra distance past the target to land on, in viewport heights. */
+  scrollOffsetVh?: number;
   onClick?: () => void;
 }): React.ReactElement {
   const classes = `${linkClassName} ${className}`.trim();
+
+  // For hash targets, scroll through Lenis so the jump eases like the Hero's
+  // "see how it works" link — a native anchor jump bypasses Lenis and hard-cuts.
+  const handleHashClick = (
+    event: React.MouseEvent<HTMLAnchorElement>
+  ): void => {
+    const target = document.getElementById(href.slice(1));
+    if (target) {
+      event.preventDefault();
+      const offset = scrollOffsetVh * window.innerHeight;
+      const lenis = getLenisSnapshot();
+      if (lenis) {
+        lenis.scrollTo(target, { offset });
+      } else {
+        const top =
+          target.getBoundingClientRect().top + window.scrollY + offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    }
+    onClick?.();
+  };
+
   return href.startsWith('#') ? (
-    <a href={href} className={classes} onClick={onClick}>
+    <a href={href} className={classes} onClick={handleHashClick}>
       {label}
     </a>
   ) : (
@@ -56,8 +94,15 @@ function NavItem({
 }
 
 export default function StickyHeader(): React.ReactElement {
-  const t = useScrollProgress(0, SCROLL_RANGE);
+  // Two-state collapse: full height until scrolled past SCROLL_RANGE, then the
+  // small height — animated by a CSS transition. Tracking a boolean (not a
+  // per-frame progress value) means the header re-renders only when it flips,
+  // not on every scroll frame.
+  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => subscribeScroll((y) => setScrolled(y > SCROLL_RANGE)), []);
+
   // While the Features scroll-scene owns the top of the viewport, keep the
   // header hidden even when scrolling up — it only reappears in other sections.
   const inFeatures = useInSection('features-section');
@@ -75,7 +120,7 @@ export default function StickyHeader(): React.ReactElement {
   const headerStyle = useMemo<CSSProperties>(
     () =>
       ({
-        height: `${getHeaderHeight(t)}px`,
+        height: `${scrolled ? HEIGHT_SMALL : HEADER_HEIGHT_LARGE}px`,
         background: pageBg,
         // Drives `currentColor` for the nav text, menu icon, and GIA logo.
         color: pageFg,
@@ -83,14 +128,16 @@ export default function StickyHeader(): React.ReactElement {
         '--page-bg': pageBg,
         '--page-fg': pageFg,
         transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
-        transition: 'transform 350ms ease',
+        // Background is intentionally not transitioned — it snaps at the dark
+        // section seams (fade: 0) and is already eased per-frame for white→cream.
+        transition: 'height 250ms ease, transform 350ms ease',
       }) as CSSProperties,
-    [t, pageBg, pageFg, hidden]
+    [scrolled, pageBg, pageFg, hidden]
   );
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-5 transition-none will-change-[height,background,transform] sm:px-6 md:px-10"
+      className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-5 sm:px-6 md:px-10"
       style={headerStyle}
     >
       <Link
@@ -105,10 +152,15 @@ export default function StickyHeader(): React.ReactElement {
 
       {/* Desktop nav */}
       <nav className="hidden items-center gap-8 md:flex">
-        {NAV_LINKS.map(({ label, href }) => (
-          <NavItem key={label} href={href} label={label} />
+        {NAV_LINKS.map(({ label, href, scrollOffsetVh }) => (
+          <NavItem
+            key={label}
+            href={href}
+            label={label}
+            scrollOffsetVh={scrollOffsetVh}
+          />
         ))}
-        <Button href="/action" variant="adaptive" size="default">
+        <Button href="/form" variant="adaptive" size="default">
           ANALYZE MY TIKTOK
         </Button>
       </nav>
@@ -130,17 +182,18 @@ export default function StickyHeader(): React.ReactElement {
           className="absolute inset-x-0 top-full flex flex-col gap-1 border-b border-black/10 px-5 pt-2 pb-6 shadow-lg sm:px-6 md:hidden"
           style={{ background: pageBg }}
         >
-          {NAV_LINKS.map(({ label, href }) => (
+          {NAV_LINKS.map(({ label, href, scrollOffsetVh }) => (
             <NavItem
               key={label}
               href={href}
               label={label}
               className="py-3"
+              scrollOffsetVh={scrollOffsetVh}
               onClick={() => setMenuOpen(false)}
             />
           ))}
           <Button
-            href="/action"
+            href="/form"
             variant="adaptive"
             size="default"
             className="mt-3 w-full"

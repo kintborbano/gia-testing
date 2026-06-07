@@ -1,9 +1,10 @@
 import { lerp, clamp } from './interpolate';
 import { BRAND } from '@/styles/palette';
 
+// Scroll distance (px) past which the header collapses to its small height.
 const SCROLL_RANGE = 120;
 export const HEADER_HEIGHT_LARGE = 112;
-const HEIGHT_SMALL = 80;
+export const HEIGHT_SMALL = 80;
 
 const COLOR_HERO = BRAND.white;
 const COLOR_FEATURES = BRAND.cream;
@@ -17,10 +18,6 @@ const FROM_RGB = hexToRgb(COLOR_HERO);
 const TO_RGB = hexToRgb(COLOR_FEATURES);
 
 export { SCROLL_RANGE };
-
-export function getHeaderHeight(t: number): number {
-  return lerp(HEADER_HEIGHT_LARGE, HEIGHT_SMALL, clamp(t, 0, 1));
-}
 
 export function getHeaderBackground(t: number): string {
   const tc = clamp(t * 2.5, 0, 1);

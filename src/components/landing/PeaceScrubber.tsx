@@ -1,18 +1,17 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { subscribeScroll } from '@/lib/scroll/scrollTicker';
+import { getFrameImage, PEACE_FRAMES } from '@/lib/preloadAssets';
 
 // Peace-sign / wink animation for the CTA, scrubbed by scroll.
-// Files: public/images/peace/gia-peace00.webp ... gia-peace69.webp
+// Files: public/images/peace/gia-peace00.webp ... gia-peace69.webp (frame list
+// owned by PEACE_FRAMES in preloadAssets).
 // Downscaled from 1764px; the white background matches the white CTA section,
 // so no cut-out is needed.
-const FRAME_COUNT = 70;
+const FRAME_COUNT = PEACE_FRAMES.length;
 const FRAME_W = 1000;
 const FRAME_H = 667;
-
-function framePath(i: number): string {
-  return `/images/peace/gia-peace${String(i).padStart(2, '0')}.webp`;
-}
 
 export default function PeaceScrubber(): React.ReactElement {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -64,8 +63,8 @@ export default function PeaceScrubber(): React.ReactElement {
 
         const images: HTMLImageElement[] = [];
         for (let i = 0; i < FRAME_COUNT; i++) {
-          const img = new Image();
-          img.src = framePath(i);
+          // Shared with the loader's preload — decoded and held once.
+          const img = getFrameImage(PEACE_FRAMES[i]);
           images.push(img);
           img.decode().then(
             () => onSettled(i, true),
@@ -94,10 +93,9 @@ export default function PeaceScrubber(): React.ReactElement {
 
   // Scrub by the wrapper's travel through the viewport (no pinning, so the page
   // keeps scrolling): 0 = top at viewport bottom, 1 = bottom at viewport top.
+  // Drawn directly from the shared scroll ticker — no React state per frame.
   useEffect(() => {
-    let raf: number | null = null;
-    const update = () => {
-      raf = null;
+    return subscribeScroll(() => {
       const el = wrapRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
@@ -107,20 +105,7 @@ export default function PeaceScrubber(): React.ReactElement {
       if (index === currentFrameRef.current) return;
       currentFrameRef.current = index;
       drawFrame(index);
-    };
-    const onScroll = () => {
-      if (raf !== null) return;
-      raf = requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-      if (raf !== null) cancelAnimationFrame(raf);
-    };
+    });
   }, []);
 
   return (

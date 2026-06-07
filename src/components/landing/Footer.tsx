@@ -2,12 +2,11 @@ import Link from 'next/link';
 import Button from '@/components/ui/Button';
 
 const NAV_LINKS = [
-  { label: 'MEET GIA', href: '/meet-gia' },
   { label: 'GIA IN ACTION', href: '/#bg-stop-action' },
   { label: 'HOW GIA WORKS', href: '/#bg-stop-how' },
   { label: 'PRICING', href: '/pricing' },
   { label: 'FAQs', href: '/faq' },
-  { label: 'ABOUT US', href: '/#bg-stop-cta' },
+  { label: 'ABOUT US', href: '/about' },
 ];
 
 const LEGAL_LINKS = [
@@ -32,8 +31,9 @@ export default function Footer(): React.ReactElement {
               Not ready yet?
             </p>
             <p className="font-sans text-[14px] leading-[1.5] tracking-[-0.07px]">
-              Get the Superpower Code: a free creator guide on understanding
-              audience psychology, content signals, and growth patterns.
+              <span className="font-bold">Get the Superpower Code.</span> A free
+              creator guide on understanding audience psychology, content
+              signals, and growth patterns.
             </p>
 
             <input
@@ -48,7 +48,7 @@ export default function Footer(): React.ReactElement {
               size="default"
               className="w-[210px]"
             >
-              SEND ME THE GUIDE
+              RECEIVE CODE
             </Button>
           </form>
 
@@ -61,7 +61,7 @@ export default function Footer(): React.ReactElement {
               <Link
                 key={link.label}
                 href={link.href}
-                className="font-sans text-[16px] leading-[1.45] font-medium tracking-[-0.08px] transition-opacity hover:opacity-70"
+                className="font-sans text-[16px] leading-[1.45] font-medium tracking-[-0.08px] text-white/50 transition-colors hover:text-white"
               >
                 {link.label}
               </Link>

@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useFeatureSectionAnimation } from '@/hooks/useFeatureSectionAnimation';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import FeatureScene from './FeatureScene';
@@ -48,12 +47,7 @@ export default function Features(): React.ReactElement {
   // wider desktop "scatter" arc (Figma 61:1563).
   const isDesktop = useMediaQuery('(min-width: 768px)', true);
   const isWide = useMediaQuery('(min-width: 1024px)', true);
-  const { sectionRef, animationProgress, containerStyle } =
-    useFeatureSectionAnimation();
-
-  // Hold the explode at frame 0 until every laptop frame has decoded, so the
-  // scroll-driven scrub never stutters on a synchronous decode (animated views).
-  const [framesReady, setFramesReady] = useState(false);
+  const { sectionRef, containerStyle, onFrame } = useFeatureSectionAnimation();
 
   // Mobile (Figma 61:1789): a static 3x2 feature grid above a full-width
   // laptop, with the headline below it. No sticky scroll-scrub.
@@ -64,7 +58,7 @@ export default function Features(): React.ReactElement {
           id="features-section"
           className="flex w-full flex-col items-center gap-12 px-5 py-12 sm:px-8"
         >
-          <FeatureScene animationProgress={1} layout="mobile" />
+          <FeatureScene layout="mobile" />
           <Headline />
         </section>
         <Action />
@@ -84,9 +78,8 @@ export default function Features(): React.ReactElement {
         <div style={containerStyle}>
           <div className="flex h-full w-full items-start justify-center px-8 pt-[6vh]">
             <FeatureScene
-              animationProgress={framesReady ? animationProgress : 0}
               layout={isWide ? 'desktop' : 'tablet'}
-              onFramesReady={() => setFramesReady(true)}
+              onFrame={onFrame}
             />
           </div>
         </div>

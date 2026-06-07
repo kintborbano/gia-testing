@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { subscribeScroll } from '@/lib/scroll/scrollTicker';
+import { getFrameImage, ACTION_FRAMES } from '@/lib/preloadAssets';
 
 // Laptop-opening frames for the "GIA in action" section, scrubbed by scroll.
-// Files: public/images/action-frames/laptop00.webp ... laptop38.webp
+// Files: public/images/action-frames/laptop00.webp ... laptop38.webp (frame
+// list owned by ACTION_FRAMES in preloadAssets).
 // Downscaled from 4K to display resolution; the red background is baked in and
 // matches the section, so no transparency/cut-out is needed here.
-const FRAME_COUNT = 39;
+const FRAME_COUNT = ACTION_FRAMES.length;
 const FRAME_W = 1280;
 const FRAME_H = 720;
 
@@ -16,18 +19,7 @@ const FRAME_H = 720;
 const OPEN_START = 0.5;
 const OPEN_DURATION = 0.2;
 
-function framePath(i: number): string {
-  return `/images/action-frames/laptop${String(i).padStart(2, '0')}.webp`;
-}
-
-interface ActionLaptopProps {
-  // 0 → 1 progress through the Action section.
-  animationProgress: number;
-}
-
-export default function ActionLaptop({
-  animationProgress,
-}: ActionLaptopProps): React.ReactElement {
+export default function ActionLaptop(): React.ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef<number>(-1);
@@ -76,8 +68,8 @@ export default function ActionLaptop({
 
         const images: HTMLImageElement[] = [];
         for (let i = 0; i < FRAME_COUNT; i++) {
-          const img = new Image();
-          img.src = framePath(i);
+          // Shared with the loader's preload — decoded and held once.
+          const img = getFrameImage(ACTION_FRAMES[i]);
           images.push(img);
           img.decode().then(
             () => onSettled(i, true),
@@ -104,18 +96,31 @@ export default function ActionLaptop({
     };
   }, []);
 
-  // Draw the frame for the current scroll progress: closed until OPEN_START,
-  // then a fast open across OPEN_DURATION, then held open for the rest.
+  // Scrub by the canvas's travel through the viewport (no pinning, so the page
+  // keeps scrolling): 0 = top at viewport bottom, 1 = bottom at viewport top,
+  // 0.5 = centred. Closed until OPEN_START, then a fast open across
+  // OPEN_DURATION, then held open. Drawn directly from the shared scroll ticker
+  // — no React state per frame.
   useEffect(() => {
-    const scrub = Math.min(
-      1,
-      Math.max(0, (animationProgress - OPEN_START) / OPEN_DURATION)
-    );
-    const index = Math.round(scrub * (FRAME_COUNT - 1));
-    if (index === currentFrameRef.current) return;
-    currentFrameRef.current = index;
-    drawFrame(index);
-  }, [animationProgress]);
+    return subscribeScroll(() => {
+      const el = canvasRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const progress = Math.max(
+        0,
+        Math.min(1, (vh - rect.top) / (vh + rect.height))
+      );
+      const scrub = Math.min(
+        1,
+        Math.max(0, (progress - OPEN_START) / OPEN_DURATION)
+      );
+      const index = Math.round(scrub * (FRAME_COUNT - 1));
+      if (index === currentFrameRef.current) return;
+      currentFrameRef.current = index;
+      drawFrame(index);
+    });
+  }, []);
 
   return (
     <canvas
