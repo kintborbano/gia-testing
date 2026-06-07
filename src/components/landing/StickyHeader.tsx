@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useInSection } from '@/hooks/useInSection';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
+import { getLenisSnapshot } from '@/stores/lenisStore';
 import {
   HEADER_HEIGHT_LARGE,
   HEIGHT_SMALL,
@@ -21,13 +22,21 @@ import GiaLogo from '@/components/ui/GiaLogo';
 import PoweredByPill from '@/components/ui/PoweredByPill';
 import Button from '@/components/ui/Button';
 
-const NAV_LINKS = [
-  { label: 'PRODUCT', href: '#features-section' },
+type NavLink = {
+  label: string;
+  href: string;
+  /** Extra distance past a hash target to land on, in viewport heights. */
+  scrollOffsetVh?: number;
+};
+
+const NAV_LINKS: readonly NavLink[] = [
+  // features-section is a ~260vh sticky scroll-scrub; landing at its very top
+  // shows the unflattering first frame, so nudge past it by part of a viewport.
+  { label: 'PRODUCT', href: '#features-section', scrollOffsetVh: 0.4 },
   { label: 'PRICING', href: '/pricing' },
   { label: 'FAQs', href: '/faq' },
-  // No dedicated About Us page yet — point at the footer for now.
-  { label: 'ABOUT US', href: '#bg-stop-footer' },
-] as const;
+  { label: 'ABOUT US', href: '/about' },
+];
 
 // Color is intentionally omitted — links inherit the header's `currentColor`
 // so they tint with the active section's foreground.
@@ -40,16 +49,41 @@ function NavItem({
   href,
   label,
   className = '',
+  scrollOffsetVh = 0,
   onClick,
 }: {
   href: string;
   label: string;
   className?: string;
+  /** Extra distance past the target to land on, in viewport heights. */
+  scrollOffsetVh?: number;
   onClick?: () => void;
 }): React.ReactElement {
   const classes = `${linkClassName} ${className}`.trim();
+
+  // For hash targets, scroll through Lenis so the jump eases like the Hero's
+  // "see how it works" link — a native anchor jump bypasses Lenis and hard-cuts.
+  const handleHashClick = (
+    event: React.MouseEvent<HTMLAnchorElement>
+  ): void => {
+    const target = document.getElementById(href.slice(1));
+    if (target) {
+      event.preventDefault();
+      const offset = scrollOffsetVh * window.innerHeight;
+      const lenis = getLenisSnapshot();
+      if (lenis) {
+        lenis.scrollTo(target, { offset });
+      } else {
+        const top =
+          target.getBoundingClientRect().top + window.scrollY + offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    }
+    onClick?.();
+  };
+
   return href.startsWith('#') ? (
-    <a href={href} className={classes} onClick={onClick}>
+    <a href={href} className={classes} onClick={handleHashClick}>
       {label}
     </a>
   ) : (
@@ -118,8 +152,13 @@ export default function StickyHeader(): React.ReactElement {
 
       {/* Desktop nav */}
       <nav className="hidden items-center gap-8 md:flex">
-        {NAV_LINKS.map(({ label, href }) => (
-          <NavItem key={label} href={href} label={label} />
+        {NAV_LINKS.map(({ label, href, scrollOffsetVh }) => (
+          <NavItem
+            key={label}
+            href={href}
+            label={label}
+            scrollOffsetVh={scrollOffsetVh}
+          />
         ))}
         <Button href="/form" variant="adaptive" size="default">
           ANALYZE MY TIKTOK
@@ -143,12 +182,13 @@ export default function StickyHeader(): React.ReactElement {
           className="absolute inset-x-0 top-full flex flex-col gap-1 border-b border-black/10 px-5 pt-2 pb-6 shadow-lg sm:px-6 md:hidden"
           style={{ background: pageBg }}
         >
-          {NAV_LINKS.map(({ label, href }) => (
+          {NAV_LINKS.map(({ label, href, scrollOffsetVh }) => (
             <NavItem
               key={label}
               href={href}
               label={label}
               className="py-3"
+              scrollOffsetVh={scrollOffsetVh}
               onClick={() => setMenuOpen(false)}
             />
           ))}
