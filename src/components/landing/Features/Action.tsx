@@ -1,42 +1,6 @@
-'use client';
-
-import { useEffect, useRef, useState } from 'react';
 import ActionLaptop from './ActionLaptop';
 
 export default function Action(): React.ReactElement {
-  const laptopRef = useRef<HTMLDivElement>(null);
-  const rafRef = useRef<number | null>(null);
-  const [progress, setProgress] = useState(0);
-
-  // Drive the open off the laptop's travel through the viewport (no pinning, so
-  // the page keeps scrolling). 0 = laptop's top at the viewport bottom, 1 = its
-  // bottom at the viewport top, 0.5 = laptop centred — so the open is timed to
-  // when it is actually on screen.
-  useEffect(() => {
-    const update = () => {
-      rafRef.current = null;
-      const el = laptopRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const p = (vh - rect.top) / (vh + rect.height);
-      setProgress(Math.max(0, Math.min(1, p)));
-    };
-    const onScroll = () => {
-      if (rafRef.current !== null) return;
-      rafRef.current = requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
   return (
     // Normal-flow section: the page keeps scrolling while the laptop scrubs open
     // as it passes through the viewport.
@@ -62,11 +26,8 @@ export default function Action(): React.ReactElement {
           <br />
           GIA tells you why it happened.
         </p>
-        <div
-          ref={laptopRef}
-          className="mt-4 flex w-full items-center justify-center"
-        >
-          <ActionLaptop animationProgress={progress} />
+        <div className="mt-4 flex w-full items-center justify-center">
+          <ActionLaptop />
         </div>
       </div>
     </section>

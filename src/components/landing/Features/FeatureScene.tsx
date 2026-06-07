@@ -1,14 +1,16 @@
 'use client';
 
 import Image from 'next/image';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import {
   getDescriptionCardStyle,
   getFloatingObjectStyle,
 } from '@/animations/laptopAnimations';
 import type { FloatingObjectOrigin } from '@/animations/laptopAnimations';
+import type { FrameCallback } from '@/hooks/useFeatureSectionAnimation';
 import ChibiLaptopScene from './ChibiLaptopScene';
+import type { ChibiLaptopHandle } from './ChibiLaptopScene';
 
 export type FeatureLayout = 'mobile' | 'tablet' | 'desktop';
 
@@ -111,25 +113,60 @@ const SCENES: Record<
 };
 
 interface FeatureSceneProps {
-  animationProgress: number;
   layout: FeatureLayout;
-  onFramesReady?: () => void;
+  // Per-frame progress source from useFeatureSectionAnimation (animated views
+  // only). When omitted, the scene renders statically at rest (mobile).
+  onFrame?: (cb: FrameCallback) => () => void;
 }
 
 export default function FeatureScene({
-  animationProgress,
   layout,
-  onFramesReady,
+  onFrame,
 }: FeatureSceneProps): React.ReactElement {
   const laptopRef = useRef<HTMLDivElement>(null);
+  const laptopHandleRef = useRef<ChibiLaptopHandle>(null);
   const featureRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [origins, setOrigins] = useState<FloatingObjectOrigin[]>([]);
+  const descCardRef = useRef<HTMLDivElement>(null);
+  const originsRef = useRef<FloatingObjectOrigin[]>([]);
+  const framesReadyRef = useRef(false);
+  // Last raw section progress seen — replayed once the frames finish decoding so
+  // the explode snaps to the correct position instead of staying parked.
+  const lastProgressRef = useRef(0);
   // First feature (Hook Scoring) is shown by default so the card is never empty.
   const [selectedArea, setSelectedArea] = useState<Feature['area']>('hook');
   const selected = FEATURES.find((f) => f.area === selectedArea) ?? FEATURES[0];
 
   const explode = layout !== 'mobile';
   const scene = layout === 'mobile' ? null : SCENES[layout];
+
+  // Imperatively apply one frame: laptop scrub, icon explode, desc card slide.
+  // Driven by the scroll ticker — never triggers a React render.
+  const applyFrame = useCallback((animationProgress: number) => {
+    lastProgressRef.current = animationProgress;
+    // Hold the explode parked at 0 until the laptop frames have decoded, so the
+    // scrub never stutters on a synchronous decode.
+    const p = framesReadyRef.current ? animationProgress : 0;
+
+    laptopHandleRef.current?.draw(p);
+
+    const origins = originsRef.current;
+    for (let i = 0; i < FEATURES.length; i++) {
+      const el = featureRefs.current[i];
+      if (!el) continue;
+      const s = getFloatingObjectStyle(p, i, origins[i] ?? { x: 0, y: 0 });
+      el.style.opacity = String(s.opacity);
+      el.style.transform = s.transform as string;
+    }
+
+    const card = descCardRef.current;
+    if (card)
+      card.style.transform = getDescriptionCardStyle(p).transform as string;
+  }, []);
+
+  const handleFramesReady = useCallback(() => {
+    framesReadyRef.current = true;
+    applyFrame(lastProgressRef.current);
+  }, [applyFrame]);
 
   // Measure each feature's offset back to the laptop centre so the explode
   // starts from behind the laptop. offsetLeft/Top are layout positions (they
@@ -144,22 +181,28 @@ export default function FeatureScene({
       if (!laptop) return;
       const lcx = laptop.offsetLeft + laptop.offsetWidth / 2;
       const lcy = laptop.offsetTop + laptop.offsetHeight / 2;
-      setOrigins(
-        FEATURES.map((_, i) => {
-          const el = featureRefs.current[i];
-          if (!el) return { x: 0, y: 0 };
-          return {
-            x: lcx - (el.offsetLeft + el.offsetWidth / 2),
-            y: lcy - (el.offsetTop + el.offsetHeight / 2),
-          };
-        })
-      );
+      originsRef.current = FEATURES.map((_, i) => {
+        const el = featureRefs.current[i];
+        if (!el) return { x: 0, y: 0 };
+        return {
+          x: lcx - (el.offsetLeft + el.offsetWidth / 2),
+          y: lcy - (el.offsetTop + el.offsetHeight / 2),
+        };
+      });
+      // Re-apply with fresh origins so a resize doesn't leave icons mid-air.
+      applyFrame(lastProgressRef.current);
     };
 
     measure();
     window.addEventListener('resize', measure, { passive: true });
     return () => window.removeEventListener('resize', measure);
-  }, [explode, layout]);
+  }, [explode, layout, applyFrame]);
+
+  // Subscribe to the section's per-frame progress (animated views only).
+  useLayoutEffect(() => {
+    if (!explode || !onFrame) return;
+    return onFrame(applyFrame);
+  }, [explode, onFrame, applyFrame]);
 
   const sceneClass = scene
     ? 'relative w-full'
@@ -184,21 +227,14 @@ export default function FeatureScene({
           }
         >
           <ChibiLaptopScene
+            ref={laptopHandleRef}
             animated={explode}
-            animationProgress={animationProgress}
-            onReady={onFramesReady}
+            onReady={handleFramesReady}
           />
         </div>
 
         {FEATURES.map((feature, index) => {
           const [first, ...rest] = feature.label.split(' ');
-          const animStyle = explode
-            ? getFloatingObjectStyle(
-                animationProgress,
-                index,
-                origins[index] ?? { x: 0, y: 0 }
-              )
-            : {};
           const pos = layout === 'mobile' ? null : feature[layout];
           const placement: CSSProperties = pos
             ? { position: 'absolute', left: `${pos.left}%`, top: `${pos.top}%` }
@@ -222,7 +258,11 @@ export default function FeatureScene({
                 }
               }}
               className="group focus-visible:ring-brand-primary relative flex cursor-pointer flex-col items-center rounded-xl outline-none focus-visible:ring-2"
-              style={{ ...placement, ...animStyle }}
+              style={
+                explode
+                  ? { ...placement, willChange: 'transform, opacity' }
+                  : placement
+              }
             >
               <Image
                 alt={feature.label}
@@ -250,12 +290,13 @@ export default function FeatureScene({
       </div>
 
       {/* Description for the selected feature, anchored below the Gia laptop.
-          On desktop/tablet it slides up + fades in with the same scroll
-          progress that drives the Gia character (reverses on scroll-up). */}
+          On desktop/tablet it slides up into place with the same scroll progress
+          that drives the Gia character (transform set imperatively per frame). */}
       <div
+        ref={descCardRef}
         aria-live="polite"
         className="border-brand-gold mx-auto mt-7 w-full max-w-[680px] rounded-[15px] border-[3px] bg-white px-12 py-7 text-center shadow-[inset_0_0_0_2px_var(--color-text),inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_var(--color-brand-gold-shadow)] md:mt-9"
-        style={explode ? getDescriptionCardStyle(animationProgress) : undefined}
+        style={explode ? { willChange: 'transform' } : undefined}
       >
         <p className="font-pixelify text-brand-primary text-[22px] tracking-[0.3px] md:text-[26px]">
           {selected.label}

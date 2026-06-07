@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { useSectionProgress } from '@/hooks/useSectionProgress';
+import { subscribeScroll } from '@/lib/scroll/scrollTicker';
 
 // Layout: 260vh total.
 // Phase 1: laptop slides in (0–160vh).
@@ -16,10 +16,18 @@ interface SectionDimensions {
   viewportH: number;
 }
 
+type ContainerMode = 'sticky' | 'absolute';
+
+/** Per-frame callback receiving the eased 0→1 animation progress. */
+export type FrameCallback = (animationProgress: number) => void;
+
 export interface FeatureSectionAnimation {
   sectionRef: React.RefObject<HTMLElement | null>;
-  animationProgress: number;
   containerStyle: CSSProperties;
+  // Register a per-frame callback. Invoked imperatively from the scroll ticker,
+  // so the scrub/explode runs WITHOUT a React render each frame. Returns an
+  // unsubscribe.
+  onFrame: (cb: FrameCallback) => () => void;
 }
 
 function getAnimationProgress(scrollProgress: number): number {
@@ -39,10 +47,10 @@ function getAnimationProgress(scrollProgress: number): number {
 }
 
 function getContainerStyle(
-  scrollProgress: number,
+  mode: ContainerMode,
   dims: SectionDimensions
 ): CSSProperties {
-  if (scrollProgress >= SWITCH_FRACTION) {
+  if (mode === 'absolute') {
     return {
       position: 'absolute',
       top: SWITCH_FRACTION * dims.sectionH - dims.viewportH,
@@ -69,13 +77,23 @@ export function useFeatureSectionAnimation(): FeatureSectionAnimation {
     sectionH: 0,
     viewportH: 0,
   });
+  // The sticky→absolute hand-off is the only scroll-driven value that needs a
+  // React render, and it flips exactly once — so we track it as discrete state
+  // instead of re-rendering every frame.
+  const [mode, setMode] = useState<ContainerMode>('sticky');
   const sectionRef = useRef<HTMLElement | null>(null);
-  const scrollProgress = useSectionProgress(sectionRef);
+  const frameCbs = useRef<Set<FrameCallback>>(new Set());
+
+  const onFrame = useCallback((cb: FrameCallback) => {
+    frameCbs.current.add(cb);
+    return () => {
+      frameCbs.current.delete(cb);
+    };
+  }, []);
 
   useEffect(() => {
     const measure = () => {
       if (!sectionRef.current) return;
-
       setDims({
         sectionH: sectionRef.current.offsetHeight,
         viewportH: window.innerHeight,
@@ -87,9 +105,31 @@ export function useFeatureSectionAnimation(): FeatureSectionAnimation {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
+  useEffect(() => {
+    return subscribeScroll((scrollY) => {
+      const el = sectionRef.current;
+      if (!el) return;
+      const start = el.offsetTop - window.innerHeight;
+      const range = el.offsetHeight;
+      const scrollProgress = Math.max(
+        0,
+        Math.min(1, (scrollY - start) / range)
+      );
+
+      const ap = getAnimationProgress(scrollProgress);
+      // Per-frame, imperative — drives the canvas scrub + icon explode with no
+      // React render.
+      for (const cb of frameCbs.current) cb(ap);
+
+      // Discrete — setState with the same value is a no-op in React, so this
+      // only re-renders at the single hand-off point.
+      setMode(scrollProgress >= SWITCH_FRACTION ? 'absolute' : 'sticky');
+    });
+  }, []);
+
   return {
     sectionRef,
-    animationProgress: getAnimationProgress(scrollProgress),
-    containerStyle: getContainerStyle(scrollProgress, dims),
+    containerStyle: getContainerStyle(mode, dims),
+    onFrame,
   };
 }

@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { setPageColors } from '@/stores/pageBackgroundStore';
+import { subscribeScroll } from '@/lib/scroll/scrollTicker';
 import {
   COLORS,
   STOPS,
@@ -58,8 +59,7 @@ const LAST_REAL_BG_SEG = REAL_BG_STOP_COUNT - 2;
 const REAL_BG_HOLD = toRgb(RGB_STOPS[REAL_BG_STOP_COUNT - 1]);
 
 export default function ScrollBackground(): React.ReactElement {
-  const [color, setColor] = useState<string>(toRgb(RGB_STOPS[0]));
-  const rafRef = useRef<number | null>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Compute every stop's trigger scroll position fresh on each frame. Doing
@@ -83,7 +83,6 @@ export default function ScrollBackground(): React.ReactElement {
     };
 
     const update = () => {
-      rafRef.current = null;
       const positions = measure();
       if (positions.length === 0) return;
 
@@ -103,7 +102,9 @@ export default function ScrollBackground(): React.ReactElement {
       // every stop. The fixed div paints the REAL page background, which only
       // follows the leading hero→features transition and then holds cream.
       const publish = (headerBg: string, headerFg: string, realBg: string) => {
-        setColor(realBg);
+        // Paint the fixed div imperatively so the background color tween never
+        // triggers a React render of this component each frame.
+        if (bgRef.current) bgRef.current.style.backgroundColor = realBg;
         setPageColors({ background: headerBg, foreground: headerFg });
       };
 
@@ -153,29 +154,20 @@ export default function ScrollBackground(): React.ReactElement {
       publish(headerBg, headerFg, realBg);
     };
 
-    const onScroll = () => {
-      if (rafRef.current !== null) return;
-      rafRef.current = requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    };
+    // The shared ticker fires once immediately and then on every scroll/resize
+    // frame, in sync with Lenis.
+    return subscribeScroll(update);
   }, []);
 
   return (
     <div
+      ref={bgRef}
       aria-hidden
       style={{
         position: 'fixed',
         inset: 0,
         zIndex: -1,
-        backgroundColor: color,
+        backgroundColor: toRgb(RGB_STOPS[0]),
       }}
     />
   );

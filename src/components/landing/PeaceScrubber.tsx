@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { subscribeScroll } from '@/lib/scroll/scrollTicker';
 
 // Peace-sign / wink animation for the CTA, scrubbed by scroll.
 // Files: public/images/peace/gia-peace00.webp ... gia-peace69.webp
@@ -94,10 +95,9 @@ export default function PeaceScrubber(): React.ReactElement {
 
   // Scrub by the wrapper's travel through the viewport (no pinning, so the page
   // keeps scrolling): 0 = top at viewport bottom, 1 = bottom at viewport top.
+  // Drawn directly from the shared scroll ticker — no React state per frame.
   useEffect(() => {
-    let raf: number | null = null;
-    const update = () => {
-      raf = null;
+    return subscribeScroll(() => {
       const el = wrapRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
@@ -107,20 +107,7 @@ export default function PeaceScrubber(): React.ReactElement {
       if (index === currentFrameRef.current) return;
       currentFrameRef.current = index;
       drawFrame(index);
-    };
-    const onScroll = () => {
-      if (raf !== null) return;
-      raf = requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-      if (raf !== null) cancelAnimationFrame(raf);
-    };
+    });
   }, []);
 
   return (

@@ -1,7 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 
 // Laptop animation frames (Kling export, background removed to transparent so
 // the feature icons can peek out around the laptop as they explode outward).
@@ -25,27 +31,31 @@ function framePath(i: number): string {
   return `/images/laptop-frames/final2_prob${FRAME_START + i}.webp`;
 }
 
+// Imperative handle: the parent drives the scrub from the shared scroll ticker
+// (no per-frame React render). `draw` maps 0→1 section progress to a frame.
+export interface ChibiLaptopHandle {
+  draw: (animationProgress: number) => void;
+}
+
 interface ChibiLaptopSceneProps {
   // Tablet/desktop scrub the frame sequence as the section scrolls; mobile (no
   // scroll animation) shows a single still instead.
   animated: boolean;
-  // 0 → 1 progress through the Features section (used by the animated variant).
-  animationProgress: number;
   // Called once every frame has loaded + decoded (animated variant only).
   onReady?: () => void;
 }
 
-export default function ChibiLaptopScene({
-  animated,
-  animationProgress,
-  onReady,
-}: ChibiLaptopSceneProps): React.ReactElement {
-  return animated ? (
-    <AnimatedLaptop animationProgress={animationProgress} onReady={onReady} />
-  ) : (
-    <StaticLaptop />
-  );
-}
+const ChibiLaptopScene = forwardRef<ChibiLaptopHandle, ChibiLaptopSceneProps>(
+  function ChibiLaptopScene({ animated, onReady }, ref) {
+    return animated ? (
+      <AnimatedLaptop ref={ref} onReady={onReady} />
+    ) : (
+      <StaticLaptop />
+    );
+  }
+);
+
+export default ChibiLaptopScene;
 
 // Mobile: a single still (gia-on-laptop.png, 1536x1024 / 3:2).
 function StaticLaptop(): React.ReactElement {
@@ -63,133 +73,132 @@ function StaticLaptop(): React.ReactElement {
 }
 
 // Tablet/desktop: scrub the 120-frame sequence so the laptop animates in.
-function AnimatedLaptop({
-  animationProgress,
-  onReady,
-}: {
-  animationProgress: number;
-  onReady?: () => void;
-}): React.ReactElement {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imagesRef = useRef<HTMLImageElement[]>([]);
-  const currentFrameRef = useRef<number>(-1);
-  const [posterReady, setPosterReady] = useState(false);
+const AnimatedLaptop = forwardRef<ChibiLaptopHandle, { onReady?: () => void }>(
+  function AnimatedLaptop({ onReady }, ref) {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const imagesRef = useRef<HTMLImageElement[]>([]);
+    const currentFrameRef = useRef<number>(-1);
+    const [posterReady, setPosterReady] = useState(false);
 
-  // Keep the latest onReady without re-running the loader effect.
-  const onReadyRef = useRef(onReady);
-  useEffect(() => {
-    onReadyRef.current = onReady;
-  }, [onReady]);
+    // Keep the latest onReady without re-running the loader effect.
+    const onReadyRef = useRef(onReady);
+    useEffect(() => {
+      onReadyRef.current = onReady;
+    }, [onReady]);
 
-  const drawFrame = (index: number) => {
-    const canvas = canvasRef.current;
-    const img = imagesRef.current[index];
-    if (!canvas || !img || !img.complete || img.naturalWidth === 0) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.clearRect(0, 0, FRAME_W, FRAME_H);
-    ctx.drawImage(img, 0, 0, FRAME_W, FRAME_H);
-  };
-
-  // Lazily preload + decode the frame sequence once the laptop nears the
-  // viewport. Decoding up front means drawImage during scroll never blocks.
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    let timeoutId: number | undefined;
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
-        io.disconnect();
-
-        const images: HTMLImageElement[] = [];
-        let settled = 0;
-        let readyFired = false;
-
-        const fireReady = () => {
-          if (readyFired) return;
-          readyFired = true;
-          if (timeoutId !== undefined) clearTimeout(timeoutId);
-          // Reveal + unlock the scrub even if a frame failed, so the section is
-          // never left stuck on frame 0.
-          setPosterReady(true);
-          onReadyRef.current?.();
-        };
-
-        // Count every frame that settles — success OR failure — so a single
-        // decode rejection can't leave `decoded` short of FRAME_COUNT and pin
-        // the laptop on frame 0 forever.
-        const onSettled = (i: number, ok: boolean) => {
-          settled += 1;
-          if (ok && i === 0) {
-            setPosterReady(true);
-            drawFrame(0);
-          }
-          if (ok && i === currentFrameRef.current) drawFrame(i);
-          if (settled === FRAME_COUNT) fireReady();
-        };
-
-        for (let i = 0; i < FRAME_COUNT; i++) {
-          // `new window.Image()` — the bare `Image` identifier is shadowed by
-          // the next/image import above; the frame loader needs the DOM global.
-          const img = new window.Image();
-          img.src = framePath(i);
-          images.push(img);
-          // decode() resolves once the bitmap is ready off the main thread. If
-          // it rejects, settle from the load state / events instead of hanging.
-          img.decode().then(
-            () => onSettled(i, true),
-            () => {
-              if (img.complete) onSettled(i, img.naturalWidth > 0);
-              else {
-                img.onload = () => onSettled(i, true);
-                img.onerror = () => onSettled(i, false);
-              }
-            }
-          );
-        }
-        imagesRef.current = images;
-
-        // Safety net: never leave the scrub locked if some frame hangs.
-        timeoutId = window.setTimeout(fireReady, 8000);
-      },
-      { rootMargin: '100% 0px' } // begin ~1 viewport early
-    );
-    io.observe(canvas);
-    return () => {
-      io.disconnect();
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    const drawFrame = (index: number) => {
+      const canvas = canvasRef.current;
+      const img = imagesRef.current[index];
+      if (!canvas || !img || !img.complete || img.naturalWidth === 0) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.clearRect(0, 0, FRAME_W, FRAME_H);
+      ctx.drawImage(img, 0, 0, FRAME_W, FRAME_H);
     };
-  }, []);
 
-  // Draw the frame matching the current scroll progress. The laptop holds its
-  // first frame through LAPTOP_DELAY, then scrubs across the remaining progress.
-  useEffect(() => {
-    const scrub = Math.min(
-      1,
-      Math.max(0, (animationProgress - LAPTOP_DELAY) / (1 - LAPTOP_DELAY))
+    // Draw the frame matching the current scroll progress. The laptop holds its
+    // first frame through LAPTOP_DELAY, then scrubs across the remaining progress.
+    // Called imperatively from the scroll ticker — no React render per frame.
+    useImperativeHandle(ref, () => ({
+      draw: (animationProgress: number) => {
+        const scrub = Math.min(
+          1,
+          Math.max(0, (animationProgress - LAPTOP_DELAY) / (1 - LAPTOP_DELAY))
+        );
+        const index = Math.round(scrub * (FRAME_COUNT - 1));
+        if (index === currentFrameRef.current) return;
+        currentFrameRef.current = index;
+        drawFrame(index);
+      },
+    }));
+
+    // Lazily preload + decode the frame sequence once the laptop nears the
+    // viewport. Decoding up front means drawImage during scroll never blocks.
+    useEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      let timeoutId: number | undefined;
+
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          io.disconnect();
+
+          const images: HTMLImageElement[] = [];
+          let settled = 0;
+          let readyFired = false;
+
+          const fireReady = () => {
+            if (readyFired) return;
+            readyFired = true;
+            if (timeoutId !== undefined) clearTimeout(timeoutId);
+            // Reveal + unlock the scrub even if a frame failed, so the section is
+            // never left stuck on frame 0.
+            setPosterReady(true);
+            onReadyRef.current?.();
+          };
+
+          // Count every frame that settles — success OR failure — so a single
+          // decode rejection can't leave `decoded` short of FRAME_COUNT and pin
+          // the laptop on frame 0 forever.
+          const onSettled = (i: number, ok: boolean) => {
+            settled += 1;
+            if (ok && i === 0) {
+              setPosterReady(true);
+              drawFrame(0);
+            }
+            if (ok && i === currentFrameRef.current) drawFrame(i);
+            if (settled === FRAME_COUNT) fireReady();
+          };
+
+          for (let i = 0; i < FRAME_COUNT; i++) {
+            // `new window.Image()` — the bare `Image` identifier is shadowed by
+            // the next/image import above; the frame loader needs the DOM global.
+            const img = new window.Image();
+            img.src = framePath(i);
+            images.push(img);
+            // decode() resolves once the bitmap is ready off the main thread. If
+            // it rejects, settle from the load state / events instead of hanging.
+            img.decode().then(
+              () => onSettled(i, true),
+              () => {
+                if (img.complete) onSettled(i, img.naturalWidth > 0);
+                else {
+                  img.onload = () => onSettled(i, true);
+                  img.onerror = () => onSettled(i, false);
+                }
+              }
+            );
+          }
+          imagesRef.current = images;
+
+          // Safety net: never leave the scrub locked if some frame hangs.
+          timeoutId = window.setTimeout(fireReady, 8000);
+        },
+        { rootMargin: '100% 0px' } // begin ~1 viewport early
+      );
+      io.observe(canvas);
+      return () => {
+        io.disconnect();
+        if (timeoutId !== undefined) clearTimeout(timeoutId);
+      };
+    }, []);
+
+    return (
+      <div className="relative aspect-[3/2] w-full overflow-hidden">
+        <canvas
+          ref={canvasRef}
+          width={FRAME_W}
+          height={FRAME_H}
+          aria-label="GIA on Laptop"
+          className={`pointer-events-none absolute inset-0 h-full w-full ${FILL}`}
+          style={{
+            opacity: posterReady ? 1 : 0,
+            transition: 'opacity 0.3s ease',
+          }}
+        />
+      </div>
     );
-    const index = Math.round(scrub * (FRAME_COUNT - 1));
-    if (index === currentFrameRef.current) return;
-    currentFrameRef.current = index;
-    drawFrame(index);
-  }, [animationProgress]);
-
-  return (
-    <div className="relative aspect-[3/2] w-full overflow-hidden">
-      <canvas
-        ref={canvasRef}
-        width={FRAME_W}
-        height={FRAME_H}
-        aria-label="GIA on Laptop"
-        className={`pointer-events-none absolute inset-0 h-full w-full ${FILL}`}
-        style={{
-          opacity: posterReady ? 1 : 0,
-          transition: 'opacity 0.3s ease',
-        }}
-      />
-    </div>
-  );
-}
+  }
+);
