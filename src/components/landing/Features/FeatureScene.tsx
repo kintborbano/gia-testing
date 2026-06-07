@@ -236,7 +236,7 @@ export default function FeatureScene({
           progress that drives the Gia character (reverses on scroll-up). */}
       <div
         aria-live="polite"
-        className="border-brand-gold bg-brand-cream mx-auto mt-7 w-full max-w-[680px] rounded-[15px] border-[3px] px-12 py-7 text-center shadow-[inset_0_0_0_2px_var(--text),inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_var(--brand-gold-shadow)] md:mt-9"
+        className="border-brand-gold bg-brand-cream mx-auto mt-7 w-full max-w-[680px] rounded-[15px] border-[3px] px-12 py-7 text-center shadow-[inset_0_0_0_2px_var(--color-text),inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_var(--color-brand-gold-shadow)] md:mt-9"
         style={explode ? getDescriptionCardStyle(animationProgress) : undefined}
       >
         <p className="font-pixelify text-brand-primary text-[22px] tracking-[0.3px] md:text-[26px]">

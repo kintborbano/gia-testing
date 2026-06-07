@@ -105,7 +105,7 @@ function StepCard({
   return (
     <div
       ref={ref}
-      className="border-brand-gold bg-brand-cream flex min-h-[214px] w-full flex-col items-center justify-center gap-[14px] rounded-[15px] border-[3px] px-6 py-8 shadow-[inset_0_0_0_2px_var(--text),inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_var(--brand-gold-shadow)] will-change-transform md:px-[30px] md:pt-[31px] md:pb-[33px]"
+      className="border-brand-gold bg-brand-cream flex min-h-[214px] w-full flex-col items-center justify-center gap-[14px] rounded-[15px] border-[3px] px-6 py-8 shadow-[inset_0_0_0_2px_var(--color-text),inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_var(--color-brand-gold-shadow)] will-change-transform md:px-[30px] md:pt-[31px] md:pb-[33px]"
       style={{ transform: `translateX(${x}px)` }}
     >
       <Image

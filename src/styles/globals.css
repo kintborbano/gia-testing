@@ -20,34 +20,26 @@ html::-webkit-scrollbar {
   overscroll-behavior: contain;
 }
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --text: #1a1208;
-  --white: #ffffff;
-  --brand-primary: #8c1f2e;
-  --brand-primary-transparent: #8c1f2e80;
-  --brand-primary-dark: #751a26;
-  --brand-secondary: #eed03a;
-  --brand-secondary-transparent: #eed03a80;
-  --brand-cream: #fef7dd;
-  --brand-gold: #c2992e;
-  --brand-gold-shadow: #8a6a1c;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-text: var(--text);
-  --color-white: var(--white);
-  --color-brand-primary: var(--brand-primary);
-  --color-brand-primary-transparent: var(--brand-primary-transparent);
-  --color-brand-primary-dark: var(--brand-primary-dark);
-  --color-brand-secondary: var(--brand-secondary);
-  --color-brand-secondary-transparent: var(--brand-secondary-transparent);
-  --color-brand-cream: var(--brand-cream);
-  --color-brand-gold: var(--brand-gold);
-  --color-brand-gold-shadow: var(--brand-gold-shadow);
+/*
+ * Design tokens. Defined directly in @theme so Tailwind owns the generated
+ * `--color-*` custom properties and the matching utilities (bg-brand-cream,
+ * text-text, …). Reference the emitted vars as var(--color-…) in arbitrary
+ * values (e.g. box-shadows). Brand hex is mirrored in src/styles/palette.ts
+ * for JS color contexts — keep the two in sync.
+ */
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #171717;
+  --color-text: #1a1208;
+  --color-white: #ffffff;
+  --color-brand-primary: #8c1f2e;
+  --color-brand-primary-transparent: #8c1f2e80;
+  --color-brand-primary-dark: #751a26;
+  --color-brand-secondary: #eed03a;
+  --color-brand-secondary-transparent: #eed03a80;
+  --color-brand-cream: #fef7dd;
+  --color-brand-gold: #c2992e;
+  --color-brand-gold-shadow: #8a6a1c;
   --font-sans: var(--font-instrument-sans);
   --font-young-serif: var(--font-young-serif);
   --font-itc-garamond: var(--font-itc-garamond);
@@ -56,8 +48,8 @@ html::-webkit-scrollbar {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-background);
+  color: var(--color-foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
 
