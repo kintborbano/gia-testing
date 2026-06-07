@@ -97,22 +97,38 @@ function AnimatedLaptop({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    let timeoutId: number | undefined;
+
     const io = new IntersectionObserver(
       (entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         io.disconnect();
 
         const images: HTMLImageElement[] = [];
-        let decoded = 0;
+        let settled = 0;
+        let readyFired = false;
 
-        const onDecoded = (i: number) => {
-          decoded += 1;
-          if (i === 0) {
+        const fireReady = () => {
+          if (readyFired) return;
+          readyFired = true;
+          if (timeoutId !== undefined) clearTimeout(timeoutId);
+          // Reveal + unlock the scrub even if a frame failed, so the section is
+          // never left stuck on frame 0.
+          setPosterReady(true);
+          onReadyRef.current?.();
+        };
+
+        // Count every frame that settles — success OR failure — so a single
+        // decode rejection can't leave `decoded` short of FRAME_COUNT and pin
+        // the laptop on frame 0 forever.
+        const onSettled = (i: number, ok: boolean) => {
+          settled += 1;
+          if (ok && i === 0) {
             setPosterReady(true);
             drawFrame(0);
           }
-          if (i === currentFrameRef.current) drawFrame(i);
-          if (decoded === FRAME_COUNT) onReadyRef.current?.();
+          if (ok && i === currentFrameRef.current) drawFrame(i);
+          if (settled === FRAME_COUNT) fireReady();
         };
 
         for (let i = 0; i < FRAME_COUNT; i++) {
@@ -121,22 +137,31 @@ function AnimatedLaptop({
           const img = new window.Image();
           img.src = framePath(i);
           images.push(img);
-          // decode() resolves once the bitmap is ready off the main thread.
-          // Fall back to load events if a browser rejects decode().
+          // decode() resolves once the bitmap is ready off the main thread. If
+          // it rejects, settle from the load state / events instead of hanging.
           img.decode().then(
-            () => onDecoded(i),
+            () => onSettled(i, true),
             () => {
-              if (img.complete) onDecoded(i);
-              else img.onload = () => onDecoded(i);
+              if (img.complete) onSettled(i, img.naturalWidth > 0);
+              else {
+                img.onload = () => onSettled(i, true);
+                img.onerror = () => onSettled(i, false);
+              }
             }
           );
         }
         imagesRef.current = images;
+
+        // Safety net: never leave the scrub locked if some frame hangs.
+        timeoutId = window.setTimeout(fireReady, 8000);
       },
       { rootMargin: '100% 0px' } // begin ~1 viewport early
     );
     io.observe(canvas);
-    return () => io.disconnect();
+    return () => {
+      io.disconnect();
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
   }, []);
 
   // Draw the frame matching the current scroll progress. The laptop holds its
