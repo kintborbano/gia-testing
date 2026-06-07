@@ -27,8 +27,12 @@ html::-webkit-scrollbar {
   --white: #ffffff;
   --brand-primary: #8c1f2e;
   --brand-primary-transparent: #8c1f2e80;
+  --brand-primary-dark: #751a26;
   --brand-secondary: #eed03a;
   --brand-secondary-transparent: #eed03a80;
+  --brand-cream: #fef7dd;
+  --brand-gold: #c2992e;
+  --brand-gold-shadow: #8a6a1c;
 }
 
 @theme inline {
@@ -38,8 +42,12 @@ html::-webkit-scrollbar {
   --color-white: var(--white);
   --color-brand-primary: var(--brand-primary);
   --color-brand-primary-transparent: var(--brand-primary-transparent);
+  --color-brand-primary-dark: var(--brand-primary-dark);
   --color-brand-secondary: var(--brand-secondary);
   --color-brand-secondary-transparent: var(--brand-secondary-transparent);
+  --color-brand-cream: var(--brand-cream);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-shadow: var(--brand-gold-shadow);
   --font-sans: var(--font-instrument-sans);
   --font-young-serif: var(--font-young-serif);
   --font-itc-garamond: var(--font-itc-garamond);

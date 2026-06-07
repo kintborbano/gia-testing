@@ -105,7 +105,7 @@ function StepCard({
   return (
     <div
       ref={ref}
-      className="flex min-h-[214px] w-full flex-col items-center justify-center gap-[14px] rounded-[15px] border-[3px] border-[#c2992e] bg-[#fef7dd] px-6 py-8 shadow-[inset_0_0_0_2px_#1a1208,inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_#8a6a1c] will-change-transform md:px-[30px] md:pt-[31px] md:pb-[33px]"
+      className="border-brand-gold bg-brand-cream flex min-h-[214px] w-full flex-col items-center justify-center gap-[14px] rounded-[15px] border-[3px] px-6 py-8 shadow-[inset_0_0_0_2px_var(--text),inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_var(--brand-gold-shadow)] will-change-transform md:px-[30px] md:pt-[31px] md:pb-[33px]"
       style={{ transform: `translateX(${x}px)` }}
     >
       <Image
@@ -115,11 +115,11 @@ function StepCard({
         height={420}
         className="size-[65px] shrink-0"
       />
-      <p className="font-young-serif text-center text-[31px] tracking-[-1.5px] text-[#1a1208]">
+      <p className="font-young-serif text-text text-center text-[31px] tracking-[-1.5px]">
         {step.title}
       </p>
       <p
-        className="w-full text-center font-sans text-[15px] tracking-[-0.3px] text-[#1a1208]"
+        className="text-text w-full text-center font-sans text-[15px] tracking-[-0.3px]"
         style={{ maxWidth: step.descriptionWidth }}
       >
         {step.description}
@@ -135,7 +135,7 @@ export default function How(): React.ReactElement {
       className="flex w-full flex-col items-center gap-16 overflow-x-clip bg-black px-5 py-16 sm:px-8 md:gap-24 md:px-16 md:py-24"
     >
       <div className="flex w-[1152px] max-w-full flex-col items-center pb-5">
-        <div className="flex w-full flex-col items-center gap-8 text-center text-[#fef7dd] sm:gap-11 md:gap-14">
+        <div className="text-brand-cream flex w-full flex-col items-center gap-8 text-center sm:gap-11 md:gap-14">
           <p className="font-sans text-[15px] leading-[1.45] font-bold tracking-[-0.075px]">
             HOW GIA WORKS
           </p>

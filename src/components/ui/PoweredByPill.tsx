@@ -26,9 +26,9 @@ const TONES = {
     logo: 'text-brand-primary',
   },
   onDark: {
-    pill: 'border-[#c2992e] bg-transparent',
-    text: 'text-[#fef7dd]',
-    logo: 'text-[#c2992e]',
+    pill: 'border-brand-gold bg-transparent',
+    text: 'text-brand-cream',
+    logo: 'text-brand-gold',
   },
 } as const;
 

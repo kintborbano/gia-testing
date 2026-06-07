@@ -54,7 +54,7 @@ const countIcons: {
 
 function DetailLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-xs font-semibold tracking-wide text-[#8c1f2e] uppercase">
+    <p className="text-brand-primary text-xs font-semibold tracking-wide uppercase">
       {children}
     </p>
   );
@@ -119,7 +119,7 @@ function ExpandedDetails({
               >
                 <span
                   aria-hidden
-                  className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#8c1f2e]"
+                  className="bg-brand-primary mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
                 />
                 <span>{item}</span>
               </li>
@@ -136,7 +136,7 @@ function ExpandedDetails({
               >
                 <span
                   aria-hidden
-                  className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#8c1f2e]"
+                  className="bg-brand-primary mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
                 />
                 <span>{item}</span>
               </li>
@@ -173,7 +173,7 @@ function ExpandedDetails({
         href={profileUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-[#8c1f2e] hover:underline"
+        className="text-brand-primary inline-flex items-center gap-1.5 text-sm font-medium hover:underline"
       >
         <ExternalLink className="h-4 w-4" />
         View on TikTok

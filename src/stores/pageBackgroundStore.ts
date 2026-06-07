@@ -1,3 +1,5 @@
+import { BRAND } from '@/styles/palette';
+
 type Listener = () => void;
 
 /** The live page palette the header adopts as it scrolls between sections. */
@@ -10,7 +12,7 @@ export type PageColors = {
 
 const DEFAULT_BACKGROUND = 'rgb(255, 255, 255)';
 /** Brand maroon (`--brand-primary`); the foreground used on light sections. */
-const DEFAULT_FOREGROUND = '#8c1f2e';
+const DEFAULT_FOREGROUND = BRAND.primary;
 
 const listeners = new Set<Listener>();
 

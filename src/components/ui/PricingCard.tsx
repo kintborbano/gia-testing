@@ -19,8 +19,8 @@ export default function PricingCard({
     <div
       className={`flex flex-col gap-6 rounded-[15px] border p-8 ${
         featured
-          ? 'border-black bg-[#fef7dd] text-[#8c1f2e]'
-          : 'border-black bg-white text-[#8c1f2e]'
+          ? 'bg-brand-cream text-brand-primary border-black'
+          : 'text-brand-primary border-black bg-white'
       }`}
     >
       <div className="flex flex-col gap-2">
@@ -41,7 +41,7 @@ export default function PricingCard({
             key={feature}
             className="flex gap-2 font-sans text-[15px] tracking-[-0.3px]"
           >
-            <span className="text-[#8c1f2e]">•</span>
+            <span className="text-brand-primary">•</span>
             <span>{feature}</span>
           </li>
         ))}

@@ -34,7 +34,7 @@ export default async function ReportPage({
       <section className="flex flex-col justify-center gap-3 pt-4 sm:flex-row">
         <button
           type="button"
-          className="rounded-full bg-[#8c1f2e] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#751a26]"
+          className="bg-brand-primary hover:bg-brand-primary-dark rounded-full px-6 py-2.5 text-sm font-semibold text-white"
         >
           Download PDF Report
         </button>

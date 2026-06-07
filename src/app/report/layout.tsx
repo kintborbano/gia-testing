@@ -17,8 +17,8 @@ export default function ReportLayout({
             className="h-[42px] w-auto"
             priority
           />
-          <div className="flex h-[38px] w-auto items-center justify-center rounded-full border border-[#8c1f2e] bg-white px-3.5">
-            <p className="flex items-center gap-1.5 font-sans text-[13px] tracking-[-0.26px] text-[#8c1f2e]">
+          <div className="border-brand-primary flex h-[38px] w-auto items-center justify-center rounded-full border bg-white px-3.5">
+            <p className="text-brand-primary flex items-center gap-1.5 font-sans text-[13px] tracking-[-0.26px]">
               powered by
               <Image
                 src="/logos/sofi-ai-logo.svg"

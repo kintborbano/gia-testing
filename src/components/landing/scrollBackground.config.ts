@@ -28,10 +28,12 @@
  * stop's `color` field. A stop's `color` can also be a raw hex string directly
  * (e.g. '#ffcc00') if you don't want to name it.
  */
+import { BRAND } from '@/styles/palette';
+
 export const COLORS = {
-  white: '#ffffff',
-  cream: '#fef7dd',
-  maroon: '#8c1f2e',
+  white: BRAND.white,
+  cream: BRAND.cream,
+  maroon: BRAND.primary,
 } as const;
 
 export type ColorName = keyof typeof COLORS;

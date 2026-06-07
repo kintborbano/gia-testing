@@ -1,11 +1,12 @@
 import { lerp, clamp } from './interpolate';
+import { BRAND } from '@/styles/palette';
 
 const SCROLL_RANGE = 120;
 export const HEADER_HEIGHT_LARGE = 112;
 const HEIGHT_SMALL = 80;
 
-const COLOR_HERO = '#ffffff';
-const COLOR_FEATURES = '#fef7dd';
+const COLOR_HERO = BRAND.white;
+const COLOR_FEATURES = BRAND.cream;
 
 function hexToRgb(hex: string): [number, number, number] {
   const n = parseInt(hex.slice(1), 16);

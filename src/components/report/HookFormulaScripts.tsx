@@ -47,7 +47,7 @@ export default function HookFormulaScripts(): React.ReactElement {
             key={script.goal}
             className="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
           >
-            <span className="self-start rounded-full bg-[#8c1f2e]/10 px-2.5 py-0.5 text-xs font-semibold text-[#8c1f2e]">
+            <span className="bg-brand-primary/10 text-brand-primary self-start rounded-full px-2.5 py-0.5 text-xs font-semibold">
               {script.goal}
             </span>
             <div className="mt-4 space-y-1">

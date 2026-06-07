@@ -39,7 +39,7 @@ export default function FAQ(): React.ReactElement {
       id="bg-stop-faq"
       className="flex w-full flex-col items-center px-5 sm:px-8 md:px-16"
     >
-      <div className="flex w-[1152px] max-w-full flex-col items-center gap-6 py-16 text-center text-[#8c1f2e] md:py-20">
+      <div className="text-brand-primary flex w-[1152px] max-w-full flex-col items-center gap-6 py-16 text-center md:py-20">
         <p className="font-sans text-[18px] font-bold tracking-[-0.09px]">
           FAQ
         </p>
@@ -55,17 +55,20 @@ export default function FAQ(): React.ReactElement {
             const isOpen = openIndex === index;
 
             return (
-              <div key={faq.question} className="border-b border-[#8c1f2e]/30">
+              <div
+                key={faq.question}
+                className="border-brand-primary/30 border-b"
+              >
                 <button
                   type="button"
                   aria-expanded={isOpen}
                   onClick={() => setOpenIndex(isOpen ? -1 : index)}
                   className="flex w-full items-center justify-between gap-6 py-6 text-left"
                 >
-                  <span className="font-sans text-[20px] leading-snug font-semibold tracking-[-0.1px] text-[#8c1f2e]">
+                  <span className="text-brand-primary font-sans text-[20px] leading-snug font-semibold tracking-[-0.1px]">
                     {faq.question}
                   </span>
-                  <span className="grid size-10 shrink-0 place-items-center text-[#8c1f2e]">
+                  <span className="text-brand-primary grid size-10 shrink-0 place-items-center">
                     {isOpen ? <Minus size={22} /> : <Plus size={22} />}
                   </span>
                 </button>

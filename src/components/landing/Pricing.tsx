@@ -48,7 +48,7 @@ export default function Pricing(): React.ReactElement {
       id="bg-stop-pricing"
       className="flex w-full flex-col items-center px-5 py-10 sm:px-8 md:px-16"
     >
-      <div className="flex w-[1152px] max-w-full flex-col items-center justify-center rounded-[24px] bg-[#8c1f2e] px-5 py-12 sm:px-8 md:px-16 md:py-20">
+      <div className="bg-brand-primary flex w-[1152px] max-w-full flex-col items-center justify-center rounded-[24px] px-5 py-12 sm:px-8 md:px-16 md:py-20">
         <div className="flex w-full flex-col items-center gap-6 text-center text-white">
           <p className="font-sans text-[18px] font-bold tracking-[-0.09px]">
             PRICING

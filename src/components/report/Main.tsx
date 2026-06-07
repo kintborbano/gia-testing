@@ -39,7 +39,7 @@ export default function Main({
 
       {/* GIA SCORE */}
       <section className="rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-        <div className="text-xs font-semibold tracking-widest text-[#8c1f2e] uppercase">
+        <div className="text-brand-primary text-xs font-semibold tracking-widest uppercase">
           GIA Score
         </div>
         <div className="mt-2 flex items-baseline justify-center gap-1">

@@ -51,7 +51,7 @@ export default function AudienceIntelligence(): React.ReactElement {
             key={label}
             className="flex gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#8c1f2e]/10 text-[#8c1f2e]">
+            <div className="bg-brand-primary/10 text-brand-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
               <Icon className="h-5 w-5" />
             </div>
             <div>

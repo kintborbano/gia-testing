@@ -1,6 +1,6 @@
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-xs font-semibold tracking-widest text-[#8c1f2e] uppercase">
+    <h2 className="text-brand-primary text-xs font-semibold tracking-widest uppercase">
       {children}
     </h2>
   );
@@ -19,7 +19,7 @@ export function Bullet({ text }: { text: string }) {
     <li className="flex gap-3 text-sm leading-relaxed text-gray-700">
       <span
         aria-hidden
-        className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#8c1f2e]"
+        className="bg-brand-primary mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
       />
       <span>{text}</span>
     </li>
