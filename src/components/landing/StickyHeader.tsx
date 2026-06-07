@@ -30,6 +30,31 @@ const NAV_LINKS = [
 const linkClassName =
   'font-sans text-[14px] font-medium tracking-[0.5px] hover:font-bold';
 
+// One nav entry — a hash target stays a plain <a> (same-page anchor); a route
+// uses next/link. Shared by the desktop and mobile menus.
+function NavItem({
+  href,
+  label,
+  className = '',
+  onClick,
+}: {
+  href: string;
+  label: string;
+  className?: string;
+  onClick?: () => void;
+}): React.ReactElement {
+  const classes = `${linkClassName} ${className}`.trim();
+  return href.startsWith('#') ? (
+    <a href={href} className={classes} onClick={onClick}>
+      {label}
+    </a>
+  ) : (
+    <Link href={href} className={classes} onClick={onClick}>
+      {label}
+    </Link>
+  );
+}
+
 export default function StickyHeader(): React.ReactElement {
   const t = useScrollProgress(0, SCROLL_RANGE);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -80,17 +105,9 @@ export default function StickyHeader(): React.ReactElement {
 
       {/* Desktop nav */}
       <nav className="hidden items-center gap-8 md:flex">
-        {NAV_LINKS.map(({ label, href }) =>
-          href.startsWith('#') ? (
-            <a key={label} href={href} className={linkClassName}>
-              {label}
-            </a>
-          ) : (
-            <Link key={label} href={href} className={linkClassName}>
-              {label}
-            </Link>
-          )
-        )}
+        {NAV_LINKS.map(({ label, href }) => (
+          <NavItem key={label} href={href} label={label} />
+        ))}
         <Button href="/action" variant="adaptive" size="default">
           ANALYZE MY TIKTOK
         </Button>
@@ -113,27 +130,15 @@ export default function StickyHeader(): React.ReactElement {
           className="absolute inset-x-0 top-full flex flex-col gap-1 border-b border-black/10 px-5 pt-2 pb-6 shadow-lg sm:px-6 md:hidden"
           style={{ background: pageBg }}
         >
-          {NAV_LINKS.map(({ label, href }) =>
-            href.startsWith('#') ? (
-              <a
-                key={label}
-                href={href}
-                className={`${linkClassName} py-3`}
-                onClick={() => setMenuOpen(false)}
-              >
-                {label}
-              </a>
-            ) : (
-              <Link
-                key={label}
-                href={href}
-                className={`${linkClassName} py-3`}
-                onClick={() => setMenuOpen(false)}
-              >
-                {label}
-              </Link>
-            )
-          )}
+          {NAV_LINKS.map(({ label, href }) => (
+            <NavItem
+              key={label}
+              href={href}
+              label={label}
+              className="py-3"
+              onClick={() => setMenuOpen(false)}
+            />
+          ))}
           <Button
             href="/action"
             variant="adaptive"

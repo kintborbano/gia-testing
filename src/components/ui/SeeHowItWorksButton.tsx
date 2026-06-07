@@ -17,7 +17,7 @@ export default function SeeHowItWorksButton({
     <button
       type="button"
       onClick={onClick}
-      className={`text-brand-primary font-sans text-[16px] font-bold tracking-[-0.02em] underline underline-offset-4 transition-opacity duration-200 ease-out hover:opacity-70 ${className}`}
+      className={`text-brand-primary font-sans text-base font-bold tracking-[-0.02em] underline underline-offset-4 transition-opacity duration-200 ease-out hover:opacity-70 ${className}`}
     >
       See how it works
     </button>
