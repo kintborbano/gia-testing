@@ -37,17 +37,29 @@ export default function PeaceScrubber(): React.ReactElement {
     const wrap = wrapRef.current;
     if (!wrap) return;
 
+    let timeoutId: number | undefined;
+
     const io = new IntersectionObserver(
       (entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         io.disconnect();
 
-        const onDecoded = (i: number) => {
+        let revealed = false;
+        const reveal = () => {
+          if (revealed) return;
+          revealed = true;
+          if (timeoutId !== undefined) clearTimeout(timeoutId);
+          setPosterReady(true);
+        };
+
+        // Settle each frame on success OR failure (decode reject + onerror +
+        // already-complete) so a rejected decode never leaves the canvas hidden.
+        const onSettled = (i: number, ok: boolean) => {
           if (i === 0) {
-            setPosterReady(true);
-            drawFrame(0);
+            reveal();
+            if (ok) drawFrame(0);
           }
-          if (i === currentFrameRef.current) drawFrame(i);
+          if (ok && i === currentFrameRef.current) drawFrame(i);
         };
 
         const images: HTMLImageElement[] = [];
@@ -56,19 +68,28 @@ export default function PeaceScrubber(): React.ReactElement {
           img.src = framePath(i);
           images.push(img);
           img.decode().then(
-            () => onDecoded(i),
+            () => onSettled(i, true),
             () => {
-              if (img.complete) onDecoded(i);
-              else img.onload = () => onDecoded(i);
+              if (img.complete) onSettled(i, img.naturalWidth > 0);
+              else {
+                img.onload = () => onSettled(i, true);
+                img.onerror = () => onSettled(i, false);
+              }
             }
           );
         }
         imagesRef.current = images;
+
+        // Safety net: reveal the canvas even if the first frame stalls.
+        timeoutId = window.setTimeout(reveal, 8000);
       },
       { rootMargin: '100% 0px' } // begin ~1 viewport early
     );
     io.observe(wrap);
-    return () => io.disconnect();
+    return () => {
+      io.disconnect();
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
   }, []);
 
   // Scrub by the wrapper's travel through the viewport (no pinning, so the page
