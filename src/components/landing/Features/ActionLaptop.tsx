@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
-import { getFrameImage } from '@/lib/preloadAssets';
+import { getFrameImage, ACTION_FRAMES } from '@/lib/preloadAssets';
 
 // Laptop-opening frames for the "GIA in action" section, scrubbed by scroll.
-// Files: public/images/action-frames/laptop00.webp ... laptop38.webp
+// Files: public/images/action-frames/laptop00.webp ... laptop38.webp (frame
+// list owned by ACTION_FRAMES in preloadAssets).
 // Downscaled from 4K to display resolution; the red background is baked in and
 // matches the section, so no transparency/cut-out is needed here.
-const FRAME_COUNT = 39;
+const FRAME_COUNT = ACTION_FRAMES.length;
 const FRAME_W = 1280;
 const FRAME_H = 720;
 
@@ -17,10 +18,6 @@ const FRAME_H = 720;
 // whole open finishes well before the section scrolls away (i.e. stays seen).
 const OPEN_START = 0.5;
 const OPEN_DURATION = 0.2;
-
-function framePath(i: number): string {
-  return `/images/action-frames/laptop${String(i).padStart(2, '0')}.webp`;
-}
 
 export default function ActionLaptop(): React.ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -72,7 +69,7 @@ export default function ActionLaptop(): React.ReactElement {
         const images: HTMLImageElement[] = [];
         for (let i = 0; i < FRAME_COUNT; i++) {
           // Shared with the loader's preload — decoded and held once.
-          const img = getFrameImage(framePath(i));
+          const img = getFrameImage(ACTION_FRAMES[i]);
           images.push(img);
           img.decode().then(
             () => onSettled(i, true),

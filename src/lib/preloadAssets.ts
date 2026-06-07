@@ -10,14 +10,46 @@
 
 const pad2 = (i: number) => String(i).padStart(2, '0');
 
-function sequence(count: number, name: (i: number) => string): string[] {
-  return Array.from({ length: count }, (_, i) => name(i));
+// Build a frame-URL list that loads every `step`-th source frame (always
+// including the last, so the animation reaches its final state). Dropping the
+// in-between frames is imperceptible at scroll speed but roughly divides the
+// decoded-bitmap memory AND the download by `step`. If a scrub ever looks
+// steppy on a slow, deliberate scroll, lower that sequence's step toward 1.
+function sampled(
+  total: number,
+  step: number,
+  name: (i: number) => string
+): string[] {
+  const indices: number[] = [];
+  for (let i = 0; i < total; i += step) indices.push(i);
+  if (indices[indices.length - 1] !== total - 1) indices.push(total - 1);
+  return indices.map(name);
 }
 
+// Single source of truth for each scrubber's frames — the scrubbers import
+// these exact lists, so the preload below can never drift out of sync with what
+// they actually draw. Source folders hold the full sequences (120 / 39 / 70);
+// we sample them down here.
+export const LAPTOP_FRAMES = sampled(
+  120,
+  2,
+  (i) => `/images/laptop-frames/final2_prob${3000 + i}.webp`
+);
+export const ACTION_FRAMES = sampled(
+  39,
+  1,
+  (i) => `/images/action-frames/laptop${pad2(i)}.webp`
+);
+export const PEACE_FRAMES = sampled(
+  70,
+  2,
+  (i) => `/images/peace/gia-peace${pad2(i)}.webp`
+);
+
 const CRITICAL_URLS: string[] = [
-  ...sequence(120, (i) => `/images/laptop-frames/final2_prob${3000 + i}.webp`),
-  ...sequence(39, (i) => `/images/action-frames/laptop${pad2(i)}.webp`),
-  ...sequence(70, (i) => `/images/peace/gia-peace${pad2(i)}.webp`),
+  ...LAPTOP_FRAMES,
+  ...ACTION_FRAMES,
+  ...PEACE_FRAMES,
   '/images/gia-on-laptop.png',
 ];
 

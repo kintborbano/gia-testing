@@ -8,13 +8,13 @@ import {
   useRef,
   useState,
 } from 'react';
-import { getFrameImage } from '@/lib/preloadAssets';
+import { getFrameImage, LAPTOP_FRAMES } from '@/lib/preloadAssets';
 
 // Laptop animation frames (Kling export, background removed to transparent so
 // the feature icons can peek out around the laptop as they explode outward).
-// Files: public/images/laptop-frames/final2_prob3000.webp ... 3119.
-const FRAME_COUNT = 120;
-const FRAME_START = 3000;
+// Files: public/images/laptop-frames/final2_prob3000.webp ... 3119, sampled
+// down by LAPTOP_FRAMES in preloadAssets.
+const FRAME_COUNT = LAPTOP_FRAMES.length;
 const FRAME_W = 1200;
 const FRAME_H = 800;
 
@@ -27,10 +27,6 @@ const LAPTOP_DELAY = 0.15;
 // transparent margins, so the laptop is scaled up from the centre to crop those
 // margins and fill the box. Capped (~1.25): any larger clips her head / the desk.
 const FILL = 'scale-[1.24] object-contain';
-
-function framePath(i: number): string {
-  return `/images/laptop-frames/final2_prob${FRAME_START + i}.webp`;
-}
 
 // Imperative handle: the parent drives the scrub from the shared scroll ticker
 // (no per-frame React render). `draw` maps 0→1 section progress to a frame.
@@ -156,7 +152,7 @@ const AnimatedLaptop = forwardRef<ChibiLaptopHandle, { onReady?: () => void }>(
           for (let i = 0; i < FRAME_COUNT; i++) {
             // Shared with the loader's preload — same Image instance, decoded
             // and held once (not a second per-scrubber copy).
-            const img = getFrameImage(framePath(i));
+            const img = getFrameImage(LAPTOP_FRAMES[i]);
             images.push(img);
             // decode() resolves once the bitmap is ready off the main thread. If
             // it rejects, settle from the load state / events instead of hanging.
