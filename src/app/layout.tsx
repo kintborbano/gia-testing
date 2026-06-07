@@ -58,7 +58,10 @@ const itcGaramondNarrowItalic = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'GIA by SOFI AI',
+  title: {
+    default: 'GIA by SOFI AI',
+    template: '%s · GIA by SOFI AI',
+  },
   description: 'A tool that analyzes your TikTok hooks',
 };
 

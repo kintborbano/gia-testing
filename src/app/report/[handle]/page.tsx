@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { normalizeReportHandle } from '@/lib/dummy/reportData';
 import Main from '@/components/report/Main';
@@ -9,6 +10,20 @@ import VideoBreakdownSection from '@/components/report/VideoBreakdownSection';
 
 interface ReportPageProps {
   params: Promise<{ handle: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: ReportPageProps): Promise<Metadata> {
+  const { handle: rawHandle } = await params;
+  const handle = normalizeReportHandle(rawHandle);
+
+  return {
+    title: handle ? `@${handle}'s TikTok report` : 'Report',
+    description: handle
+      ? `GIA's hook, comment, and content breakdown for @${handle}.`
+      : undefined,
+  };
 }
 
 export default async function ReportPage({
