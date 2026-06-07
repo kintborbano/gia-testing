@@ -32,7 +32,7 @@ type NavLink = {
 const NAV_LINKS: readonly NavLink[] = [
   // features-section is a ~260vh sticky scroll-scrub; landing at its very top
   // shows the unflattering first frame, so nudge past it by part of a viewport.
-  { label: 'PRODUCT', href: '#features-section', scrollOffsetVh: 0.4 },
+  { label: 'PRODUCT', href: '#features-section', scrollOffsetVh: 1.6 },
   { label: 'PRICING', href: '/pricing' },
   { label: 'FAQs', href: '/faq' },
   { label: 'ABOUT US', href: '/about' },
