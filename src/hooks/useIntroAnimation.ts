@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { EXIT_EASING, WRAPPER_EXIT_DURATION } from '@/animations/introTiming';
 import { resizeLenis, startLenis } from '@/lib/scroll/lenisControls';
+import { preloadCriticalAssets } from '@/lib/preloadAssets';
 import { useIntroScrollLock } from './useIntroScrollLock';
 
 type IntroPhase = 'animating' | 'done';
@@ -51,9 +52,12 @@ export function useIntroAnimation({
     const onFonts = document.fonts
       ? document.fonts.ready.then(() => undefined)
       : Promise.resolve();
+    // Download the lazy scroll-animation frames now so they don't pop in /
+    // fail to animate the moment the page is revealed.
+    const onAssets = preloadCriticalAssets();
 
     const timer = window.setTimeout(mark, MAX_LOADING_MS);
-    Promise.all([onLoad, onFonts]).then(mark);
+    Promise.all([onLoad, onFonts, onAssets]).then(mark);
 
     return () => window.clearTimeout(timer);
   }, []);
