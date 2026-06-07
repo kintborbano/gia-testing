@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
+import { getFrameImage } from '@/lib/preloadAssets';
 
 // Peace-sign / wink animation for the CTA, scrubbed by scroll.
 // Files: public/images/peace/gia-peace00.webp ... gia-peace69.webp
@@ -65,8 +66,8 @@ export default function PeaceScrubber(): React.ReactElement {
 
         const images: HTMLImageElement[] = [];
         for (let i = 0; i < FRAME_COUNT; i++) {
-          const img = new Image();
-          img.src = framePath(i);
+          // Shared with the loader's preload — decoded and held once.
+          const img = getFrameImage(framePath(i));
           images.push(img);
           img.decode().then(
             () => onSettled(i, true),

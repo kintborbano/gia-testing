@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { getFrameImage } from '@/lib/preloadAssets';
 
 // Laptop animation frames (Kling export, background removed to transparent so
 // the feature icons can peek out around the laptop as they explode outward).
@@ -153,10 +154,9 @@ const AnimatedLaptop = forwardRef<ChibiLaptopHandle, { onReady?: () => void }>(
           };
 
           for (let i = 0; i < FRAME_COUNT; i++) {
-            // `new window.Image()` — the bare `Image` identifier is shadowed by
-            // the next/image import above; the frame loader needs the DOM global.
-            const img = new window.Image();
-            img.src = framePath(i);
+            // Shared with the loader's preload — same Image instance, decoded
+            // and held once (not a second per-scrubber copy).
+            const img = getFrameImage(framePath(i));
             images.push(img);
             // decode() resolves once the bitmap is ready off the main thread. If
             // it rejects, settle from the load state / events instead of hanging.

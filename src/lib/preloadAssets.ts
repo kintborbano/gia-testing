@@ -21,9 +21,25 @@ const CRITICAL_URLS: string[] = [
   '/images/gia-on-laptop.png',
 ];
 
-// Hold references so the browser keeps the fetched resources cached; the
-// scrubber components then load the same URLs instantly from cache.
-const held: HTMLImageElement[] = [];
+// Single source of truth for every scroll-frame Image. Both the loader (warming
+// the cache below) and the scrubber components request frames through
+// `getFrameImage`, so each URL is downloaded, decoded, and held in memory
+// exactly once. Previously the loader kept its own array AND each scrubber
+// allocated a second Image per frame — doubling hundreds of MB of decoded
+// bitmaps. The map keeps the fetched resources alive (cached) for the page's
+// lifetime; the scrubbers read the same instances straight from it.
+const frameImages = new Map<string, HTMLImageElement>();
+
+/** Get the shared Image for a frame URL, creating + kicking off its load once. */
+export function getFrameImage(url: string): HTMLImageElement {
+  let img = frameImages.get(url);
+  if (!img) {
+    img = new Image();
+    img.src = url;
+    frameImages.set(url, img);
+  }
+  return img;
+}
 
 let promise: Promise<void> | null = null;
 
@@ -36,12 +52,14 @@ export function preloadCriticalAssets(): Promise<void> {
     CRITICAL_URLS.map(
       (url) =>
         new Promise<void>((resolve) => {
-          const img = new Image();
-          held.push(img);
+          const img = getFrameImage(url);
           // Resolve on success or failure — never block readiness on one asset.
-          img.onload = () => resolve();
-          img.onerror = () => resolve();
-          img.src = url;
+          if (img.complete) {
+            resolve();
+            return;
+          }
+          img.addEventListener('load', () => resolve(), { once: true });
+          img.addEventListener('error', () => resolve(), { once: true });
         })
     )
   ).then(() => undefined);
