@@ -1,12 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import {
-  EXIT_EASING,
-  LOGO_ENTER_DURATION,
-  LOGO_HOLD_DURATION,
-  WRAPPER_EXIT_DURATION,
-} from '@/animations/introTiming';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { EXIT_EASING, WRAPPER_EXIT_DURATION } from '@/animations/introTiming';
 import { resizeLenis, startLenis } from '@/lib/scroll/lenisControls';
 import { useIntroScrollLock } from './useIntroScrollLock';
 
@@ -15,131 +10,97 @@ type IntroPhase = 'animating' | 'done';
 interface IntroAnimationRefs {
   wrapperRef: React.RefObject<HTMLDivElement | null>;
   panelRef: React.RefObject<HTMLDivElement | null>;
-  logoRef: React.RefObject<HTMLImageElement | null>;
 }
 
 interface IntroAnimation {
   phase: IntroPhase;
+  // True once the site is prepared (fonts + window load). Drives the loader loop.
+  ready: boolean;
+  // Passed to the loader; runs the reveal once the loader animation completes.
+  onLoaderFinished: () => void;
 }
 
-function wait(duration: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, duration));
-}
-
-function isAnimationCancellation(error: unknown): boolean {
-  return error instanceof DOMException && error.name === 'AbortError';
-}
-
-async function decodeLogo(logo: HTMLImageElement): Promise<void> {
-  await logo.decode().catch(() => {});
-}
-
-function animateLogoEnter(logo: HTMLImageElement): Animation {
-  return logo.animate(
-    [
-      { opacity: '0', transform: 'scale(0.92)' },
-      { opacity: '1', transform: 'scale(1)' },
-    ],
-    { duration: LOGO_ENTER_DURATION, easing: 'ease-out', fill: 'forwards' }
-  );
-}
-
-function animateScrollReveal(wrapper: HTMLDivElement): Animation {
-  return wrapper.animate(
-    [{ transform: 'translateY(0vh)' }, { transform: 'translateY(-100vh)' }],
-    {
-      duration: WRAPPER_EXIT_DURATION,
-      easing: EXIT_EASING,
-      fill: 'forwards',
-    }
-  );
-}
+// Safety cap so the loader can never hang forever if a resource stalls.
+const MAX_LOADING_MS = 15000;
 
 export function useIntroAnimation({
   wrapperRef,
   panelRef,
-  logoRef,
 }: IntroAnimationRefs): IntroAnimation {
   const [phase, setPhase] = useState<IntroPhase>('animating');
+  const [ready, setReady] = useState(false);
+  const finishedRef = useRef(false);
   const { releaseScrollLock } = useIntroScrollLock(phase === 'animating');
 
+  // Readiness: real loading signal — fonts decoded + all initial resources
+  // loaded. The loader keeps looping until this resolves.
   useEffect(() => {
-    if (phase !== 'animating') return;
+    let settled = false;
+    const mark = () => {
+      if (settled) return;
+      settled = true;
+      setReady(true);
+    };
+
+    const onLoad =
+      document.readyState === 'complete'
+        ? Promise.resolve()
+        : new Promise<void>((resolve) =>
+            window.addEventListener('load', () => resolve(), { once: true })
+          );
+    const onFonts = document.fonts
+      ? document.fonts.ready.then(() => undefined)
+      : Promise.resolve();
+
+    const timer = window.setTimeout(mark, MAX_LOADING_MS);
+    Promise.all([onLoad, onFonts]).then(mark);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  // Reveal the page once the loader (intro + loading loop) has finished.
+  const onLoaderFinished = useCallback(() => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
 
     const wrapper = wrapperRef.current;
     const panel = panelRef.current;
-    const logo = logoRef.current;
-    if (!wrapper || !panel || !logo) return;
 
-    let cancelled = false;
-    let logoEnter: Animation | null = null;
-    let scrollReveal: Animation | null = null;
+    const complete = () => {
+      releaseScrollLock();
+      if (panel) panel.style.display = 'none';
+      setPhase('done');
+    };
 
-    wrapper.style.willChange = 'transform';
-
-    async function runIntro(
-      introWrapper: HTMLDivElement,
-      introPanel: HTMLDivElement,
-      introLogo: HTMLImageElement
-    ) {
-      let shouldComplete = false;
-
-      try {
-        await decodeLogo(introLogo);
-        if (cancelled) return;
-
-        logoEnter = animateLogoEnter(introLogo);
-        await logoEnter.finished;
-        if (cancelled) return;
-
-        await wait(LOGO_HOLD_DURATION);
-        if (cancelled) return;
-
-        scrollReveal = animateScrollReveal(introWrapper);
-        await scrollReveal.finished;
-        if (cancelled) return;
-
-        shouldComplete = true;
-      } catch (error) {
-        if (!cancelled && !isAnimationCancellation(error)) {
-          console.error('Intro animation failed', error);
-        }
-
-        shouldComplete = !cancelled;
-      } finally {
-        logoEnter?.cancel();
-        scrollReveal?.cancel();
-        introWrapper.style.transform = '';
-        introWrapper.style.willChange = '';
-        releaseScrollLock();
-
-        if (shouldComplete && !cancelled) {
-          introPanel.style.display = 'none';
-          setPhase('done');
-        }
-      }
+    if (!wrapper) {
+      complete();
+      return;
     }
 
-    runIntro(wrapper, panel, logo);
+    wrapper.style.willChange = 'transform';
+    const reveal = wrapper.animate(
+      [{ transform: 'translateY(0vh)' }, { transform: 'translateY(-100vh)' }],
+      { duration: WRAPPER_EXIT_DURATION, easing: EXIT_EASING, fill: 'forwards' }
+    );
+    reveal.finished
+      .catch(() => {})
+      .finally(() => {
+        reveal.cancel();
+        wrapper.style.transform = '';
+        wrapper.style.willChange = '';
+        complete();
+      });
+  }, [panelRef, releaseScrollLock, wrapperRef]);
 
-    return () => {
-      cancelled = true;
-      wrapper.getAnimations().forEach((animation) => animation.cancel());
-      logo.getAnimations().forEach((animation) => animation.cancel());
-      releaseScrollLock();
-    };
-  }, [logoRef, panelRef, phase, releaseScrollLock, wrapperRef]);
-
+  // Hand control back to Lenis once the page is revealed.
   useEffect(() => {
     if (phase !== 'done') return;
-
-    const frameId = requestAnimationFrame(() => {
+    const id = requestAnimationFrame(() => {
       resizeLenis();
       startLenis();
     });
-
-    return () => cancelAnimationFrame(frameId);
+    return () => cancelAnimationFrame(id);
   }, [phase]);
 
-  return { phase };
+  return { phase, ready, onLoaderFinished };
 }

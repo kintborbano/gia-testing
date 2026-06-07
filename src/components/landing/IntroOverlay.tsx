@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { useRef } from 'react';
 import { useIntroAnimation } from '@/hooks/useIntroAnimation';
+import IntroLoader from './IntroLoader';
 
 interface Props {
   children: React.ReactNode;
@@ -11,25 +11,16 @@ interface Props {
 export default function IntroOverlay({ children }: Props): React.ReactElement {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const logoRef = useRef<HTMLImageElement>(null);
-  const { phase } = useIntroAnimation({ wrapperRef, panelRef, logoRef });
+  const { phase, ready, onLoaderFinished } = useIntroAnimation({
+    wrapperRef,
+    panelRef,
+  });
   const isDone = phase === 'done';
 
   return (
     <div ref={wrapperRef} className={!isDone ? 'intro-wrapper' : undefined}>
       <div ref={panelRef} className="intro-panel">
-        {!isDone && (
-          <Image
-            ref={logoRef}
-            id="intro-logo"
-            src="/logos/gia-logo.svg"
-            width={689}
-            height={480}
-            alt="GIA by SOFI AI"
-            className="intro-overlay__logo"
-            priority
-          />
-        )}
+        {!isDone && <IntroLoader ready={ready} onFinished={onLoaderFinished} />}
       </div>
 
       {children}
