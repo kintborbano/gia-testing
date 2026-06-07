@@ -1,13 +1,17 @@
 'use client';
 
-import { useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type { CSSProperties } from 'react';
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
-import { useScrollProgress } from '@/hooks/useScrollProgress';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useInSection } from '@/hooks/useInSection';
-import { getHeaderHeight, SCROLL_RANGE } from '@/animations/headerAnimations';
+import { subscribeScroll } from '@/lib/scroll/scrollTicker';
+import {
+  HEADER_HEIGHT_LARGE,
+  HEIGHT_SMALL,
+  SCROLL_RANGE,
+} from '@/animations/headerAnimations';
 import {
   getPageColorsServerSnapshot,
   getPageColorsSnapshot,
@@ -56,8 +60,15 @@ function NavItem({
 }
 
 export default function StickyHeader(): React.ReactElement {
-  const t = useScrollProgress(0, SCROLL_RANGE);
+  // Two-state collapse: full height until scrolled past SCROLL_RANGE, then the
+  // small height — animated by a CSS transition. Tracking a boolean (not a
+  // per-frame progress value) means the header re-renders only when it flips,
+  // not on every scroll frame.
+  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => subscribeScroll((y) => setScrolled(y > SCROLL_RANGE)), []);
+
   // While the Features scroll-scene owns the top of the viewport, keep the
   // header hidden even when scrolling up — it only reappears in other sections.
   const inFeatures = useInSection('features-section');
@@ -75,7 +86,7 @@ export default function StickyHeader(): React.ReactElement {
   const headerStyle = useMemo<CSSProperties>(
     () =>
       ({
-        height: `${getHeaderHeight(t)}px`,
+        height: `${scrolled ? HEIGHT_SMALL : HEADER_HEIGHT_LARGE}px`,
         background: pageBg,
         // Drives `currentColor` for the nav text, menu icon, and GIA logo.
         color: pageFg,
@@ -83,14 +94,16 @@ export default function StickyHeader(): React.ReactElement {
         '--page-bg': pageBg,
         '--page-fg': pageFg,
         transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
-        transition: 'transform 350ms ease',
+        // Background is intentionally not transitioned — it snaps at the dark
+        // section seams (fade: 0) and is already eased per-frame for white→cream.
+        transition: 'height 250ms ease, transform 350ms ease',
       }) as CSSProperties,
-    [t, pageBg, pageFg, hidden]
+    [scrolled, pageBg, pageFg, hidden]
   );
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-5 transition-none will-change-[height,background,transform] sm:px-6 md:px-10"
+      className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-5 sm:px-6 md:px-10"
       style={headerStyle}
     >
       <Link
