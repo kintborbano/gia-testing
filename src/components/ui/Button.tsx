@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 import type { ReactElement, ReactNode } from 'react';
 
 export type ButtonVariant =
@@ -90,8 +91,18 @@ export default function Button(props: ButtonProps): ReactElement {
   );
 
   if ('href' in props && props.href) {
+    const { href } = props;
+    // Internal route → next/link for client-side nav + prefetch. External URLs
+    // and same-page hash anchors fall back to a plain anchor.
+    if (href.startsWith('/')) {
+      return (
+        <Link href={href} className={classes}>
+          {content}
+        </Link>
+      );
+    }
     return (
-      <a href={props.href} className={classes}>
+      <a href={href} className={classes}>
         {content}
       </a>
     );
