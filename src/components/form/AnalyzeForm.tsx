@@ -70,6 +70,7 @@ export default function AnalyzeForm(): ReactElement {
   const [accountType, setAccountType] = useState<string>('');
   const [goal, setGoal] = useState<string>('');
   const [focus, setFocus] = useState('');
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState('');
 
   // These pages have no ScrollBackground, so paint the shared background cream
@@ -122,7 +123,7 @@ export default function AnalyzeForm(): ReactElement {
           </div>
 
           {/* Email */}
-          <div className="mt-8 flex w-full flex-col items-center gap-1.5">
+          <div className="mt-8 flex w-full flex-col items-center gap-3.5">
             <FieldLabel
               label="EMAIL ADDRESS"
               helper="we'll send your report here"
@@ -139,7 +140,7 @@ export default function AnalyzeForm(): ReactElement {
           </div>
 
           {/* TikTok profile link */}
-          <div className="flex w-full flex-col items-center gap-1.5">
+          <div className="flex w-full flex-col items-center gap-3.5">
             <FieldLabel
               label="TIKTOK PROFILE LINK"
               helper="paste the tiktok account you want gia to analyze"
@@ -214,7 +215,7 @@ export default function AnalyzeForm(): ReactElement {
           </div>
 
           {/* Optional focus */}
-          <div className="flex w-full flex-col items-center gap-2">
+          <div className="flex w-full flex-col items-center gap-3.5">
             <FieldLabel label="ANYTHING YOU'D LIKE GIA TO FOCUS ON? (OPTIONAL)" />
             <textarea
               name="focus"
@@ -228,14 +229,23 @@ export default function AnalyzeForm(): ReactElement {
 
           {/* CTA */}
           <section className="bg-brand-primary mt-4 flex w-full max-w-[943px] flex-col items-center justify-center gap-6 rounded-[32px] px-8 py-12 text-center sm:px-12 sm:py-14 md:rounded-[44px] md:py-16">
-            <h2 className="font-itc-garamond text-[28px] leading-[1.1] tracking-[-0.6px] text-white md:text-[32px]">
-              continue to checkout
+            <h2 className="font-sans text-[28px] leading-[1.1] font-bold tracking-[-0.6px] text-white md:text-[32px]">
+              Continue to checkout
             </h2>
-            <p className="max-w-[504px] font-sans text-[15px] leading-[1.5] font-medium tracking-[-0.075px] text-white">
-              By continuing, you agree that GIA will analyze publicly available
-              TikTok content and engagement data to generate your personalized
-              report.
-            </p>
+            <label className="mx-auto flex w-fit cursor-pointer items-start gap-5 text-left">
+              <input
+                type="checkbox"
+                name="consent"
+                checked={agreed}
+                onChange={(event) => setAgreed(event.target.checked)}
+                className="mt-0.5 size-[18px] shrink-0 accent-white"
+              />
+              <span className="max-w-[600px] font-sans text-[15px] leading-[1.5] font-medium tracking-[-0.075px] text-white">
+                By continuing, you agree that GIA will analyze publicly
+                available TikTok content and engagement data to generate your
+                personalized report.
+              </span>
+            </label>
             <Button type="submit" variant="onBrand" size="default" withArrow>
               CONTINUE
             </Button>
