@@ -9,7 +9,7 @@ import { useEffect, useRef } from 'react';
 // Frames are 600x600 transparent (shown on the white intro panel).
 const INTRO_COUNT = 28;
 const LOOP_COUNT = 85;
-const FPS = 30;
+const FPS = 60;
 const FRAME_MS = 1000 / FPS;
 const FRAME_W = 600;
 const FRAME_H = 600;
