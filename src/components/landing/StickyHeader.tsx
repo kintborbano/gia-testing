@@ -108,7 +108,7 @@ export default function StickyHeader(): React.ReactElement {
         {NAV_LINKS.map(({ label, href }) => (
           <NavItem key={label} href={href} label={label} />
         ))}
-        <Button href="/action" variant="adaptive" size="default">
+        <Button href="/form" variant="adaptive" size="default">
           ANALYZE MY TIKTOK
         </Button>
       </nav>
@@ -140,7 +140,7 @@ export default function StickyHeader(): React.ReactElement {
             />
           ))}
           <Button
-            href="/action"
+            href="/form"
             variant="adaptive"
             size="default"
             className="mt-3 w-full"

@@ -18,7 +18,7 @@ type AnalyzeTiktokButtonProps = {
  */
 export default function AnalyzeTiktokButton({
   className = '',
-  href = '/action',
+  href = '/form',
   variant = 'hero',
 }: AnalyzeTiktokButtonProps): ReactElement {
   return (
