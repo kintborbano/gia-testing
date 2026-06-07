@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
 // Laptop animation frames (Kling export, background removed to transparent so
@@ -50,10 +51,12 @@ export default function ChibiLaptopScene({
 function StaticLaptop(): React.ReactElement {
   return (
     <div className="relative aspect-[3/2] w-full overflow-hidden">
-      <img
+      <Image
         src="/images/gia-on-laptop.png"
         alt="GIA on Laptop"
-        className={`pointer-events-none absolute inset-0 h-full w-full ${FILL}`}
+        fill
+        sizes="100vw"
+        className={`pointer-events-none ${FILL}`}
       />
     </div>
   );
@@ -113,7 +116,9 @@ function AnimatedLaptop({
         };
 
         for (let i = 0; i < FRAME_COUNT; i++) {
-          const img = new Image();
+          // `new window.Image()` — the bare `Image` identifier is shadowed by
+          // the next/image import above; the frame loader needs the DOM global.
+          const img = new window.Image();
           img.src = framePath(i);
           images.push(img);
           // decode() resolves once the bitmap is ready off the main thread.

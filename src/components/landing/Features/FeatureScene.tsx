@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import {
@@ -20,6 +21,9 @@ type Feature = {
   label: string;
   /** Shown in the description card when this feature is selected. */
   description: string;
+  /** Intrinsic px size of /images/<label>.png — passed to next/image. */
+  width: number;
+  height: number;
   /** Horizontal nudge (px) for the label when the artwork isn't centered. */
   labelOffsetX?: number;
   /** Absolute "scatter" positions — top-left corner as a % of the scene box.
@@ -34,6 +38,8 @@ const FEATURES: Feature[] = [
   {
     area: 'hook',
     label: 'Hook Scoring',
+    width: 116,
+    height: 105,
     description:
       'GIA rates the first three seconds of every video on its power to stop the scroll — showing you which hooks earned the watch and which lost it.',
     labelOffsetX: -6,
@@ -43,6 +49,8 @@ const FEATURES: Feature[] = [
   {
     area: 'perf',
     label: 'Performance Patterns',
+    width: 125,
+    height: 99,
     description:
       'She maps what your best posts have in common — formats, lengths, topics, posting times — so you can repeat what already works instead of guessing.',
     tablet: { left: 28.3, top: 1.3 },
@@ -51,6 +59,8 @@ const FEATURES: Feature[] = [
   {
     area: 'comment',
     label: 'Comment Intelligence',
+    width: 140,
+    height: 105,
     description:
       'GIA reads your comments the way a strategist would, surfacing the questions, objections, and cravings your audience keeps repeating.',
     tablet: { left: 6.4, top: 21.7 },
@@ -59,6 +69,8 @@ const FEATURES: Feature[] = [
   {
     area: 'roadmap',
     label: 'Content Roadmap',
+    width: 108,
+    height: 107,
     description:
       'A week-by-week plan of what to post next, built from your own data — no blank-page guessing, just the next best move.',
     tablet: { left: 54.4, top: 0 },
@@ -67,6 +79,8 @@ const FEATURES: Feature[] = [
   {
     area: 'story',
     label: 'Shareable Story Card',
+    width: 118,
+    height: 107,
     description:
       'A polished, screenshot-ready summary of your growth wins, designed to drop straight into your Stories.',
     tablet: { left: 82.8, top: 53.9 },
@@ -75,6 +89,8 @@ const FEATURES: Feature[] = [
   {
     area: 'score',
     label: 'GIA Score',
+    width: 117,
+    height: 98,
     description:
       'One honest number that captures your account’s overall health — plus the specific levers that will move it up the fastest.',
     tablet: { left: 76.6, top: 23.3 },
@@ -208,8 +224,10 @@ export default function FeatureScene({
               className="group focus-visible:ring-brand-primary relative flex cursor-pointer flex-col items-center rounded-xl outline-none focus-visible:ring-2"
               style={{ ...placement, ...animStyle }}
             >
-              <img
+              <Image
                 alt={feature.label}
+                width={feature.width}
+                height={feature.height}
                 className={`pointer-events-none h-auto w-[78px] object-contain transition-transform duration-200 group-hover:scale-105 sm:w-[92px] md:w-[104px] lg:w-[120px] xl:w-[136px] ${
                   isSelected ? 'scale-110' : ''
                 }`}

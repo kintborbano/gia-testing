@@ -9,6 +9,7 @@ export default function Story(): React.ReactElement {
             positioned artistic overlay below doesn't fit narrow screens). */}
         <div className="flex w-full flex-col items-center gap-6 sm:hidden">
           <div className="relative aspect-[493/385] w-full max-w-[420px] overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element -- remote Figma MCP asset, not a local/optimizable file */}
             <img
               alt="GIA Illustration"
               className="absolute top-[-0.21%] left-[-11.56%] h-full w-[117.3%] max-w-none"
@@ -23,6 +24,7 @@ export default function Story(): React.ReactElement {
         {/* sm+ : original overlapping-text composition */}
         <div className="relative hidden shrink-0 [grid-template-columns:max-content] [grid-template-rows:max-content] place-items-start leading-[0] sm:inline-grid">
           <div className="relative [grid-column:1] [grid-row:1] h-[385px] w-[493px] overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element -- remote Figma MCP asset, not a local/optimizable file */}
             <img
               alt="GIA Illustration"
               className="absolute top-[-0.21%] left-[-11.56%] h-full w-[117.3%] max-w-none"
