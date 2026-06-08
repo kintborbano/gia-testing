@@ -100,8 +100,23 @@ export default function StickyHeader(): React.ReactElement {
   // not on every scroll frame.
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => subscribeScroll((y) => setScrolled(y > SCROLL_RANGE)), []);
+
+  // On the landing page a `<Link href="/">` click is a no-op (same route), so
+  // the logo neither scrolls up nor refreshes. Intercept it and force a full
+  // reload of '/', which lands at the top with fresh state. From any other page
+  // the Link routes home as usual.
+  const handleLogoClick = (
+    event: React.MouseEvent<HTMLAnchorElement>
+  ): void => {
+    setMenuOpen(false);
+    if (pathname === '/') {
+      event.preventDefault();
+      window.location.assign('/');
+    }
+  };
 
   // While the Features scroll-scene owns the top of the viewport, keep the
   // header hidden even when scrolling up — it only reappears in other sections.
@@ -149,7 +164,7 @@ export default function StickyHeader(): React.ReactElement {
         href="/"
         aria-label="Go to homepage"
         className="flex items-center gap-2 sm:gap-3"
-        onClick={() => setMenuOpen(false)}
+        onClick={handleLogoClick}
       >
         <GiaLogo className="mt-2 h-[34px] w-auto sm:h-[40px]" />
         <PoweredByPill size="sm" tone={inHow ? 'onDark' : 'default'} />
