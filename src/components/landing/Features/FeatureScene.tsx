@@ -228,8 +228,8 @@ export default function FeatureScene({
         >
           <ChibiLaptopScene
             ref={laptopHandleRef}
-            animated={explode}
-            onReady={handleFramesReady}
+            selfScrub={!explode}
+            onReady={explode ? handleFramesReady : undefined}
           />
         </div>
 
