@@ -2,12 +2,17 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Check } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import { scrollToHashTarget } from '@/lib/scroll/navScroll';
 
+// Hash entries are stored bare (no leading slash) so the same-page handler can
+// pass them straight to scrollToHashTarget; cross-page clicks get a '/' prefix
+// to route home first. Mirrors the convention in StickyHeader.
 const NAV_LINKS = [
-  { label: 'GIA IN ACTION', href: '/#bg-stop-action' },
-  { label: 'HOW GIA WORKS', href: '/#bg-stop-how' },
+  { label: 'GIA IN ACTION', href: '#bg-stop-action' },
+  { label: 'HOW GIA WORKS', href: '#bg-stop-how' },
   { label: 'PRICING', href: '/pricing' },
   { label: 'FAQs', href: '/faq' },
   { label: 'ABOUT US', href: '/about' },
@@ -21,6 +26,7 @@ const LEGAL_LINKS = [
 export default function Footer(): React.ReactElement {
   const [email, setEmail] = useState('');
   const [codeSent, setCodeSent] = useState(false);
+  const pathname = usePathname();
 
   // No backend yet — swallow the native submit (which was reloading the page
   // and jumping to the top) and just confirm the send in place. The email is
@@ -92,15 +98,42 @@ export default function Footer(): React.ReactElement {
             <p className="pb-3 font-sans text-[18px] font-bold tracking-[-0.09px]">
               Navigate
             </p>
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="font-sans text-[16px] leading-[1.45] font-medium tracking-[-0.08px] text-white/50 transition-colors hover:text-white"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const isHash = link.href.startsWith('#');
+              const linkClassName =
+                'font-sans text-[16px] leading-[1.45] font-medium tracking-[-0.08px] text-white/50 transition-colors hover:text-white';
+
+              // Same-page hash click: ease to the section via Lenis. Going
+              // through scrollToHashTarget (rather than letting the hash drive
+              // the scroll) means re-clicking an already-visited section still
+              // scrolls — the native hash is a no-op when it hasn't changed.
+              if (isHash && pathname === '/') {
+                return (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    onClick={(event) => {
+                      if (scrollToHashTarget(link.href)) event.preventDefault();
+                    }}
+                    className={linkClassName}
+                  >
+                    {link.label}
+                  </a>
+                );
+              }
+
+              // From another page a hash target must first route home.
+              const linkHref = isHash ? `/${link.href}` : link.href;
+              return (
+                <Link
+                  key={link.label}
+                  href={linkHref}
+                  className={linkClassName}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
