@@ -14,10 +14,12 @@ export default function CTA(): React.ReactElement {
 
         <div className="text-brand-primary flex w-full max-w-[603px] flex-col items-center justify-center gap-5 text-center sm:gap-6 md:min-w-0 md:flex-1 md:items-start md:gap-7 md:text-left">
           <h2 className="font-itc-garamond w-full max-w-[574px] text-[40px] leading-[1.1] tracking-[-1px] text-[#151515] sm:text-[52px] md:text-[64px]">
-            ready to know what your{' '}
+            ready to know what <br className="md:hidden" />
+            your{' '}
             <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
               audience
             </span>{' '}
+            <br className="md:hidden" />
             <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
               actually
             </span>{' '}

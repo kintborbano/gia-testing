@@ -7,7 +7,7 @@ import Action from './Action';
 
 function Headline(): React.ReactElement {
   return (
-    <div className="flex flex-col items-center gap-8 text-center text-black sm:gap-11 md:gap-14">
+    <div className="flex flex-col items-center gap-8 py-12 text-center text-black sm:gap-11 md:gap-14 md:py-0">
       <p className="font-sans text-[16px] font-semibold tracking-[-0.09px] md:text-[18px]">
         MEET GIA
       </p>
@@ -19,23 +19,31 @@ function Headline(): React.ReactElement {
         <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
           strategist
         </span>
-        . part{' '}
+        . <br className="md:hidden" />
+        part{' '}
         <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
           analyst
         </span>
         .
         <br />
-        part brutally{' '}
+        part brutally <br className="md:hidden" />
         <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
           honest
         </span>{' '}
         friend.
       </h2>
+      {/* Phone view splits this into two stacked paragraphs; md+ reflows the
+          two spans back into one continuous paragraph (the layout also swaps to
+          the desktop scene at md). */}
       <p className="w-full max-w-[700px] font-sans text-[16px] leading-[1.3] font-normal tracking-[-0.12px] text-[#151515] md:text-[20px] md:leading-[1.25]">
-        GIA reviews your TikTok account video by video, comment by comment, then
-        turns everything into a personalized growth report. No generic AI
-        prompts. No recycled creator advice. Just insights pulled directly from
-        your audience.
+        <span className="block md:inline">
+          GIA reviews your TikTok account video by video, comment by comment,
+          then turns everything into a personalized growth report.
+        </span>{' '}
+        <span className="mt-4 block md:mt-0 md:inline">
+          No generic AI prompts. No recycled creator advice. Just insights
+          pulled directly from your audience.
+        </span>
       </p>
     </div>
   );

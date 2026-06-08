@@ -93,7 +93,7 @@ canvas {
   row-gap: 2rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-areas:
+    'laptop  laptop  laptop'
     'hook    perf    score'
-    'comment roadmap story'
-    'laptop  laptop  laptop';
+    'comment roadmap story';
 }
