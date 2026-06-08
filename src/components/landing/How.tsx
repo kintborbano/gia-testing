@@ -21,7 +21,12 @@ const steps = [
   },
   {
     number: 3,
-    title: 'report arrives in 24 hours',
+    // Phone view splits this longer title onto two rows; md+ keeps one line.
+    title: (
+      <>
+        report arrives in <br className="md:hidden" />a few minutes
+      </>
+    ),
     description:
       'Receive your personalized report with recommendations, content roadmap, and audience insights.',
     descriptionWidth: 468,
@@ -81,7 +86,7 @@ function StepCard({
         height={420}
         className="size-[65px] shrink-0"
       />
-      <p className="font-young-serif text-text text-center text-[31px] tracking-[-1.5px]">
+      <p className="font-young-serif text-text text-center text-[27px] tracking-[-1.5px] md:text-[31px]">
         {step.title}
       </p>
       <p

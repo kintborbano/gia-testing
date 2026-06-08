@@ -36,8 +36,8 @@ export default function Hero(): React.ReactElement {
             your{' '}
             <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
               tiktok
-            </span>{' '}
-            finally has
+            </span>
+            <br className="sm:hidden" /> finally has
             <br />
             someone watching
             <span aria-hidden="true">
@@ -46,15 +46,19 @@ export default function Hero(): React.ReactElement {
             </span>
           </h1>
           <p className="font-sans text-[16px] leading-[1.3] font-normal tracking-[-0.12px] text-[#151515] sm:text-[18px] md:text-[20px] md:leading-[1.25]">
-            GIA watches your content, reads your comments,
-            <br />
-            studies your patterns, and tells you exactly what to post next.
+            GIA watches your content, reads your
+            <br className="sm:hidden" /> comments,
+            <br className="hidden sm:inline" /> studies your patterns, and tells
+            <br className="sm:hidden" /> you exactly what to post next.
           </p>
 
           {/* Design calls for Instrument Sans Bold (700); only 400/600 are loaded — falls back to 600 */}
-          <div className="flex w-auto flex-row items-center justify-center gap-4 sm:gap-[34px]">
+          <div className="flex w-auto flex-col items-center justify-center gap-7 sm:flex-row sm:gap-[34px]">
             <AnalyzeTiktokButton />
-            <SeeHowItWorksButton onClick={scrollToHow} />
+            <SeeHowItWorksButton
+              onClick={scrollToHow}
+              className="inline-block"
+            />
           </div>
         </div>
       </div>
