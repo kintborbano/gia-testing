@@ -8,9 +8,17 @@ import { getLenisSnapshot } from '@/stores/lenisStore';
  *
  * features-section is a ~260vh sticky scroll-scrub; landing at its very top
  * shows the unflattering first frame, so nudge past it by part of a viewport.
+ *
+ * The Action/How header palettes snap (fade: 0) exactly at each section's top.
+ * A click that eases to rest right on that seam can settle a hair short, leaving
+ * the sticky header on the previous (upward) section's color — it reads as the
+ * header not matching the section. Land a sliver past the seam so the flip has
+ * committed by the time the scroll stops.
  */
 export const HASH_SCROLL_OFFSET_VH: Record<string, number> = {
   'features-section': 1.6,
+  'bg-stop-action': 0.05,
+  'bg-stop-how': 0.05,
 };
 
 /**
