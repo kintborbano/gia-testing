@@ -197,6 +197,14 @@ export default function AnalyzeForm(): ReactElement {
     router.push(`/report/${handle}`);
   };
 
+  // Every required field satisfied — gates the submit button's disabled state.
+  const canSubmit =
+    isValidEmail(email) &&
+    getReportHandle(tiktok) !== null &&
+    accountType !== '' &&
+    goal !== '' &&
+    agreed;
+
   return (
     <main
       className="flex w-full flex-1 flex-col"
@@ -365,27 +373,37 @@ export default function AnalyzeForm(): ReactElement {
             <h2 className="font-sans text-[28px] leading-[1.1] font-bold tracking-[-0.6px] text-white md:text-[32px]">
               Continue to checkout
             </h2>
-            <FieldLabel label="CONSENT" required onBrand align="left" />
-            <label className="mx-auto flex w-fit cursor-pointer items-start gap-5 text-left">
-              <input
-                type="checkbox"
-                name="consent"
-                required
-                checked={agreed}
-                onChange={(event) => {
-                  setAgreed(event.target.checked);
-                  clearError('consent');
-                }}
-                className="mt-0.5 size-[18px] shrink-0 accent-white"
-              />
-              <span className="max-w-[600px] font-sans text-[15px] leading-[1.5] font-medium tracking-[-0.075px] text-white">
-                By continuing, you agree that GIA will analyze publicly
-                available TikTok content and engagement data to generate your
-                personalized report.
-              </span>
-            </label>
-            <FieldError message={errors.consent} onBrand />
-            <Button type="submit" variant="onBrand" size="default" withArrow>
+            {/* Header, checkbox and error share one centered, content-width
+                column so the header's left edge lines up with the checkbox. */}
+            <div className="mx-auto flex w-fit flex-col items-start gap-3">
+              <FieldLabel label="CONSENT" required onBrand align="left" />
+              <label className="flex cursor-pointer items-start gap-5 text-left">
+                <input
+                  type="checkbox"
+                  name="consent"
+                  required
+                  checked={agreed}
+                  onChange={(event) => {
+                    setAgreed(event.target.checked);
+                    clearError('consent');
+                  }}
+                  className="mt-0.5 size-[18px] shrink-0 accent-white"
+                />
+                <span className="max-w-[600px] font-sans text-[15px] leading-[1.5] font-medium tracking-[-0.075px] text-white">
+                  By continuing, you agree that GIA will analyze publicly
+                  available TikTok content and engagement data to generate your
+                  personalized report.
+                </span>
+              </label>
+              <FieldError message={errors.consent} onBrand />
+            </div>
+            <Button
+              type="submit"
+              variant="onBrand"
+              size="default"
+              withArrow
+              disabled={!canSubmit}
+            >
               CONTINUE
             </Button>
           </section>
