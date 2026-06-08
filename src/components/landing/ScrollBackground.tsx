@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { setPageColors } from '@/stores/pageBackgroundStore';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
 import {
@@ -46,20 +46,42 @@ function resolveColor(color: ScrollStop['color']): Rgb {
   ];
 }
 
-// Resolve the palette once — the config is static.
-const RGB_STOPS: Rgb[] = STOPS.map((s) => resolveColor(s.color));
-const RGB_FG_STOPS: Rgb[] = STOPS.map((s) =>
-  resolveColor(s.foreground ?? DEFAULT_FOREGROUND)
-);
-// The real page background follows only the leading stops (hero → features);
-// past them it holds the last painted color (cream) while the header keeps
-// adopting later sections from the store. A segment `i` blends stops i and i+1,
-// so the last real-bg segment is the one ending on the last real-bg stop.
-const LAST_REAL_BG_SEG = REAL_BG_STOP_COUNT - 2;
-const REAL_BG_HOLD = toRgb(RGB_STOPS[REAL_BG_STOP_COUNT - 1]);
+interface Props {
+  /**
+   * Color stops in page order. Defaults to the landing-page config. Pass a
+   * custom list to reuse the exact same scroll-driven transition elsewhere
+   * (e.g. the form's white→cream, which mirrors the landing's first segment).
+   */
+  stops?: ScrollStop[];
+  /**
+   * How many leading stops paint the REAL page background (the rest only retint
+   * the header). Defaults to the landing config — also correct for a 2-stop
+   * white→cream list, where both stops paint the background.
+   */
+  realBgStopCount?: number;
+}
 
-export default function ScrollBackground(): React.ReactElement {
+export default function ScrollBackground({
+  stops = STOPS,
+  realBgStopCount = REAL_BG_STOP_COUNT,
+}: Props = {}): React.ReactElement {
   const bgRef = useRef<HTMLDivElement>(null);
+
+  // Resolve the palette from the stops. A segment `i` blends stops i and i+1, so
+  // the last real-bg segment is the one ending on the last real-bg stop; past it
+  // the real background holds the last painted color while the header keeps
+  // adopting later sections from the store.
+  const { rgbStops, rgbFgStops, lastRealBgSeg, realBgHold } = useMemo(() => {
+    const resolved = stops.map((s) => resolveColor(s.color));
+    return {
+      rgbStops: resolved,
+      rgbFgStops: stops.map((s) =>
+        resolveColor(s.foreground ?? DEFAULT_FOREGROUND)
+      ),
+      lastRealBgSeg: realBgStopCount - 2,
+      realBgHold: toRgb(resolved[realBgStopCount - 1]),
+    };
+  }, [stops, realBgStopCount]);
 
   useEffect(() => {
     // Compute every stop's trigger scroll position fresh on each frame. Doing
@@ -70,7 +92,7 @@ export default function ScrollBackground(): React.ReactElement {
     const measure = (): number[] => {
       const vh = window.innerHeight;
       const y = window.scrollY;
-      return STOPS.map((stop) => {
+      return stops.map((stop) => {
         const el = document.getElementById(stop.anchorId);
         if (!el) return Number.NaN;
         const rect = el.getBoundingClientRect();
@@ -100,7 +122,7 @@ export default function ScrollBackground(): React.ReactElement {
 
       // The store drives the HEADER palette (background + foreground) and uses
       // every stop. The fixed div paints the REAL page background, which only
-      // follows the leading hero→features transition and then holds cream.
+      // follows the leading stops and then holds the last painted color.
       const publish = (headerBg: string, headerFg: string, realBg: string) => {
         // Paint the fixed div imperatively so the background color tween never
         // triggers a React render of this component each frame.
@@ -111,7 +133,7 @@ export default function ScrollBackground(): React.ReactElement {
       if (segIndex === -1) {
         for (let i = positions.length - 1; i >= 0; i--) {
           if (Number.isFinite(positions[i])) {
-            publish(toRgb(RGB_STOPS[i]), toRgb(RGB_FG_STOPS[i]), REAL_BG_HOLD);
+            publish(toRgb(rgbStops[i]), toRgb(rgbFgStops[i]), realBgHold);
             return;
           }
         }
@@ -121,7 +143,7 @@ export default function ScrollBackground(): React.ReactElement {
       const start = positions[segIndex];
       const end = positions[segIndex + 1];
       const gap = end - start;
-      const destStop = STOPS[segIndex + 1];
+      const destStop = stops[segIndex + 1];
 
       // `fade` (on the destination stop) sets what fraction of the gap the
       // transition occupies, ending exactly at the destination. fade = 1 fades
@@ -132,10 +154,10 @@ export default function ScrollBackground(): React.ReactElement {
       const t =
         fadeRange > 0 ? clamp01((y - fadeStart) / fadeRange) : y >= end ? 1 : 0;
 
-      const a = RGB_STOPS[segIndex];
-      const b = RGB_STOPS[segIndex + 1];
-      const fa = RGB_FG_STOPS[segIndex];
-      const fb = RGB_FG_STOPS[segIndex + 1];
+      const a = rgbStops[segIndex];
+      const b = rgbStops[segIndex + 1];
+      const fa = rgbFgStops[segIndex];
+      const fb = rgbFgStops[segIndex + 1];
       const headerBg = toRgb([
         lerp(a[0], b[0], t),
         lerp(a[1], b[1], t),
@@ -147,17 +169,17 @@ export default function ScrollBackground(): React.ReactElement {
         lerp(fa[2], fb[2], t),
       ]);
 
-      // In the leading hero→features segment the real background tracks the
-      // header (white→cream); past it, hold cream.
-      const realBg = segIndex <= LAST_REAL_BG_SEG ? headerBg : REAL_BG_HOLD;
+      // In a leading segment the real background tracks the header; past the
+      // last real-bg segment, hold the last painted color.
+      const realBg = segIndex <= lastRealBgSeg ? headerBg : realBgHold;
 
       publish(headerBg, headerFg, realBg);
     };
 
     // The shared ticker fires once immediately and then on every scroll/resize
-    // frame, in sync with Lenis.
+    // frame, in sync with Lenis (or native scroll where Lenis isn't mounted).
     return subscribeScroll(update);
-  }, []);
+  }, [stops, rgbStops, rgbFgStops, lastRealBgSeg, realBgHold]);
 
   return (
     <div
@@ -167,7 +189,7 @@ export default function ScrollBackground(): React.ReactElement {
         position: 'fixed',
         inset: 0,
         zIndex: -1,
-        backgroundColor: toRgb(RGB_STOPS[0]),
+        backgroundColor: toRgb(rgbStops[0]),
       }}
     />
   );

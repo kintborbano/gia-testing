@@ -51,6 +51,24 @@
   }
 }
 
+/* ── Page-transition overlay ────────────────────────────────────────────────
+   Full-screen loader panel that survives client-side navigation (mounted in the
+   root layout via PageTransitionProvider). Same stacked-document model as the
+   intro: the panel and the page wrapper translate together so they read as one
+   connected document — on cover the page slides up while this rises from below;
+   on reveal this slides off the top while the next page rises into place. The
+   transform is driven by the Web Animations API. Shares the intro's top
+   z-index — the two never run at the same time. */
+.page-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+}
+
 /* ── Page keyframes ─────────────────────────────────────────────────────── */
 
 @keyframes chibi-float {

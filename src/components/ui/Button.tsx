@@ -1,18 +1,22 @@
+'use client';
+
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactElement, ReactNode } from 'react';
+import { usePageTransition } from '@/components/transition/PageTransitionProvider';
 
 export type ButtonVariant =
   | 'filled'
   | 'filledStatic'
   | 'outlined'
   | 'onBrand'
+  | 'whiteStatic'
   | 'adaptive';
 export type ButtonSize = 'sm' | 'default' | 'lg';
 
 type BaseProps = {
   children: ReactNode;
-  /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. `onBrand` = white fill with brand text for use on a brand-colored surface; warms to cream on hover so it never blends in. `adaptive` = fills with the live `--page-fg`/`--page-bg` CSS vars so it tracks the section palette (used in the sticky header); inverts on hover. */
+  /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. `onBrand` = white fill with brand text for use on a brand-colored surface; warms to cream on hover so it never blends in. `whiteStatic` = white fill, black border and text, no color change on hover (only the arrow moves). `adaptive` = fills with the live `--page-fg`/`--page-bg` CSS vars so it tracks the section palette (used in the sticky header); inverts on hover. */
   variant?: ButtonVariant;
   /** sm 38px/13px · default 48px/14px · lg 60px/16px. */
   size?: ButtonSize;
@@ -20,6 +24,11 @@ type BaseProps = {
   withArrow?: boolean;
   /** Extra classes (e.g. a fixed `w-[...]`) merged after the defaults. */
   className?: string;
+  /**
+   * For internal `href`s: play the loop page-transition overlay on click
+   * instead of navigating instantly. No effect on external/hash links.
+   */
+  transition?: boolean;
 };
 
 type ButtonAsLink = BaseProps & {
@@ -59,6 +68,7 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
     'border-brand-primary bg-white text-brand-primary hover:bg-brand-primary hover:text-white',
   onBrand:
     'border-white bg-white text-brand-primary hover:border-black hover:bg-black hover:text-white',
+  whiteStatic: 'border-black bg-white text-black',
   adaptive:
     'border-[color:var(--page-fg)] bg-[color:var(--page-fg)] text-[color:var(--page-bg)] hover:bg-[color:var(--page-bg)] hover:text-[color:var(--page-fg)]',
 };
@@ -74,7 +84,9 @@ export default function Button(props: ButtonProps): ReactElement {
     size = 'default',
     withArrow = false,
     className = '',
+    transition = false,
   } = props;
+  const { navigate } = usePageTransition();
 
   const classes = `${BASE} ${SIZE_CLASSES[size]} ${VARIANT_CLASSES[variant]} ${className}`;
 
@@ -96,7 +108,20 @@ export default function Button(props: ButtonProps): ReactElement {
     // and same-page hash anchors fall back to a plain anchor.
     if (href.startsWith('/')) {
       return (
-        <Link href={href} className={classes}>
+        <Link
+          href={href}
+          className={classes}
+          // onNavigate only fires on same-origin SPA navigation, so prefetch
+          // and modifier-click (open-in-new-tab) keep working untouched.
+          onNavigate={
+            transition
+              ? (e) => {
+                  e.preventDefault();
+                  navigate(href);
+                }
+              : undefined
+          }
+        >
           {content}
         </Link>
       );

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+import PageTransitionProvider from '@/components/transition/PageTransitionProvider';
 import '@/styles/globals.css';
 import '@/animations/keyframes.css';
 
@@ -75,7 +76,9 @@ export default function RootLayout({
       lang="en"
       className={`${instrumentSans.variable} ${youngSerif.variable} ${itcGaramond.variable} ${itcGaramondNarrowItalic.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <PageTransitionProvider>{children}</PageTransitionProvider>
+      </body>
     </html>
   );
 }

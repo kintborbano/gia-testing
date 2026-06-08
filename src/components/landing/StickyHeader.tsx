@@ -4,10 +4,11 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type { CSSProperties } from 'react';
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useInSection } from '@/hooks/useInSection';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
-import { getLenisSnapshot } from '@/stores/lenisStore';
+import { scrollToHashTarget } from '@/lib/scroll/navScroll';
 import {
   HEADER_HEIGHT_LARGE,
   HEIGHT_SMALL,
@@ -21,18 +22,18 @@ import {
 import GiaLogo from '@/components/ui/GiaLogo';
 import PoweredByPill from '@/components/ui/PoweredByPill';
 import Button from '@/components/ui/Button';
+import { usePageTransition } from '@/components/transition/PageTransitionProvider';
 
 type NavLink = {
   label: string;
+  // A leading-hash href (e.g. '#features-section') targets a section on the
+  // landing page: it scrolls in place when already on '/', and routes home
+  // first (then scrolls on arrival) from any other page.
   href: string;
-  /** Extra distance past a hash target to land on, in viewport heights. */
-  scrollOffsetVh?: number;
 };
 
 const NAV_LINKS: readonly NavLink[] = [
-  // features-section is a ~260vh sticky scroll-scrub; landing at its very top
-  // shows the unflattering first frame, so nudge past it by part of a viewport.
-  { label: 'PRODUCT', href: '#features-section', scrollOffsetVh: 1.6 },
+  { label: 'PRODUCT', href: '#features-section' },
   { label: 'PRICING', href: '/pricing' },
   { label: 'FAQs', href: '/faq' },
   { label: 'ABOUT US', href: '/about' },
@@ -43,51 +44,50 @@ const NAV_LINKS: readonly NavLink[] = [
 const linkClassName =
   'font-sans text-[14px] font-medium tracking-[0.5px] hover:font-bold';
 
-// One nav entry — a hash target stays a plain <a> (same-page anchor); a route
-// uses next/link. Shared by the desktop and mobile menus.
+// One nav entry. A hash target points at a landing-page section: on '/' it
+// scrolls in place through Lenis (eased like the Hero's "see how it works"
+// link — a native anchor jump bypasses Lenis and hard-cuts); from any other
+// page it routes to '/<hash>' so the landing page scrolls there on arrival.
+// Plain routes use next/link. Shared by the desktop and mobile menus.
 function NavItem({
   href,
   label,
   className = '',
-  scrollOffsetVh = 0,
   onClick,
 }: {
   href: string;
   label: string;
   className?: string;
-  /** Extra distance past the target to land on, in viewport heights. */
-  scrollOffsetVh?: number;
   onClick?: () => void;
 }): React.ReactElement {
+  const pathname = usePathname();
   const classes = `${linkClassName} ${className}`.trim();
+  const isHash = href.startsWith('#');
+  const onLanding = pathname === '/';
 
-  // For hash targets, scroll through Lenis so the jump eases like the Hero's
-  // "see how it works" link — a native anchor jump bypasses Lenis and hard-cuts.
+  // Same-page hash click: ease to the section via Lenis instead of jumping.
   const handleHashClick = (
     event: React.MouseEvent<HTMLAnchorElement>
   ): void => {
-    const target = document.getElementById(href.slice(1));
-    if (target) {
+    if (scrollToHashTarget(href)) {
       event.preventDefault();
-      const offset = scrollOffsetVh * window.innerHeight;
-      const lenis = getLenisSnapshot();
-      if (lenis) {
-        lenis.scrollTo(target, { offset });
-      } else {
-        const top =
-          target.getBoundingClientRect().top + window.scrollY + offset;
-        window.scrollTo({ top, behavior: 'smooth' });
-      }
     }
     onClick?.();
   };
 
-  return href.startsWith('#') ? (
-    <a href={href} className={classes} onClick={handleHashClick}>
-      {label}
-    </a>
-  ) : (
-    <Link href={href} className={classes} onClick={onClick}>
+  if (isHash && onLanding) {
+    return (
+      <a href={href} className={classes} onClick={handleHashClick}>
+        {label}
+      </a>
+    );
+  }
+
+  // From another page a hash target must first route home; everywhere else is
+  // a plain route. `/${'#features-section'}` → '/#features-section'.
+  const linkHref = isHash ? `/${href}` : href;
+  return (
+    <Link href={linkHref} className={classes} onClick={onClick}>
       {label}
     </Link>
   );
@@ -109,8 +109,13 @@ export default function StickyHeader(): React.ReactElement {
   // The How section is black with gold accents — switch the SOFI pill to its
   // dark/gold tone only while the header sits over it.
   const inHow = useInSection('bg-stop-how');
+  // Stay hidden for the whole page transition, then slide in once it ends: when
+  // `active` flips false the header eases from translateY(-100%) back to 0 (its
+  // existing 350ms transform transition), so it appears after the swipe settles.
+  const { active: transitioning } = usePageTransition();
   // Keep the header visible while the mobile menu is open.
-  const hidden = (useScrollDirection() || inFeatures) && !menuOpen;
+  const hidden =
+    ((useScrollDirection() || inFeatures) && !menuOpen) || transitioning;
   const { background: pageBg, foreground: pageFg } = useSyncExternalStore(
     subscribeToPageColors,
     getPageColorsSnapshot,
@@ -152,15 +157,10 @@ export default function StickyHeader(): React.ReactElement {
 
       {/* Desktop nav */}
       <nav className="hidden items-center gap-8 md:flex">
-        {NAV_LINKS.map(({ label, href, scrollOffsetVh }) => (
-          <NavItem
-            key={label}
-            href={href}
-            label={label}
-            scrollOffsetVh={scrollOffsetVh}
-          />
+        {NAV_LINKS.map(({ label, href }) => (
+          <NavItem key={label} href={href} label={label} />
         ))}
-        <Button href="/form" variant="adaptive" size="default">
+        <Button href="/form" variant="adaptive" size="default" transition>
           ANALYZE MY TIKTOK
         </Button>
       </nav>
@@ -182,13 +182,12 @@ export default function StickyHeader(): React.ReactElement {
           className="absolute inset-x-0 top-full flex flex-col gap-1 border-b border-black/10 px-5 pt-2 pb-6 shadow-lg sm:px-6 md:hidden"
           style={{ background: pageBg }}
         >
-          {NAV_LINKS.map(({ label, href, scrollOffsetVh }) => (
+          {NAV_LINKS.map(({ label, href }) => (
             <NavItem
               key={label}
               href={href}
               label={label}
               className="py-3"
-              scrollOffsetVh={scrollOffsetVh}
               onClick={() => setMenuOpen(false)}
             />
           ))}
@@ -196,6 +195,7 @@ export default function StickyHeader(): React.ReactElement {
             href="/form"
             variant="adaptive"
             size="default"
+            transition
             className="mt-3 w-full"
           >
             ANALYZE MY TIKTOK
