@@ -50,8 +50,43 @@ function getReportHandle(value: string): string {
     .split(/[/?]/)[0];
 }
 
+/** Loose email shape check — enough to catch an empty/obviously wrong entry. */
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+/** Per-field validation messages, keyed by the field they belong to. */
+type FormErrors = {
+  email?: string;
+  tiktok?: string;
+  accountType?: string;
+  goal?: string;
+  consent?: string;
+};
+
 const INPUT_CLASSES =
   'h-[44px] w-full max-w-[459px] rounded-[25px] border border-brand-primary bg-white px-7 font-sans text-[15px] tracking-[-0.3px] text-brand-primary outline-none transition-shadow duration-200 placeholder:text-brand-primary/50 focus:ring-2 focus:ring-brand-primary/30';
+
+/** Inline validation message shown beneath a field. */
+function FieldError({
+  message,
+  onBrand = false,
+}: {
+  message?: string;
+  onBrand?: boolean;
+}): ReactElement | null {
+  if (!message) return null;
+  return (
+    <p
+      role="alert"
+      className={`font-sans text-[13px] ${
+        onBrand ? 'text-white' : 'text-brand-primary'
+      }`}
+    >
+      {message}
+    </p>
+  );
+}
 
 function FieldLabel({
   label,
@@ -86,16 +121,48 @@ export default function AnalyzeForm(): ReactElement {
   const [goal, setGoal] = useState<string>('');
   const [focus, setFocus] = useState('');
   const [agreed, setAgreed] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  /** Drop a single field's error once the user starts correcting it. */
+  const clearError = (field: keyof FormErrors): void => {
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     const handle = getReportHandle(tiktok);
+    const nextErrors: FormErrors = {};
+
+    if (!email.trim()) {
+      nextErrors.email = 'Enter the email where we should send your report.';
+    } else if (!isValidEmail(email)) {
+      nextErrors.email = 'Enter a valid email address.';
+    }
     if (!handle) {
-      setError('Paste the TikTok account you want GIA to analyze.');
+      nextErrors.tiktok = 'Paste the TikTok account you want GIA to analyze.';
+    }
+    if (!accountType) {
+      nextErrors.accountType =
+        "Let us know if this is your account or one you're browsing.";
+    }
+    if (!goal) {
+      nextErrors.goal = 'Pick what you’re hoping to achieve.';
+    }
+    if (!agreed) {
+      nextErrors.consent = 'Please agree before continuing.';
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
       return;
     }
-    setError('');
+
+    setErrors({});
     router.push(`/report/${handle}`);
   };
 
@@ -151,9 +218,13 @@ export default function AnalyzeForm(): ReactElement {
               autoComplete="email"
               placeholder="username@mail.com"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                clearError('email');
+              }}
               className={INPUT_CLASSES}
             />
+            <FieldError message={errors.email} />
           </div>
 
           {/* TikTok profile link */}
@@ -169,15 +240,11 @@ export default function AnalyzeForm(): ReactElement {
               value={tiktok}
               onChange={(event) => {
                 setTiktok(event.target.value);
-                if (error) setError('');
+                clearError('tiktok');
               }}
               className={INPUT_CLASSES}
             />
-            {error && (
-              <p className="text-brand-primary font-sans text-[13px]">
-                {error}
-              </p>
-            )}
+            <FieldError message={errors.tiktok} />
 
             <fieldset className="mt-4 flex flex-wrap items-start justify-center gap-x-12 gap-y-4">
               {ACCOUNT_TYPES.map(({ value, description }) => (
@@ -190,7 +257,10 @@ export default function AnalyzeForm(): ReactElement {
                     name="accountType"
                     value={value}
                     checked={accountType === value}
-                    onChange={() => setAccountType(value)}
+                    onChange={() => {
+                      setAccountType(value);
+                      clearError('accountType');
+                    }}
                     className="accent-brand-primary mt-0.5 size-[18px] shrink-0"
                   />
                   <span className="flex flex-col gap-1 text-left">
@@ -204,6 +274,7 @@ export default function AnalyzeForm(): ReactElement {
                 </label>
               ))}
             </fieldset>
+            <FieldError message={errors.accountType} />
           </div>
 
           {/* Goal */}
@@ -220,7 +291,10 @@ export default function AnalyzeForm(): ReactElement {
                     name="goal"
                     value={value}
                     checked={goal === value}
-                    onChange={() => setGoal(value)}
+                    onChange={() => {
+                      setGoal(value);
+                      clearError('goal');
+                    }}
                     className="accent-brand-primary size-[18px] shrink-0"
                   />
                   <span className="text-brand-primary font-sans text-[14px] font-medium tracking-[-0.07px]">
@@ -229,6 +303,7 @@ export default function AnalyzeForm(): ReactElement {
                 </label>
               ))}
             </fieldset>
+            <FieldError message={errors.goal} />
           </div>
 
           {/* Optional focus */}
@@ -254,7 +329,10 @@ export default function AnalyzeForm(): ReactElement {
                 type="checkbox"
                 name="consent"
                 checked={agreed}
-                onChange={(event) => setAgreed(event.target.checked)}
+                onChange={(event) => {
+                  setAgreed(event.target.checked);
+                  clearError('consent');
+                }}
                 className="mt-0.5 size-[18px] shrink-0 accent-white"
               />
               <span className="max-w-[600px] font-sans text-[15px] leading-[1.5] font-medium tracking-[-0.075px] text-white">
@@ -263,6 +341,7 @@ export default function AnalyzeForm(): ReactElement {
                 personalized report.
               </span>
             </label>
+            <FieldError message={errors.consent} onBrand />
             <Button type="submit" variant="onBrand" size="default" withArrow>
               CONTINUE
             </Button>
