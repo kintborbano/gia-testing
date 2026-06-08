@@ -6,6 +6,13 @@ export const metadata: Metadata = {
   description: 'GIA is analyzing the TikTok account you submitted.',
 };
 
-export default function LoadingPage(): React.ReactElement {
-  return <LoadingScreen />;
+interface LoadingPageProps {
+  searchParams: Promise<{ handle?: string }>;
+}
+
+export default async function LoadingPage({
+  searchParams,
+}: LoadingPageProps): Promise<React.ReactElement> {
+  const { handle } = await searchParams;
+  return <LoadingScreen handle={handle} />;
 }

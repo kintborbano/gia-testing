@@ -74,8 +74,9 @@
    recedes inside its cream track on a loop (alternating, so it never snaps).
    Hard edges, no gradient, to match the minimalist theme. */
 .loading-progress {
-  animation: loading-progress 2s cubic-bezier(0.65, 0, 0.35, 1) infinite
-    alternate;
+  /* Fills once and locks at the top — completion flips the screen to its
+     "done" state (LoadingScreen listens for animationend). */
+  animation: loading-progress 3.6s cubic-bezier(0.65, 0, 0.35, 1) forwards;
 }
 @keyframes loading-progress {
   /* The fill grows 12% → 100% while its colour warms from gold (#c9920a) to
