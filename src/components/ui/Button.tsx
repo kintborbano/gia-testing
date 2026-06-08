@@ -29,6 +29,8 @@ type BaseProps = {
    * instead of navigating instantly. No effect on external/hash links.
    */
   transition?: boolean;
+  /** Greys the button out and blocks all interaction (the `disabled` state). */
+  disabled?: boolean;
 };
 
 type ButtonAsLink = BaseProps & {
@@ -45,8 +47,13 @@ type ButtonAsButton = BaseProps & {
 
 export type ButtonProps = ButtonAsLink | ButtonAsButton;
 
+// `default` is the base appearance, `hover:` lives on each variant, and the
+// shared `active:` (pressed) feedback nudges the button down a touch.
 const BASE =
-  'group inline-flex shrink-0 items-center justify-center border font-sans font-bold tracking-[-0.02em] transition-[background-color,color,box-shadow] duration-200 ease-out';
+  'group inline-flex shrink-0 items-center justify-center border font-sans font-bold tracking-[-0.02em] transition-[background-color,color,box-shadow,transform] duration-200 ease-out active:scale-[0.97]';
+
+/** The `disabled` state: dimmed and inert (no hover/press/click). */
+const DISABLED = 'pointer-events-none opacity-50';
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
   sm: 'h-[38px] gap-2 rounded-[25px] px-5 text-[13px]',
@@ -75,7 +82,8 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
 
 /**
  * The single source of truth for buttons across the site. Renders an anchor
- * when given `href`, otherwise a `<button>`.
+ * when given `href`, otherwise a `<button>`. Supports four states: `default`,
+ * `hover` (per variant), `pressed` (shared `active:` scale) and `disabled`.
  */
 export default function Button(props: ButtonProps): ReactElement {
   const {
@@ -85,10 +93,13 @@ export default function Button(props: ButtonProps): ReactElement {
     withArrow = false,
     className = '',
     transition = false,
+    disabled = false,
   } = props;
   const { navigate } = usePageTransition();
 
-  const classes = `${BASE} ${SIZE_CLASSES[size]} ${VARIANT_CLASSES[variant]} ${className}`;
+  const classes = `${BASE} ${SIZE_CLASSES[size]} ${VARIANT_CLASSES[variant]} ${
+    disabled ? DISABLED : ''
+  } ${className}`;
 
   const content = (
     <>
@@ -104,6 +115,14 @@ export default function Button(props: ButtonProps): ReactElement {
 
   if ('href' in props && props.href) {
     const { href } = props;
+    // A disabled link has no valid target — render an inert, styled span.
+    if (disabled) {
+      return (
+        <span className={classes} aria-disabled="true">
+          {content}
+        </span>
+      );
+    }
     // Internal route → next/link for client-side nav + prefetch. External URLs
     // and same-page hash anchors fall back to a plain anchor.
     if (href.startsWith('/')) {
@@ -137,6 +156,7 @@ export default function Button(props: ButtonProps): ReactElement {
     <button
       type={props.type ?? 'button'}
       onClick={props.onClick}
+      disabled={disabled}
       className={classes}
     >
       {content}
