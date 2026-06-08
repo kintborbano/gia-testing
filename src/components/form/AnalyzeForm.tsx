@@ -103,21 +103,25 @@ function FieldLabel({
   helper,
   required = false,
   onBrand = false,
+  align = 'center',
 }: {
   label: string;
   helper?: string;
   required?: boolean;
   onBrand?: boolean;
+  align?: 'center' | 'left';
 }): ReactElement {
   const textColor = onBrand ? 'text-white' : 'text-brand-primary';
+  const alignment =
+    align === 'left' ? 'items-start text-left' : 'items-center text-center';
   return (
-    <div className="flex flex-col gap-1.5 text-center">
+    <div className={`flex w-full flex-col gap-1.5 ${alignment}`}>
       <p
         className={`font-sans text-[15px] font-bold tracking-[-0.075px] ${textColor}`}
       >
         {label}
         {required && (
-          <span aria-hidden="true" className="ml-0.5 font-normal text-red-500">
+          <span aria-hidden="true" className="ml-1.5 font-normal text-red-500">
             *
           </span>
         )}
@@ -361,7 +365,7 @@ export default function AnalyzeForm(): ReactElement {
             <h2 className="font-sans text-[28px] leading-[1.1] font-bold tracking-[-0.6px] text-white md:text-[32px]">
               Continue to checkout
             </h2>
-            <FieldLabel label="CONSENT" required onBrand />
+            <FieldLabel label="CONSENT" required onBrand align="left" />
             <label className="mx-auto flex w-fit cursor-pointer items-start gap-5 text-left">
               <input
                 type="checkbox"
