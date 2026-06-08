@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -10,13 +11,17 @@ import {
 import type { CSSProperties } from 'react';
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useInSection } from '@/hooks/useInSection';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
 import { scrollToHashTarget } from '@/lib/scroll/navScroll';
 import { startLenis, stopLenis } from '@/lib/scroll/lenisControls';
-import { FLOOD_DURATION, FLOOD_EASING } from '@/animations/introTiming';
+import {
+  EXIT_EASING,
+  FLOOD_DURATION,
+  FLOOD_EASING,
+} from '@/animations/introTiming';
 import {
   HEADER_HEIGHT_LARGE,
   HEIGHT_SMALL,
@@ -64,6 +69,26 @@ const linkClassName =
 const mobileLinkClassName =
   'font-sans text-[15px] font-bold tracking-[-0.075px] text-white transition-opacity hover:opacity-70';
 
+// Close choreography: the X spins away while the maroon flood drains (both start
+// together), then the bare header slides back in like the intro reveal. The
+// close starts from an exact screen-covering disc (no off-screen overshoot) and
+// retracts at a constant rate, so it begins on frame one and finishes cleanly —
+// no slow tail, no "wait". A touch quicker than the open so it feels snappy.
+const FLOOD_CLOSE_DURATION = 420;
+const HEADER_REENTRY_MS = 700;
+
+// Radius that guarantees a disc centred at (x, y) covers the whole viewport —
+// the distance from the origin to its farthest corner.
+function floodRadius(x: number, y: number): number {
+  const dx = Math.max(x, window.innerWidth - x);
+  const dy = Math.max(y, window.innerHeight - y);
+  return Math.hypot(dx, dy);
+}
+
+// Phases of the header's post-close re-entrance. `hidden` parks it off-screen
+// with no transition; `sliding` eases it back down; `idle` is normal behaviour.
+type HeaderEntry = 'idle' | 'hidden' | 'sliding';
+
 // One nav entry. A hash target points at a landing-page section: on '/' it
 // scrolls in place through Lenis (eased like the Hero's "see how it works"
 // link — a native anchor jump bypasses Lenis and hard-cuts); from any other
@@ -81,21 +106,26 @@ function NavItem({
   className?: string;
   /** Typography/color base; defaults to the desktop nav style. */
   baseClassName?: string;
-  onClick?: () => void;
+  /** Receives the click event; calling preventDefault takes over navigation
+   *  entirely (the mobile menu uses this to defer nav until it has closed). */
+  onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
 }): React.ReactElement {
   const pathname = usePathname();
   const classes = `${baseClassName} ${className}`.trim();
   const isHash = href.startsWith('#');
   const onLanding = pathname === '/';
 
-  // Same-page hash click: ease to the section via Lenis instead of jumping.
+  // Same-page hash click: let the handler run first — if it took over (the
+  // mobile menu defers nav until close), bail; otherwise ease to the section
+  // via Lenis instead of jumping.
   const handleHashClick = (
     event: React.MouseEvent<HTMLAnchorElement>
   ): void => {
+    onClick?.(event);
+    if (event.defaultPrevented) return;
     if (scrollToHashTarget(href)) {
       event.preventDefault();
     }
-    onClick?.();
   };
 
   if (isHash && onLanding) {
@@ -127,13 +157,57 @@ export default function StickyHeader(): React.ReactElement {
   // unmounts.
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuMounted, setMenuMounted] = useState(false);
+  // Drives the header's slide-back-in after the closing flood drains.
+  const [headerEntry, setHeaderEntry] = useState<HeaderEntry>('idle');
   const overlayRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  // A nav target captured from an overlay link, fired only once the close
+  // choreography (flood retract + header slide-in) has fully played out — so a
+  // cached/prefetched route can't swap the page out mid-animation.
+  const pendingNavRef = useRef<string | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
+  const { active: transitioning } = usePageTransition();
 
   // The overlay should look "active" (header transparent, logo hidden) for the
   // whole time it's on screen, including the closing flood.
   const overlayActive = menuOpen || menuMounted;
+  // The closing window: overlay still mounted but intent is closed — the beat
+  // during which the X spins away and the flood drains.
+  const closing = menuMounted && !menuOpen;
+
+  // Run the nav captured from an overlay link. Same-page hash → ease via Lenis;
+  // a route (or cross-page hash) → a plain client navigation, no special
+  // transition or loading screen. Stable identity so the re-entry effect's
+  // timeout isn't reset by re-renders.
+  const runPendingNav = useCallback((): void => {
+    const href = pendingNavRef.current;
+    if (!href) return;
+    pendingNavRef.current = null;
+    if (href.startsWith('#')) {
+      if (pathname === '/') {
+        scrollToHashTarget(href);
+      } else {
+        router.push(`/${href}`);
+      }
+    } else {
+      router.push(href);
+    }
+  }, [pathname, router]);
+
+  // Overlay link handler: swallow the click's own navigation, remember where it
+  // was headed, and start closing. `runPendingNav` fires when the close ends.
+  const deferNavigate =
+    (href: string) =>
+    (event: React.MouseEvent<HTMLAnchorElement>): void => {
+      // Leave modifier-clicks (open in new tab/window) to the browser.
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+      event.preventDefault();
+      pendingNavRef.current = href;
+      setMenuOpen(false);
+    };
 
   useEffect(() => subscribeScroll((y) => setScrolled(y > SCROLL_RANGE)), []);
 
@@ -143,6 +217,10 @@ export default function StickyHeader(): React.ReactElement {
     if (menuOpen) {
       setMenuOpen(false);
     } else {
+      // Re-opening: drop any nav queued by a previous close and cancel an
+      // in-flight re-entrance.
+      pendingNavRef.current = null;
+      setHeaderEntry('idle');
       setMenuMounted(true);
       setMenuOpen(true);
     }
@@ -160,26 +238,68 @@ export default function StickyHeader(): React.ReactElement {
     const x = rect.left + rect.width / 2;
     const y = rect.top + rect.height / 2;
     const hidden = `circle(0px at ${x}px ${y}px)`;
-    // A percentage radius is resolved against the viewport, so 200% always
-    // covers the screen — even after a resize — letting the animation simply
-    // hold its end frame (`fill: forwards`) with no cancel/handoff that could
-    // flash the page through for a frame.
-    const covered = `circle(200% at ${x}px ${y}px)`;
+    // Open: a 200% radius is resolved against the viewport, so it always covers
+    // the screen — even after a resize — letting the open hold its end frame
+    // (`fill: forwards`) with no cancel/handoff that could flash the page.
+    const openCover = `circle(200% at ${x}px ${y}px)`;
+    // Close: start from an exact screen-covering disc (no off-screen overshoot)
+    // so the retract is visible from frame one and tracks the X spin. Going from
+    // the held 200% to this slightly smaller disc is an invisible jump — both
+    // still cover the screen.
+    const closeCover = `circle(${floodRadius(x, y)}px at ${x}px ${y}px)`;
 
     const anim = overlay.animate(
       menuOpen
-        ? [{ clipPath: hidden }, { clipPath: covered }]
-        : [{ clipPath: covered }, { clipPath: hidden }],
-      { duration: FLOOD_DURATION, easing: FLOOD_EASING, fill: 'forwards' }
+        ? [{ clipPath: hidden }, { clipPath: openCover }]
+        : [{ clipPath: closeCover }, { clipPath: hidden }],
+      {
+        // The open bursts out (ease-out) and hides its slow tail off-screen. The
+        // close retracts on-screen the whole way, so it uses a constant rate over
+        // a shorter duration — it starts instantly with the X and finishes clean,
+        // with no slow tail to read as sluggish.
+        duration: menuOpen ? FLOOD_DURATION : FLOOD_CLOSE_DURATION,
+        easing: menuOpen ? FLOOD_EASING : 'linear',
+        fill: 'forwards',
+      }
     );
 
-    // On close, unmount once the disc has contracted back into the button.
+    // On close, once the disc has drained: unmount the overlay and hand off to
+    // the header re-entrance (parked off-screen, then it slides back in).
     if (!menuOpen) {
-      anim.finished.catch(() => {}).finally(() => setMenuMounted(false));
+      anim.finished
+        .catch(() => {})
+        .finally(() => {
+          setMenuMounted(false);
+          setHeaderEntry('hidden');
+        });
     }
 
     return () => anim.cancel();
   }, [menuOpen, menuMounted]);
+
+  // Header re-entrance after a close: park it off-screen (no transition), then
+  // on the next frame ease it back down — the intro's slide-in, replayed.
+  useEffect(() => {
+    if (headerEntry === 'hidden') {
+      let inner = 0;
+      const outer = requestAnimationFrame(() => {
+        inner = requestAnimationFrame(() => setHeaderEntry('sliding'));
+      });
+      return () => {
+        cancelAnimationFrame(outer);
+        cancelAnimationFrame(inner);
+      };
+    }
+    if (headerEntry === 'sliding') {
+      const id = window.setTimeout(() => {
+        setHeaderEntry('idle');
+        // The full close has now played out (flood drained + header slid down):
+        // safe to navigate to the link the user picked, if any.
+        runPendingNav();
+      }, HEADER_REENTRY_MS);
+      return () => window.clearTimeout(id);
+    }
+  }, [headerEntry, runPendingNav]);
 
   // While the overlay is on screen, freeze the page behind it: stop Lenis and
   // pin overflow so the brand overlay owns the viewport. Escape also closes it.
@@ -222,10 +342,10 @@ export default function StickyHeader(): React.ReactElement {
   // The How section is black with gold accents — switch the SOFI pill to its
   // dark/gold tone only while the header sits over it.
   const inHow = useInSection('bg-stop-how');
-  // Stay hidden for the whole page transition, then slide in once it ends: when
-  // `active` flips false the header eases from translateY(-100%) back to 0 (its
-  // existing 350ms transform transition), so it appears after the swipe settles.
-  const { active: transitioning } = usePageTransition();
+  // `transitioning` (from usePageTransition, read at the top): stay hidden for
+  // the whole page transition, then slide in once it ends — when `active` flips
+  // false the header eases from translateY(-100%) back to 0 (its existing 350ms
+  // transform transition), so it appears after the swipe settles.
   // Keep the header visible while the mobile overlay is on screen.
   const hidden =
     ((useScrollDirection() || inFeatures) && !overlayActive) || transitioning;
@@ -234,6 +354,18 @@ export default function StickyHeader(): React.ReactElement {
     getPageColorsSnapshot,
     getPageColorsServerSnapshot
   );
+
+  // The post-close re-entrance overrides the normal hidden/visible transform:
+  // `hidden` parks it up with no transform transition (so it snaps off-screen),
+  // `sliding` eases it back down with the intro easing.
+  const offscreen =
+    headerEntry === 'hidden' || (hidden && headerEntry !== 'sliding');
+  const transformTransition =
+    headerEntry === 'hidden'
+      ? 'transform 0ms'
+      : headerEntry === 'sliding'
+        ? `transform ${HEADER_REENTRY_MS}ms ${EXIT_EASING}`
+        : 'transform 350ms ease';
 
   const headerStyle = useMemo<CSSProperties>(
     () =>
@@ -247,12 +379,12 @@ export default function StickyHeader(): React.ReactElement {
         // Exposed to the adaptive CTA button so it tracks the section palette.
         '--page-bg': pageBg,
         '--page-fg': pageFg,
-        transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
+        transform: offscreen ? 'translateY(-100%)' : 'translateY(0)',
         // Background is intentionally not transitioned — it snaps at the dark
         // section seams (fade: 0) and is already eased per-frame for white→cream.
-        transition: 'height 250ms ease, transform 350ms ease',
+        transition: `height 250ms ease, ${transformTransition}`,
       }) as CSSProperties,
-    [scrolled, pageBg, pageFg, hidden, overlayActive]
+    [scrolled, pageBg, pageFg, offscreen, overlayActive, transformTransition]
   );
 
   return (
@@ -292,7 +424,12 @@ export default function StickyHeader(): React.ReactElement {
           onClick={toggleMenu}
           className="-mr-1 grid size-10 place-items-center md:hidden"
         >
-          {overlayActive ? <X size={26} /> : <Menu size={26} />}
+          {overlayActive ? (
+            // On close, the X spins away and fades before the flood drains.
+            <X size={26} className={closing ? 'menu-x-exit' : undefined} />
+          ) : (
+            <Menu size={26} />
+          )}
         </button>
       </header>
 
@@ -318,7 +455,7 @@ export default function StickyHeader(): React.ReactElement {
                 label={label}
                 baseClassName={mobileLinkClassName}
                 className="flex h-[72px] items-center justify-center"
-                onClick={() => setMenuOpen(false)}
+                onClick={deferNavigate(href)}
               />
             ))}
           </nav>
