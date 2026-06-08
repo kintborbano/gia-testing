@@ -101,14 +101,21 @@ function FieldError({
 function FieldLabel({
   label,
   helper,
+  required = false,
 }: {
   label: string;
   helper?: string;
+  required?: boolean;
 }): ReactElement {
   return (
     <div className="flex flex-col gap-1.5 text-center">
       <p className="text-brand-primary font-sans text-[15px] font-bold tracking-[-0.075px]">
         {label}
+        {required && (
+          <span aria-hidden="true" className="ml-0.5">
+            *
+          </span>
+        )}
       </p>
       {helper && (
         <p className="text-brand-primary font-sans text-[15px] leading-[1.45] font-medium tracking-[-0.075px]">
@@ -224,6 +231,7 @@ export default function AnalyzeForm(): ReactElement {
             <FieldLabel
               label="EMAIL ADDRESS"
               helper="we'll send your report here"
+              required
             />
             <input
               type="email"
@@ -246,6 +254,7 @@ export default function AnalyzeForm(): ReactElement {
             <FieldLabel
               label="TIKTOK PROFILE LINK"
               helper="paste the tiktok account you want gia to analyze"
+              required
             />
             <input
               type="text"
@@ -295,7 +304,7 @@ export default function AnalyzeForm(): ReactElement {
 
           {/* Goal */}
           <div className="flex w-full flex-col items-center gap-3">
-            <FieldLabel label="WHAT ARE YOU HOPING TO ACHIEVE?" />
+            <FieldLabel label="WHAT ARE YOU HOPING TO ACHIEVE?" required />
             <fieldset className="flex flex-col items-start gap-2">
               {GOALS.map((value, index) => (
                 <label
