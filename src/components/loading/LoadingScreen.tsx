@@ -51,6 +51,7 @@ export default function LoadingScreen(): ReactElement {
             variant="onBrand"
             size="default"
             withArrow
+            className="px-12!"
           >
             JOIN GIA&rsquo;S BROADCAST CHANNEL
           </Button>
