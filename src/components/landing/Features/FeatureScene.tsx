@@ -205,9 +205,22 @@ export default function FeatureScene({
   }, [explode, onFrame, applyFrame]);
 
   const sceneClass = scene
-    ? 'relative w-full'
+    ? 'relative mx-auto'
     : 'features-grid features-grid--stack';
-  const sceneStyle: CSSProperties = scene ? { aspectRatio: scene.aspect } : {};
+  // The scene lives inside a 100vh sticky container (overflow hidden) and the
+  // description card stacks below it. Sizing the box by width alone (aspect
+  // ratio) lets a tall layout — the tablet ring especially — overflow the
+  // viewport and clip the card. Cap the box by a vertical budget instead:
+  // reserve 6vh top padding + ~280px for the card/margins/gap, and drive the
+  // width from that height so the box shrinks to fit short viewports. On wide
+  // layouts (desktop's short aspect) the budget exceeds 100%, so the width cap
+  // wins and behaviour is unchanged.
+  const sceneStyle: CSSProperties = scene
+    ? {
+        aspectRatio: scene.aspect,
+        width: `min(100%, calc((94vh - 280px) * ${scene.aspect}))`,
+      }
+    : {};
 
   return (
     <div className="mx-auto w-full max-w-[1040px] lg:max-w-[1210px]">
