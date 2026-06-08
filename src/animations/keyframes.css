@@ -78,11 +78,18 @@
     alternate;
 }
 @keyframes loading-progress {
-  from {
+  /* The fill grows 12% → 100% while its colour warms from gold (#c9920a) to
+     yellow (#eed03a), reaching full yellow by ~85% and holding it to the top. */
+  0% {
     width: 12%;
+    background-color: #c9920a;
   }
-  to {
+  83% {
+    background-color: #eed03a;
+  }
+  100% {
     width: 100%;
+    background-color: #eed03a;
   }
 }
 
