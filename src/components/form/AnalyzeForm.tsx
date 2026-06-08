@@ -78,21 +78,10 @@ const INPUT_CLASSES =
   'h-[44px] w-full max-w-[459px] rounded-[25px] border border-brand-primary bg-white px-7 font-sans text-[15px] tracking-[-0.3px] text-brand-primary outline-none transition-shadow duration-200 placeholder:text-brand-primary/50 focus:ring-2 focus:ring-brand-primary/30';
 
 /** Inline validation message shown beneath a field. */
-function FieldError({
-  message,
-  onBrand = false,
-}: {
-  message?: string;
-  onBrand?: boolean;
-}): ReactElement | null {
+function FieldError({ message }: { message?: string }): ReactElement | null {
   if (!message) return null;
   return (
-    <p
-      role="alert"
-      className={`font-sans text-[13px] ${
-        onBrand ? 'text-white' : 'text-brand-primary'
-      }`}
-    >
+    <p role="alert" className="font-sans text-[13px] text-red-500">
       {message}
     </p>
   );
@@ -401,7 +390,7 @@ export default function AnalyzeForm(): ReactElement {
                   personalized report.
                 </span>
               </label>
-              <FieldError message={errors.consent} onBrand />
+              <FieldError message={errors.consent} />
             </div>
             <Button
               type="submit"
