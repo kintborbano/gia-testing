@@ -41,13 +41,32 @@ const GOALS = [
   'just curious',
 ] as const;
 
-/** Strip the URL/@ wrapping so we can route straight to the report. */
-function getReportHandle(value: string): string {
-  return value
-    .trim()
-    .replace(/^https?:\/\/(www\.)?tiktok\.com\//i, '')
-    .replace(/^@/, '')
-    .split(/[/?]/)[0];
+/** TikTok usernames: letters, numbers, underscores and periods, up to 24. */
+const TIKTOK_HANDLE = /^[a-z0-9_.]{1,24}$/i;
+
+/**
+ * Pull a TikTok handle out of a profile URL or a raw @handle. Returns null
+ * when the value isn't a recognizable TikTok account — e.g. a non-TikTok URL
+ * or text with illegal characters — so the caller can reject it.
+ */
+function getReportHandle(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  let handle: string;
+  if (/^(https?:\/\/|www\.)/i.test(trimmed) || trimmed.includes('/')) {
+    // Looks like a URL — it must point at tiktok.com, with the handle in the
+    // /@username path segment.
+    const match = trimmed.match(
+      /^(?:https?:\/\/)?(?:www\.)?tiktok\.com\/@?([^/?#]+)/i
+    );
+    if (!match) return null;
+    handle = match[1];
+  } else {
+    handle = trimmed.replace(/^@/, '');
+  }
+
+  return TIKTOK_HANDLE.test(handle) ? handle : null;
 }
 
 /** Loose email shape check — enough to catch an empty/obviously wrong entry. */
@@ -143,8 +162,11 @@ export default function AnalyzeForm(): ReactElement {
     } else if (!isValidEmail(email)) {
       nextErrors.email = 'Enter a valid email address.';
     }
-    if (!handle) {
+    if (!tiktok.trim()) {
       nextErrors.tiktok = 'Paste the TikTok account you want GIA to analyze.';
+    } else if (!handle) {
+      nextErrors.tiktok =
+        "That doesn't look like a TikTok profile link or @handle.";
     }
     if (!accountType) {
       nextErrors.accountType =
