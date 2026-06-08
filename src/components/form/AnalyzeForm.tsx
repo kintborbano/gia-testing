@@ -102,23 +102,30 @@ function FieldLabel({
   label,
   helper,
   required = false,
+  onBrand = false,
 }: {
   label: string;
   helper?: string;
   required?: boolean;
+  onBrand?: boolean;
 }): ReactElement {
+  const textColor = onBrand ? 'text-white' : 'text-brand-primary';
   return (
     <div className="flex flex-col gap-1.5 text-center">
-      <p className="text-brand-primary font-sans text-[15px] font-bold tracking-[-0.075px]">
+      <p
+        className={`font-sans text-[15px] font-bold tracking-[-0.075px] ${textColor}`}
+      >
         {label}
         {required && (
-          <span aria-hidden="true" className="ml-0.5">
+          <span aria-hidden="true" className="ml-0.5 font-normal text-red-500">
             *
           </span>
         )}
       </p>
       {helper && (
-        <p className="text-brand-primary font-sans text-[15px] leading-[1.45] font-medium tracking-[-0.075px]">
+        <p
+          className={`font-sans text-[15px] leading-[1.45] font-medium tracking-[-0.075px] ${textColor}`}
+        >
           {helper}
         </p>
       )}
@@ -269,8 +276,12 @@ export default function AnalyzeForm(): ReactElement {
               className={INPUT_CLASSES}
             />
             <FieldError message={errors.tiktok} />
+          </div>
 
-            <fieldset className="mt-4 flex flex-wrap items-start justify-center gap-x-12 gap-y-4">
+          {/* Account type */}
+          <div className="flex w-full flex-col items-center gap-3.5">
+            <FieldLabel label="WHOSE ACCOUNT IS THIS?" required />
+            <fieldset className="flex flex-wrap items-start justify-center gap-x-12 gap-y-4">
               {ACCOUNT_TYPES.map(({ value, description }, index) => (
                 <label
                   key={value}
@@ -350,6 +361,7 @@ export default function AnalyzeForm(): ReactElement {
             <h2 className="font-sans text-[28px] leading-[1.1] font-bold tracking-[-0.6px] text-white md:text-[32px]">
               Continue to checkout
             </h2>
+            <FieldLabel label="CONSENT" required onBrand />
             <label className="mx-auto flex w-fit cursor-pointer items-start gap-5 text-left">
               <input
                 type="checkbox"
