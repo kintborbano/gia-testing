@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useInSection } from '@/hooks/useInSection';
+import { useNavWrapDetection } from '@/hooks/useNavWrapDetection';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
 import { scrollToHashTarget } from '@/lib/scroll/navScroll';
 import { startLenis, stopLenis } from '@/lib/scroll/lenisControls';
@@ -168,6 +169,12 @@ export default function StickyHeader(): React.ReactElement {
   const pathname = usePathname();
   const router = useRouter();
   const { active: transitioning } = usePageTransition();
+  // Collapse to the hamburger header the moment the full nav row would wrap —
+  // catching the lower end of the tablet range where it runs out of horizontal
+  // room — instead of relying on a fixed pixel breakpoint. The `md:` classes
+  // below stay as the phone/desktop baseline; `isWrapped` only adds collapsing
+  // within the tablet range (and never un-collapses the phone view).
+  const { probeRef, isWrapped } = useNavWrapDetection();
 
   // The overlay should look "active" (header transparent, logo hidden) for the
   // whole time it's on screen, including the closing flood.
@@ -393,6 +400,33 @@ export default function StickyHeader(): React.ReactElement {
         className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-5 sm:px-6 md:px-10"
         style={headerStyle}
       >
+        {/* Hidden full-width measurement probe — a mirror of the header row
+            (logo block + nav group) used only to detect when those two stop
+            fitting on one line. It's absolutely positioned (out of the visible
+            flex flow) and shares the header's horizontal padding so its inner
+            width equals the real available width. Always rendered, so it's never
+            the element we hide — that's what keeps the threshold from
+            oscillating. `shrink-0` makes the children wrap instead of squeezing
+            onto one row; `flex-wrap` lets the nav group drop to row two. */}
+        <div
+          ref={probeRef}
+          aria-hidden
+          className="pointer-events-none invisible absolute inset-x-0 top-0 flex flex-wrap items-center gap-8 px-5 sm:px-6 md:px-10"
+        >
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <GiaLogo className="mt-2 h-[34px] w-auto sm:h-[40px]" />
+            <PoweredByPill size="sm" tone={inHow ? 'onDark' : 'default'} />
+          </div>
+          <div className="flex shrink-0 items-center gap-8">
+            {NAV_LINKS.map(({ label, href }) => (
+              <NavItem key={label} href={href} label={label} />
+            ))}
+            <Button href="/form" variant="adaptive" size="default" transition>
+              ANALYZE MY TIKTOK
+            </Button>
+          </div>
+        </div>
+
         <Link
           href="/"
           aria-label="Go to homepage"
@@ -405,8 +439,11 @@ export default function StickyHeader(): React.ReactElement {
           <PoweredByPill size="sm" tone={inHow ? 'onDark' : 'default'} />
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-8 md:flex">
+        {/* Desktop nav. Hidden on phone by the `md:` baseline, and additionally
+            hidden across the tablet/desktop range whenever the row would wrap. */}
+        <nav
+          className={`items-center gap-8 ${isWrapped ? 'hidden' : 'hidden md:flex'}`}
+        >
           {NAV_LINKS.map(({ label, href }) => (
             <NavItem key={label} href={href} label={label} />
           ))}
@@ -415,14 +452,15 @@ export default function StickyHeader(): React.ReactElement {
           </Button>
         </nav>
 
-        {/* Mobile menu toggle */}
+        {/* Menu toggle: shown on phone by the `md:hidden` baseline, plus anywhere
+            the nav would wrap (lower tablet) once `isWrapped` drops that class. */}
         <button
           ref={toggleRef}
           type="button"
           aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={menuOpen}
           onClick={toggleMenu}
-          className="-mr-1 grid size-10 place-items-center md:hidden"
+          className={`-mr-1 grid size-10 place-items-center ${isWrapped ? '' : 'md:hidden'}`}
         >
           {overlayActive ? (
             // On close, the X spins away and fades before the flood drains.
@@ -444,7 +482,7 @@ export default function StickyHeader(): React.ReactElement {
           // Resting state: fully clipped (invisible) until the flood animation
           // takes over on mount. The open flood holds its covered end frame.
           style={{ clipPath: 'circle(0px)' }}
-          className="bg-brand-primary fixed inset-0 z-[90] flex flex-col items-center justify-center gap-[52px] px-6 text-white md:hidden"
+          className={`bg-brand-primary fixed inset-0 z-[90] flex flex-col items-center justify-center gap-[52px] px-6 text-white ${isWrapped ? '' : 'md:hidden'}`}
         >
           <GiaLogo className="h-[62px] w-auto" />
           <nav className="flex flex-col items-center text-center">
