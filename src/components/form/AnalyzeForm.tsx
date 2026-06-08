@@ -161,49 +161,53 @@ export default function AnalyzeForm(): ReactElement {
     });
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    const handle = getReportHandle(tiktok);
-    const nextErrors: FormErrors = {};
-
+  // Single source of truth for the form's validity: returns a message per
+  // invalid field. Drives canSubmit, the per-field blur checks and submit.
+  const validate = (): FormErrors => {
+    const e: FormErrors = {};
     if (!email.trim()) {
-      nextErrors.email = 'Enter the email where we should send your report.';
+      e.email = 'Enter the email where we should send your report.';
     } else if (!isValidEmail(email)) {
-      nextErrors.email = 'Enter a valid email address.';
+      e.email = 'Enter a valid email address.';
     }
     if (!tiktok.trim()) {
-      nextErrors.tiktok = 'Paste the TikTok account you want GIA to analyze.';
-    } else if (!handle) {
-      nextErrors.tiktok =
+      e.tiktok = 'Paste the TikTok account you want GIA to analyze.';
+    } else if (!getReportHandle(tiktok)) {
+      e.tiktok =
         'That doesn’t look like a TikTok profile link (e.g. https://www.tiktok.com/@username).';
     }
     if (!accountType) {
-      nextErrors.accountType =
+      e.accountType =
         "Let us know if this is your account or one you're browsing.";
     }
     if (!goal) {
-      nextErrors.goal = 'Pick what you’re hoping to achieve.';
+      e.goal = 'Pick what you’re hoping to achieve.';
     }
     if (!agreed) {
-      nextErrors.consent = 'Please agree before continuing.';
+      e.consent = 'Please agree before continuing.';
     }
+    return e;
+  };
 
+  // Surface a single field's warning once the user tabs away from it, so the
+  // message shows without needing to submit (the button stays disabled).
+  const handleBlur = (field: keyof FormErrors): void => {
+    setErrors((prev) => ({ ...prev, [field]: validate()[field] }));
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    const nextErrors = validate();
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       return;
     }
-
     setErrors({});
-    router.push(`/report/${handle}`);
+    router.push(`/report/${getReportHandle(tiktok)}`);
   };
 
-  // Every required field satisfied — gates the submit button's disabled state.
-  const canSubmit =
-    isValidEmail(email) &&
-    getReportHandle(tiktok) !== null &&
-    accountType !== '' &&
-    goal !== '' &&
-    agreed;
+  // No outstanding errors — gates the submit button's disabled state.
+  const canSubmit = Object.keys(validate()).length === 0;
 
   return (
     <main
@@ -263,6 +267,7 @@ export default function AnalyzeForm(): ReactElement {
                 setEmail(event.target.value);
                 clearError('email');
               }}
+              onBlur={() => handleBlur('email')}
               className={INPUT_CLASSES}
             />
             <FieldError message={errors.email} />
@@ -285,6 +290,7 @@ export default function AnalyzeForm(): ReactElement {
                 setTiktok(event.target.value);
                 clearError('tiktok');
               }}
+              onBlur={() => handleBlur('tiktok')}
               className={INPUT_CLASSES}
             />
             <FieldError message={errors.tiktok} />
