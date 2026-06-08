@@ -94,6 +94,23 @@
   }
 }
 
+/* ── Mobile menu close ──────────────────────────────────────────────────────
+   The close (X) icon spins a quarter-turn and fades as it shrinks, in step with
+   the maroon flood retracting into the button — both start together on click. */
+.menu-x-exit {
+  animation: menu-x-exit 280ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes menu-x-exit {
+  from {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.6);
+  }
+}
+
 /* ── Page keyframes ─────────────────────────────────────────────────────── */
 
 @keyframes chibi-float {
