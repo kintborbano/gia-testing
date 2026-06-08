@@ -217,6 +217,7 @@ export default function AnalyzeForm(): ReactElement {
               name="email"
               autoComplete="email"
               placeholder="username@mail.com"
+              required
               value={email}
               onChange={(event) => {
                 setEmail(event.target.value);
@@ -237,6 +238,7 @@ export default function AnalyzeForm(): ReactElement {
               type="text"
               name="tiktok"
               placeholder="https://www.tiktok.com/@username"
+              required
               value={tiktok}
               onChange={(event) => {
                 setTiktok(event.target.value);
@@ -247,7 +249,7 @@ export default function AnalyzeForm(): ReactElement {
             <FieldError message={errors.tiktok} />
 
             <fieldset className="mt-4 flex flex-wrap items-start justify-center gap-x-12 gap-y-4">
-              {ACCOUNT_TYPES.map(({ value, description }) => (
+              {ACCOUNT_TYPES.map(({ value, description }, index) => (
                 <label
                   key={value}
                   className="flex max-w-[220px] cursor-pointer items-start gap-3"
@@ -256,6 +258,7 @@ export default function AnalyzeForm(): ReactElement {
                     type="radio"
                     name="accountType"
                     value={value}
+                    required={index === 0}
                     checked={accountType === value}
                     onChange={() => {
                       setAccountType(value);
@@ -281,7 +284,7 @@ export default function AnalyzeForm(): ReactElement {
           <div className="flex w-full flex-col items-center gap-3">
             <FieldLabel label="WHAT ARE YOU HOPING TO ACHIEVE?" />
             <fieldset className="flex flex-col items-start gap-2">
-              {GOALS.map((value) => (
+              {GOALS.map((value, index) => (
                 <label
                   key={value}
                   className="flex cursor-pointer items-center gap-3"
@@ -290,6 +293,7 @@ export default function AnalyzeForm(): ReactElement {
                     type="radio"
                     name="goal"
                     value={value}
+                    required={index === 0}
                     checked={goal === value}
                     onChange={() => {
                       setGoal(value);
@@ -328,6 +332,7 @@ export default function AnalyzeForm(): ReactElement {
               <input
                 type="checkbox"
                 name="consent"
+                required
                 checked={agreed}
                 onChange={(event) => {
                   setAgreed(event.target.checked);
