@@ -3,8 +3,9 @@
 import type { ReactElement } from 'react';
 import Button from '@/components/ui/Button';
 
-// Replace with the real Broadcast Channel destination once it exists.
-const BROADCAST_CHANNEL_URL = '#';
+// GIA's Instagram Broadcast Channel.
+const BROADCAST_CHANNEL_URL =
+  'https://www.instagram.com/channel/AbaXwsrEEM1hoSpY/';
 
 /**
  * Full-screen maroon loading screen shown while GIA works through an account
