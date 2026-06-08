@@ -27,6 +27,7 @@ export default function AnalyzeTiktokButton({
       variant="filledStatic"
       size={variant === 'hero' ? 'lg' : 'default'}
       withArrow
+      transition
       className={`whitespace-nowrap ${className}`}
     >
       Analyze my TikTok

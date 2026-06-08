@@ -22,6 +22,7 @@ import {
 import GiaLogo from '@/components/ui/GiaLogo';
 import PoweredByPill from '@/components/ui/PoweredByPill';
 import Button from '@/components/ui/Button';
+import { usePageTransition } from '@/components/transition/PageTransitionProvider';
 
 type NavLink = {
   label: string;
@@ -108,8 +109,13 @@ export default function StickyHeader(): React.ReactElement {
   // The How section is black with gold accents — switch the SOFI pill to its
   // dark/gold tone only while the header sits over it.
   const inHow = useInSection('bg-stop-how');
+  // Stay hidden for the whole page transition, then slide in once it ends: when
+  // `active` flips false the header eases from translateY(-100%) back to 0 (its
+  // existing 350ms transform transition), so it appears after the swipe settles.
+  const { active: transitioning } = usePageTransition();
   // Keep the header visible while the mobile menu is open.
-  const hidden = (useScrollDirection() || inFeatures) && !menuOpen;
+  const hidden =
+    ((useScrollDirection() || inFeatures) && !menuOpen) || transitioning;
   const { background: pageBg, foreground: pageFg } = useSyncExternalStore(
     subscribeToPageColors,
     getPageColorsSnapshot,
@@ -154,7 +160,7 @@ export default function StickyHeader(): React.ReactElement {
         {NAV_LINKS.map(({ label, href }) => (
           <NavItem key={label} href={href} label={label} />
         ))}
-        <Button href="/form" variant="adaptive" size="default">
+        <Button href="/form" variant="adaptive" size="default" transition>
           ANALYZE MY TIKTOK
         </Button>
       </nav>
@@ -189,6 +195,7 @@ export default function StickyHeader(): React.ReactElement {
             href="/form"
             variant="adaptive"
             size="default"
+            transition
             className="mt-3 w-full"
           >
             ANALYZE MY TIKTOK

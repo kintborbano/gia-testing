@@ -1,6 +1,9 @@
+'use client';
+
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactElement, ReactNode } from 'react';
+import { usePageTransition } from '@/components/transition/PageTransitionProvider';
 
 export type ButtonVariant =
   | 'filled'
@@ -21,6 +24,11 @@ type BaseProps = {
   withArrow?: boolean;
   /** Extra classes (e.g. a fixed `w-[...]`) merged after the defaults. */
   className?: string;
+  /**
+   * For internal `href`s: play the loop page-transition overlay on click
+   * instead of navigating instantly. No effect on external/hash links.
+   */
+  transition?: boolean;
 };
 
 type ButtonAsLink = BaseProps & {
@@ -76,7 +84,9 @@ export default function Button(props: ButtonProps): ReactElement {
     size = 'default',
     withArrow = false,
     className = '',
+    transition = false,
   } = props;
+  const { navigate } = usePageTransition();
 
   const classes = `${BASE} ${SIZE_CLASSES[size]} ${VARIANT_CLASSES[variant]} ${className}`;
 
@@ -98,7 +108,20 @@ export default function Button(props: ButtonProps): ReactElement {
     // and same-page hash anchors fall back to a plain anchor.
     if (href.startsWith('/')) {
       return (
-        <Link href={href} className={classes}>
+        <Link
+          href={href}
+          className={classes}
+          // onNavigate only fires on same-origin SPA navigation, so prefetch
+          // and modifier-click (open-in-new-tab) keep working untouched.
+          onNavigate={
+            transition
+              ? (e) => {
+                  e.preventDefault();
+                  navigate(href);
+                }
+              : undefined
+          }
+        >
           {content}
         </Link>
       );
