@@ -53,11 +53,11 @@ export default function Hero(): React.ReactElement {
           </p>
 
           {/* Design calls for Instrument Sans Bold (700); only 400/600 are loaded — falls back to 600 */}
-          <div className="flex w-auto flex-row items-center justify-center gap-4 sm:gap-[34px]">
+          <div className="flex w-auto flex-col items-center justify-center gap-7 sm:flex-row sm:gap-[34px]">
             <AnalyzeTiktokButton />
             <SeeHowItWorksButton
               onClick={scrollToHow}
-              className="hidden sm:inline-block"
+              className="inline-block"
             />
           </div>
         </div>
