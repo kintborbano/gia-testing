@@ -69,6 +69,23 @@
   background-color: #ffffff;
 }
 
+/* ── Loading screen ─────────────────────────────────────────────────────────
+   Flat 2D progress bar for the analyzer loading page: the gold fill grows and
+   recedes inside its cream track on a loop (alternating, so it never snaps).
+   Hard edges, no gradient, to match the minimalist theme. */
+.loading-progress {
+  animation: loading-progress 2s cubic-bezier(0.65, 0, 0.35, 1) infinite
+    alternate;
+}
+@keyframes loading-progress {
+  from {
+    width: 12%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
 /* ── Page keyframes ─────────────────────────────────────────────────────── */
 
 @keyframes chibi-float {
