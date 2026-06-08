@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { FormEvent, ReactElement } from 'react';
-import { useRouter } from 'next/navigation';
+import { Hammer } from 'lucide-react';
+import { usePageTransition } from '@/components/transition/PageTransitionProvider';
 import StickyHeader from '@/components/landing/StickyHeader';
 import Button from '@/components/ui/Button';
 import ScrollBackground from '@/components/landing/ScrollBackground';
@@ -57,6 +58,23 @@ function getReportHandle(value: string): string | null {
   if (!match) return null;
 
   const handle = match[1];
+  return TIKTOK_HANDLE.test(handle) ? handle : null;
+}
+
+/**
+ * Lenient counterpart to getReportHandle: pulls a handle out of the loose
+ * things people actually type — a bare `username`, an `@username`, or a
+ * tiktok.com link missing its `@`/protocol. Returns the clean handle so the
+ * inline "fix" button can rebuild a proper profile link, or null when there's
+ * nothing recoverable.
+ */
+function extractHandle(value: string): string | null {
+  let handle = value.trim();
+  // Strip a tiktok.com/(@)username prefix if present, otherwise drop a lone @.
+  const urlMatch = handle.match(
+    /^(?:https?:\/\/)?(?:www\.)?tiktok\.com\/@?([^/?#]+)/i
+  );
+  handle = urlMatch ? urlMatch[1] : handle.replace(/^@/, '');
   return TIKTOK_HANDLE.test(handle) ? handle : null;
 }
 
@@ -131,7 +149,9 @@ function FieldLabel({
  * account to analyze plus context, then routes to the generated report.
  */
 export default function AnalyzeForm(): ReactElement {
-  const router = useRouter();
+  const { navigate } = usePageTransition();
+  // The maroon CTA section — the paint-bucket flood spreads out from its centre.
+  const ctaRef = useRef<HTMLElement>(null);
   const [email, setEmail] = useState('');
   const [tiktok, setTiktok] = useState('');
   const [accountType, setAccountType] = useState<string>('');
@@ -192,11 +212,32 @@ export default function AnalyzeForm(): ReactElement {
       return;
     }
     setErrors({});
-    router.push(`/report/${getReportHandle(tiktok)}`);
+
+    // Flood the screen with maroon out of the CTA section, then swipe up into
+    // the loading screen (which carries the handle on to the report).
+    const handle = getReportHandle(tiktok);
+    const rect = ctaRef.current?.getBoundingClientRect();
+    const flood = rect
+      ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+      : undefined;
+    navigate(`/loading?handle=${handle}`, flood ? { flood } : undefined);
   };
 
   // No outstanding errors — gates the submit button's disabled state.
   const canSubmit = Object.keys(validate()).length === 0;
+
+  // A handle we could turn into a proper link, but only when what's typed isn't
+  // already a valid profile link — this gates the inline "fix" button.
+  const fixableHandle =
+    tiktok.trim() && !getReportHandle(tiktok) ? extractHandle(tiktok) : null;
+
+  // Rewrite whatever the user typed into a canonical profile link and clear the
+  // field's error so the form can validate cleanly.
+  const fixTiktokLink = (): void => {
+    if (!fixableHandle) return;
+    setTiktok(`https://www.tiktok.com/@${fixableHandle}`);
+    clearError('tiktok');
+  };
 
   return (
     <main
@@ -269,19 +310,39 @@ export default function AnalyzeForm(): ReactElement {
               helper="paste the tiktok account you want gia to analyze"
               required
             />
-            <input
-              type="text"
-              name="tiktok"
-              placeholder="https://www.tiktok.com/@username"
-              required
-              value={tiktok}
-              onChange={(event) => {
-                setTiktok(event.target.value);
-                clearError('tiktok');
-              }}
-              onBlur={() => handleBlur('tiktok')}
-              className={INPUT_CLASSES}
-            />
+            <div className="relative w-full max-w-[459px]">
+              <input
+                type="text"
+                name="tiktok"
+                placeholder="https://www.tiktok.com/@username"
+                required
+                value={tiktok}
+                onChange={(event) => {
+                  setTiktok(event.target.value);
+                  clearError('tiktok');
+                }}
+                onBlur={() => handleBlur('tiktok')}
+                className={`${INPUT_CLASSES} max-w-none ${fixableHandle ? 'pr-12' : ''}`}
+              />
+              {/* Sits where a show/hide-password toggle would: one tap rewrites a
+                  bare username into a full profile link. */}
+              {fixableHandle && (
+                <button
+                  type="button"
+                  onClick={fixTiktokLink}
+                  aria-label="Fix this into a proper TikTok profile link"
+                  title="Fix link"
+                  className="text-brand-primary absolute top-1/2 right-4 -translate-y-1/2 transition-opacity duration-200 hover:opacity-70"
+                >
+                  <Hammer
+                    aria-hidden
+                    fill="currentColor"
+                    strokeWidth={1.5}
+                    className="size-[18px]"
+                  />
+                </button>
+              )}
+            </div>
             <FieldError message={errors.tiktok} />
           </div>
 
@@ -364,7 +425,10 @@ export default function AnalyzeForm(): ReactElement {
           </div>
 
           {/* CTA */}
-          <section className="bg-brand-primary mt-4 flex w-full max-w-[943px] flex-col items-center justify-center gap-6 rounded-[32px] px-8 py-12 text-center sm:px-12 sm:py-14 md:rounded-[44px] md:py-16">
+          <section
+            ref={ctaRef}
+            className="bg-brand-primary mt-4 flex w-full max-w-[943px] flex-col items-center justify-center gap-6 rounded-[32px] px-8 py-12 text-center sm:px-12 sm:py-14 md:rounded-[44px] md:py-16"
+          >
             <h2 className="font-sans text-[28px] leading-[1.1] font-bold tracking-[-0.6px] text-white md:text-[32px]">
               Continue to checkout
             </h2>
