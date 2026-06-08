@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useInSection } from '@/hooks/useInSection';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
-import { scrollToHashTarget, scrollToTop } from '@/lib/scroll/navScroll';
+import { scrollToHashTarget } from '@/lib/scroll/navScroll';
 import {
   HEADER_HEIGHT_LARGE,
   HEIGHT_SMALL,
@@ -105,15 +105,16 @@ export default function StickyHeader(): React.ReactElement {
   useEffect(() => subscribeScroll((y) => setScrolled(y > SCROLL_RANGE)), []);
 
   // On the landing page a `<Link href="/">` click is a no-op (same route), so
-  // the logo neither scrolls up nor refreshes. Intercept it and ease to the top
-  // via Lenis. From any other page the Link routes home as usual.
+  // the logo neither scrolls up nor refreshes. Intercept it and force a full
+  // reload of '/', which lands at the top with fresh state. From any other page
+  // the Link routes home as usual.
   const handleLogoClick = (
     event: React.MouseEvent<HTMLAnchorElement>
   ): void => {
     setMenuOpen(false);
     if (pathname === '/') {
       event.preventDefault();
-      scrollToTop();
+      window.location.assign('/');
     }
   };
 
