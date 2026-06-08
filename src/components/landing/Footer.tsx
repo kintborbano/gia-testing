@@ -1,4 +1,8 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
+import { Check } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
 const NAV_LINKS = [
@@ -15,6 +19,17 @@ const LEGAL_LINKS = [
 ];
 
 export default function Footer(): React.ReactElement {
+  const [email, setEmail] = useState('');
+  const [codeSent, setCodeSent] = useState(false);
+
+  // No backend yet — swallow the native submit (which was reloading the page
+  // and jumping to the top) and just confirm the send in place. The email is
+  // kept controlled so it stays put after sending.
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    setCodeSent(true);
+  };
+
   return (
     <footer
       id="bg-stop-footer"
@@ -26,7 +41,10 @@ export default function Footer(): React.ReactElement {
         {/* Top row: lead-magnet (left) + navigation (right) */}
         <div className="flex flex-col gap-12 md:flex-row md:justify-between md:gap-16">
           {/* Lead-magnet column */}
-          <form className="flex w-[480px] max-w-full flex-col gap-[18px]">
+          <form
+            onSubmit={handleSubmit}
+            className="flex w-[480px] max-w-full flex-col gap-[18px]"
+          >
             <p className="font-sans text-[22px] leading-[1.35] font-semibold tracking-[-0.11px]">
               Not ready yet?
             </p>
@@ -40,15 +58,32 @@ export default function Footer(): React.ReactElement {
               type="email"
               name="email"
               placeholder="user@mail.com"
-              className="text-brand-primary placeholder:text-brand-primary/50 h-[44px] w-full rounded-[25px] border border-white bg-white px-5 font-sans text-[14px] tracking-[-0.28px]"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              // Locked once sent — the email stays visible but can't be edited
+              // without a page refresh.
+              readOnly={codeSent}
+              className="text-brand-primary placeholder:text-brand-primary/50 h-[44px] w-full rounded-[25px] border border-white bg-white px-5 font-sans text-[14px] tracking-[-0.28px] read-only:cursor-not-allowed read-only:opacity-70"
             />
+            {/* Fixed width so the label swap doesn't reflow the column. Once
+                sent, the button rests disabled — overridden here to a black
+                pill (the variant's default disabled dim stays for other onBrand
+                buttons like the form's CONTINUE). */}
             <Button
               type="submit"
               variant="onBrand"
               size="default"
-              className="w-[210px]"
+              disabled={codeSent}
+              className="w-[210px] disabled:border-transparent! disabled:bg-black! disabled:text-white!"
             >
-              RECEIVE CODE
+              {codeSent ? (
+                <>
+                  CODE SENT
+                  <Check aria-hidden className="h-[16px] w-[16px]" />
+                </>
+              ) : (
+                'RECEIVE CODE'
+              )}
             </Button>
           </form>
 
