@@ -19,10 +19,12 @@ const LEGAL_LINKS = [
 ];
 
 export default function Footer(): React.ReactElement {
+  const [email, setEmail] = useState('');
   const [codeSent, setCodeSent] = useState(false);
 
   // No backend yet — swallow the native submit (which was reloading the page
-  // and jumping to the top) and just confirm the send in place.
+  // and jumping to the top) and just confirm the send in place. The email is
+  // kept controlled so it stays put after sending.
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     setCodeSent(true);
@@ -56,16 +58,23 @@ export default function Footer(): React.ReactElement {
               type="email"
               name="email"
               placeholder="user@mail.com"
-              className="text-brand-primary placeholder:text-brand-primary/50 h-[44px] w-full rounded-[25px] border border-white bg-white px-5 font-sans text-[14px] tracking-[-0.28px]"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              // Locked once sent — the email stays visible but can't be edited
+              // without a page refresh.
+              readOnly={codeSent}
+              className="text-brand-primary placeholder:text-brand-primary/50 h-[44px] w-full rounded-[25px] border border-white bg-white px-5 font-sans text-[14px] tracking-[-0.28px] read-only:cursor-not-allowed read-only:opacity-70"
             />
             {/* Fixed width so the label swap doesn't reflow the column. Once
-                sent, the button rests in its disabled state as confirmation. */}
+                sent, the button rests disabled — overridden here to a black
+                pill (the variant's default disabled dim stays for other onBrand
+                buttons like the form's CONTINUE). */}
             <Button
               type="submit"
               variant="onBrand"
               size="default"
               disabled={codeSent}
-              className="w-[210px]"
+              className="w-[210px] disabled:border-transparent! disabled:bg-black! disabled:text-white!"
             >
               {codeSent ? (
                 <>
