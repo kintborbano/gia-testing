@@ -15,20 +15,29 @@ function Headline(): React.ReactElement {
         id="features-headline"
         className="font-itc-garamond w-full text-[50px] leading-[1.1] tracking-[-1.12px] text-[#151515] sm:text-[68px] md:text-[86px]"
       >
-        part{' '}
-        <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
-          strategist
+        {/* Each "part X" clause is kept non-breaking so tablet widths wrap
+            between clauses instead of splitting a phrase (e.g. "part" / "analyst"). */}
+        <span className="whitespace-nowrap">
+          part{' '}
+          <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
+            strategist
+          </span>
+          .
+        </span>{' '}
+        <br className="md:hidden" />
+        <span className="whitespace-nowrap">
+          part{' '}
+          <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
+            analyst
+          </span>
+          .
         </span>
-        . <br className="md:hidden" />
-        part{' '}
-        <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
-          analyst
-        </span>
-        .
         <br />
-        part brutally <br className="md:hidden" />
-        <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
-          honest
+        <span className="whitespace-nowrap">
+          part brutally <br className="md:hidden" />
+          <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
+            honest
+          </span>
         </span>{' '}
         friend.
       </h2>
