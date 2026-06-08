@@ -7,12 +7,13 @@ export type ButtonVariant =
   | 'filledStatic'
   | 'outlined'
   | 'onBrand'
+  | 'whiteStatic'
   | 'adaptive';
 export type ButtonSize = 'sm' | 'default' | 'lg';
 
 type BaseProps = {
   children: ReactNode;
-  /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. `onBrand` = white fill with brand text for use on a brand-colored surface; warms to cream on hover so it never blends in. `adaptive` = fills with the live `--page-fg`/`--page-bg` CSS vars so it tracks the section palette (used in the sticky header); inverts on hover. */
+  /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. `onBrand` = white fill with brand text for use on a brand-colored surface; warms to cream on hover so it never blends in. `whiteStatic` = white fill, black border and text, no color change on hover (only the arrow moves). `adaptive` = fills with the live `--page-fg`/`--page-bg` CSS vars so it tracks the section palette (used in the sticky header); inverts on hover. */
   variant?: ButtonVariant;
   /** sm 38px/13px · default 48px/14px · lg 60px/16px. */
   size?: ButtonSize;
@@ -59,6 +60,7 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
     'border-brand-primary bg-white text-brand-primary hover:bg-brand-primary hover:text-white',
   onBrand:
     'border-white bg-white text-brand-primary hover:border-black hover:bg-black hover:text-white',
+  whiteStatic: 'border-black bg-white text-black',
   adaptive:
     'border-[color:var(--page-fg)] bg-[color:var(--page-fg)] text-[color:var(--page-bg)] hover:bg-[color:var(--page-bg)] hover:text-[color:var(--page-fg)]',
 };
