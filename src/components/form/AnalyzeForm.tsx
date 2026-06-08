@@ -1,12 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { FormEvent, ReactElement } from 'react';
 import { useRouter } from 'next/navigation';
 import StickyHeader from '@/components/landing/StickyHeader';
 import Button from '@/components/ui/Button';
-import { setPageBackgroundColor } from '@/stores/pageBackgroundStore';
+import ScrollBackground from '@/components/landing/ScrollBackground';
+import type { ScrollStop } from '@/components/landing/scrollBackground.config';
 import { HEADER_HEIGHT_LARGE } from '@/animations/headerAnimations';
+
+// White → cream as you scroll past the first screen — the exact transition the
+// landing uses from the hero into features: the cream stop is anchored to its
+// section TOP (align 0) nudged +0.5vh, fading over the last 55% of the gap.
+const FORM_BG_STOPS: ScrollStop[] = [
+  { anchorId: 'form-bg-hero', color: 'white' },
+  {
+    anchorId: 'form-bg-cream',
+    color: 'cream',
+    align: 0,
+    offsetVh: 0.5,
+    fade: 0.55,
+  },
+];
 
 /** Single-select radio groups rendered in the form. */
 const ACCOUNT_TYPES = [
@@ -73,12 +88,6 @@ export default function AnalyzeForm(): ReactElement {
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState('');
 
-  // These pages have no ScrollBackground, so paint the shared background cream
-  // to match the rest of the form surface.
-  useEffect(() => {
-    setPageBackgroundColor('rgb(254, 247, 221)');
-  }, []);
-
   const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     const handle = getReportHandle(tiktok);
@@ -92,9 +101,10 @@ export default function AnalyzeForm(): ReactElement {
 
   return (
     <main
-      className="bg-brand-cream flex w-full flex-1 flex-col"
+      className="flex w-full flex-1 flex-col"
       style={{ paddingTop: `${HEADER_HEIGHT_LARGE}px` }}
     >
+      <ScrollBackground stops={FORM_BG_STOPS} />
       <StickyHeader />
 
       <form
@@ -103,7 +113,10 @@ export default function AnalyzeForm(): ReactElement {
       >
         <div className="flex w-full max-w-[1152px] flex-col items-center gap-10">
           {/* Hero + intro */}
-          <div className="flex flex-col items-center gap-5 text-center">
+          <div
+            id="form-bg-hero"
+            className="flex flex-col items-center gap-5 text-center"
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/gia-on-laptop.png"
@@ -122,8 +135,12 @@ export default function AnalyzeForm(): ReactElement {
             </p>
           </div>
 
-          {/* Email */}
-          <div className="mt-8 flex w-full flex-col items-center gap-3.5">
+          {/* Email — also the cream stop: the background is fully cream once
+              this block's top reaches the viewport top. */}
+          <div
+            id="form-bg-cream"
+            className="mt-8 flex w-full flex-col items-center gap-3.5"
+          >
             <FieldLabel
               label="EMAIL ADDRESS"
               helper="we'll send your report here"
