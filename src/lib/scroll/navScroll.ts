@@ -14,6 +14,20 @@ export const HASH_SCROLL_OFFSET_VH: Record<string, number> = {
 };
 
 /**
+ * Eased scroll to the top of the page via Lenis (falls back to native smooth
+ * scroll when Lenis isn't mounted). Used by the header logo when already on the
+ * landing page, where a `<Link href="/">` click is a no-op.
+ */
+export function scrollToTop(): void {
+  const lenis = getLenisSnapshot();
+  if (lenis) {
+    lenis.scrollTo(0);
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+/**
  * Eased scroll to a same-page hash target via Lenis (falls back to native
  * smooth scroll when Lenis isn't mounted, e.g. on the sub-pages). Returns
  * false when the target isn't in the current document.
