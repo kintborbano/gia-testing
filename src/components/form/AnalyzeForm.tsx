@@ -45,27 +45,18 @@ const GOALS = [
 const TIKTOK_HANDLE = /^[a-z0-9_.]{1,24}$/i;
 
 /**
- * Pull a TikTok handle out of a profile URL or a raw @handle. Returns null
- * when the value isn't a recognizable TikTok account — e.g. a non-TikTok URL
- * or text with illegal characters — so the caller can reject it.
+ * Pull a TikTok handle out of a profile URL. The input must be a tiktok.com
+ * link (protocol and www optional) with the handle in the /@username path
+ * segment — a bare username or @handle is rejected. Returns null otherwise so
+ * the caller can reject it.
  */
 function getReportHandle(value: string): string | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
+  const match = value
+    .trim()
+    .match(/^(?:https?:\/\/)?(?:www\.)?tiktok\.com\/@([^/?#]+)/i);
+  if (!match) return null;
 
-  let handle: string;
-  if (/^(https?:\/\/|www\.)/i.test(trimmed) || trimmed.includes('/')) {
-    // Looks like a URL — it must point at tiktok.com, with the handle in the
-    // /@username path segment.
-    const match = trimmed.match(
-      /^(?:https?:\/\/)?(?:www\.)?tiktok\.com\/@?([^/?#]+)/i
-    );
-    if (!match) return null;
-    handle = match[1];
-  } else {
-    handle = trimmed.replace(/^@/, '');
-  }
-
+  const handle = match[1];
   return TIKTOK_HANDLE.test(handle) ? handle : null;
 }
 
@@ -166,7 +157,7 @@ export default function AnalyzeForm(): ReactElement {
       nextErrors.tiktok = 'Paste the TikTok account you want GIA to analyze.';
     } else if (!handle) {
       nextErrors.tiktok =
-        "That doesn't look like a TikTok profile link or @handle.";
+        'That doesn’t look like a TikTok profile link (e.g. https://www.tiktok.com/@username).';
     }
     if (!accountType) {
       nextErrors.accountType =
