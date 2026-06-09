@@ -1,22 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
 
 // Layout: 260vh total.
 // Phase 1: laptop slides in (0–160vh).
-// Phase 2: feature icons animate (160–260vh). Sticky scene exits with the
-// section as the next sibling section scrolls in.
+// Phase 2: feature icons animate (160–260vh). The scene is pinned with a plain
+// CSS `position: sticky`; the browser releases it natively at the section's
+// bottom and it scrolls away as the next sibling section comes up — no
+// JS-driven hand-off, so there's nothing to snap or lag a frame.
 const ANIM_FRACTION = 160 / 260;
 const SWITCH_FRACTION = 1;
-
-interface SectionDimensions {
-  sectionH: number;
-  viewportH: number;
-}
-
-type ContainerMode = 'sticky' | 'absolute';
 
 /** Per-frame callback receiving the eased 0→1 animation progress. */
 export type FrameCallback = (animationProgress: number) => void;
@@ -46,41 +41,19 @@ function getAnimationProgress(scrollProgress: number): number {
   return 1.0;
 }
 
-function getContainerStyle(
-  mode: ContainerMode,
-  dims: SectionDimensions
-): CSSProperties {
-  if (mode === 'absolute') {
-    return {
-      position: 'absolute',
-      top: SWITCH_FRACTION * dims.sectionH - dims.viewportH,
-      left: 0,
-      width: '100%',
-      height: '100vh',
-      overflow: 'hidden',
-      zIndex: 1,
-    };
-  }
-
-  return {
-    position: 'sticky',
-    top: 0,
-    width: '100%',
-    height: '100vh',
-    overflow: 'hidden',
-    zIndex: 1,
-  };
-}
+// Constant — the container is always sticky. The browser pins it at top:0
+// while the section is in view and releases it natively at the section bottom,
+// so this never needs to change (and the hook never re-renders on scroll).
+const CONTAINER_STYLE: CSSProperties = {
+  position: 'sticky',
+  top: 0,
+  width: '100%',
+  height: '100vh',
+  overflow: 'hidden',
+  zIndex: 1,
+};
 
 export function useFeatureSectionAnimation(): FeatureSectionAnimation {
-  const [dims, setDims] = useState<SectionDimensions>({
-    sectionH: 0,
-    viewportH: 0,
-  });
-  // The sticky→absolute hand-off is the only scroll-driven value that needs a
-  // React render, and it flips exactly once — so we track it as discrete state
-  // instead of re-rendering every frame.
-  const [mode, setMode] = useState<ContainerMode>('sticky');
   const sectionRef = useRef<HTMLElement | null>(null);
   const frameCbs = useRef<Set<FrameCallback>>(new Set());
 
@@ -89,20 +62,6 @@ export function useFeatureSectionAnimation(): FeatureSectionAnimation {
     return () => {
       frameCbs.current.delete(cb);
     };
-  }, []);
-
-  useEffect(() => {
-    const measure = () => {
-      if (!sectionRef.current) return;
-      setDims({
-        sectionH: sectionRef.current.offsetHeight,
-        viewportH: window.innerHeight,
-      });
-    };
-
-    measure();
-    window.addEventListener('resize', measure, { passive: true });
-    return () => window.removeEventListener('resize', measure);
   }, []);
 
   useEffect(() => {
@@ -120,16 +79,12 @@ export function useFeatureSectionAnimation(): FeatureSectionAnimation {
       // Per-frame, imperative — drives the canvas scrub + icon explode with no
       // React render.
       for (const cb of frameCbs.current) cb(ap);
-
-      // Discrete — setState with the same value is a no-op in React, so this
-      // only re-renders at the single hand-off point.
-      setMode(scrollProgress >= SWITCH_FRACTION ? 'absolute' : 'sticky');
     });
   }, []);
 
   return {
     sectionRef,
-    containerStyle: getContainerStyle(mode, dims),
+    containerStyle: CONTAINER_STYLE,
     onFrame,
   };
 }
