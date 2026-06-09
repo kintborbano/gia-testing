@@ -132,9 +132,12 @@ export default function FeatureScene({
   // Last raw section progress seen — replayed once the frames finish decoding so
   // the explode snaps to the correct position instead of staying parked.
   const lastProgressRef = useRef(0);
-  // First feature (Hook Scoring) is shown by default so the card is never empty.
-  const [selectedArea, setSelectedArea] = useState<Feature['area']>('hook');
-  const selected = FEATURES.find((f) => f.area === selectedArea) ?? FEATURES[0];
+  // Nothing is selected initially: the card shows a placeholder instruction
+  // prompting users to tap a feature, instead of pre-selecting one.
+  const [selectedArea, setSelectedArea] = useState<Feature['area'] | null>(
+    null
+  );
+  const selected = FEATURES.find((f) => f.area === selectedArea) ?? null;
 
   const explode = layout !== 'mobile';
   const scene = layout === 'mobile' ? null : SCENES[layout];
@@ -312,10 +315,12 @@ export default function FeatureScene({
         style={explode ? { willChange: 'transform' } : undefined}
       >
         <p className="font-pixelify text-brand-primary text-[22px] tracking-[0.3px] md:text-[26px]">
-          {selected.label}
+          {selected ? selected.label : 'Explore GIA’s features'}
         </p>
         <p className="text-text mt-2 font-sans text-[14px] leading-[1.45] tracking-[-0.2px] md:text-[15px]">
-          {selected.description}
+          {selected
+            ? selected.description
+            : 'Each icon above is one of the ways GIA reads your account. Tap any feature to see what it does and how it works.'}
         </p>
       </div>
     </div>
