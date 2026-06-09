@@ -6,6 +6,7 @@ import { usePageTransition } from '@/components/transition/PageTransitionProvide
 import StickyHeader from '@/components/landing/StickyHeader';
 import Button from '@/components/ui/Button';
 import Checkbox from '@/components/ui/Checkbox';
+import NotebookOption from '@/components/form/NotebookOption';
 import ScrollBackground from '@/components/landing/ScrollBackground';
 import type { ScrollStop } from '@/components/landing/scrollBackground.config';
 import { HEADER_HEIGHT_LARGE } from '@/animations/headerAnimations';
@@ -78,13 +79,16 @@ type FormErrors = {
 const INPUT_CLASSES =
   'h-[52px] w-full max-w-[459px] rounded-[15px] border-[3px] border-brand-gold bg-white px-6 font-sans text-[15px] tracking-[-0.3px] text-text outline-none shadow-[inset_0_0_0_2px_var(--color-text),inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_var(--color-brand-gold-shadow)] placeholder:text-text/50';
 
-/** Inline validation message shown beneath a field. */
-function FieldError({ message }: { message?: string }): ReactElement | null {
-  if (!message) return null;
+/**
+ * Inline validation message shown beneath a field. The paragraph is always
+ * rendered with a reserved single-line height, so a warning appearing or
+ * clearing never shifts the surrounding layout.
+ */
+function FieldError({ message }: { message?: string }): ReactElement {
   return (
     <p
       role="alert"
-      className="font-pixelify text-[14px] tracking-[0.3px] text-red-500"
+      className="font-pixelify min-h-[1.5rem] text-[14px] leading-[1.5rem] tracking-[0.3px] text-red-500"
     >
       {message}
     </p>
@@ -219,11 +223,36 @@ export default function AnalyzeForm(): ReactElement {
       <ScrollBackground stops={FORM_BG_STOPS} />
       <StickyHeader />
 
+      {/* Rough-edge filter for the notebook radio options (dots + strikethrough).
+          Rendered once, off-screen; referenced via filter: url(#handDrawnNoise). */}
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        className="pointer-events-none absolute h-0 w-0"
+      >
+        <filter id="handDrawnNoise">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.02 0.04"
+            numOctaves={2}
+            seed={7}
+            result="noise"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="noise"
+            scale={3}
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </svg>
+
       <form
         onSubmit={handleSubmit}
         className="flex w-full flex-1 flex-col items-center px-5 pt-2 pb-10 sm:px-8 md:px-16"
       >
-        <div className="flex w-full max-w-[1152px] flex-col items-center gap-10">
+        <div className="flex w-full max-w-[1152px] flex-col items-center gap-14">
           {/* Hero + intro */}
           <div
             id="form-bg-hero"
@@ -301,33 +330,21 @@ export default function AnalyzeForm(): ReactElement {
           {/* Account type */}
           <div className="flex w-full flex-col items-center gap-3.5">
             <FieldLabel label="WHOSE ACCOUNT IS THIS?" required />
-            <fieldset className="flex flex-wrap items-start justify-center gap-x-12 gap-y-4">
+            <fieldset className="mt-3 flex flex-col items-start gap-4">
               {ACCOUNT_TYPES.map(({ value, description }, index) => (
-                <label
+                <NotebookOption
                   key={value}
-                  className="flex max-w-[220px] cursor-pointer items-start gap-3"
-                >
-                  <input
-                    type="radio"
-                    name="accountType"
-                    value={value}
-                    required={index === 0}
-                    checked={accountType === value}
-                    onChange={() => {
-                      setAccountType(value);
-                      clearError('accountType');
-                    }}
-                    className="accent-brand-primary mt-0.5 size-[18px] shrink-0"
-                  />
-                  <span className="flex flex-col gap-1 text-left">
-                    <span className="text-brand-primary font-sans text-[14px] font-medium tracking-[-0.07px]">
-                      {value}
-                    </span>
-                    <span className="text-brand-primary font-sans text-[12px] leading-[1.4] tracking-[-0.06px]">
-                      {description}
-                    </span>
-                  </span>
-                </label>
+                  name="accountType"
+                  value={value}
+                  label={value}
+                  description={description}
+                  required={index === 0}
+                  checked={accountType === value}
+                  onChange={() => {
+                    setAccountType(value);
+                    clearError('accountType');
+                  }}
+                />
               ))}
             </fieldset>
             <FieldError message={errors.accountType} />
@@ -336,28 +353,20 @@ export default function AnalyzeForm(): ReactElement {
           {/* Goal */}
           <div className="flex w-full flex-col items-center gap-3">
             <FieldLabel label="WHAT ARE YOU HOPING TO ACHIEVE?" required />
-            <fieldset className="flex flex-col items-start gap-2">
+            <fieldset className="mt-3 flex flex-col items-start gap-2">
               {GOALS.map((value, index) => (
-                <label
+                <NotebookOption
                   key={value}
-                  className="flex cursor-pointer items-center gap-3"
-                >
-                  <input
-                    type="radio"
-                    name="goal"
-                    value={value}
-                    required={index === 0}
-                    checked={goal === value}
-                    onChange={() => {
-                      setGoal(value);
-                      clearError('goal');
-                    }}
-                    className="border-brand-primary focus-visible:ring-brand-primary/30 checked:before:bg-brand-primary box-border inline-flex size-[18px] shrink-0 appearance-none items-center justify-center rounded-[4px] border bg-white leading-none transition-colors duration-150 outline-none before:block before:size-[10px] before:rounded-[2.5px] before:bg-transparent before:transition-colors before:duration-150 before:content-[''] focus-visible:ring-2"
-                  />
-                  <span className="text-brand-primary font-sans text-[14px] font-medium tracking-[-0.07px]">
-                    {value}
-                  </span>
-                </label>
+                  name="goal"
+                  value={value}
+                  label={value}
+                  required={index === 0}
+                  checked={goal === value}
+                  onChange={() => {
+                    setGoal(value);
+                    clearError('goal');
+                  }}
+                />
               ))}
             </fieldset>
             <FieldError message={errors.goal} />
@@ -378,10 +387,7 @@ export default function AnalyzeForm(): ReactElement {
 
           {/* Instagram handle (Figma 111:224) */}
           <div className="flex w-full flex-col items-center gap-3.5">
-            <FieldLabel
-              label="INSTAGRAM HANDLE (OPTIONAL)"
-              helper="we'll send your report here"
-            />
+            <FieldLabel label="INSTAGRAM HANDLE (OPTIONAL)" />
             <input
               type="text"
               name="instagram"

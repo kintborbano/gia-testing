@@ -97,3 +97,151 @@ canvas {
     'hook    perf    score'
     'comment roadmap story';
 }
+
+/*
+ * Notebook option — the hand-drawn radio used for the analyze form's
+ * single-select groups ("whose account is this?", "what are you hoping to
+ * achieve?"). A pencil-like dot fills in and a wavy line strikes through the
+ * label when the native radio is :checked; the rough, inked edge comes from the
+ * #handDrawnNoise SVG filter rendered once by AnalyzeForm. Markup is in
+ * NotebookOption.tsx. Driven entirely by :checked + sibling selectors, so the
+ * visual stays in sync with native form state and keyboard selection.
+ */
+.notebook-checkbox {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* The real radio: invisible but still focusable and hit-testable on top. */
+.notebook-checkbox input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.notebook-checkbox .checkmark {
+  position: relative;
+  flex-shrink: 0;
+  margin-top: 0.1em;
+  height: 18px;
+  width: 18px;
+  border-radius: 7px;
+  /* Crisp, unfiltered outline so it never shifts between states. */
+  border: 3px solid
+    color-mix(in srgb, var(--color-brand-primary) 35%, transparent);
+  background: transparent;
+}
+
+/* The inner fill lives on its own layer so the hand-drawn noise only ever
+   touches the dot — never the border. Empty by default; draws in when checked. */
+.notebook-checkbox .checkmark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  filter: url(#handDrawnNoise);
+  background: transparent;
+}
+
+.notebook-checkbox input:checked ~ .checkmark::before {
+  animation: notebook-mark 0.3s forwards;
+}
+
+.notebook-checkbox input:focus-visible ~ .checkmark {
+  outline: 2px solid
+    color-mix(in srgb, var(--color-brand-primary) 45%, transparent);
+  outline-offset: 2px;
+}
+
+@keyframes notebook-mark {
+  0%,
+  50% {
+    background: radial-gradient(
+      color-mix(in srgb, var(--color-brand-primary) 24%, transparent) 0%,
+      transparent 35%
+    );
+  }
+  75% {
+    background: radial-gradient(
+      var(--color-brand-primary) 30%,
+      transparent 45%
+    );
+  }
+  100% {
+    background: radial-gradient(
+      var(--color-brand-primary) 50%,
+      transparent 58%
+    );
+  }
+}
+
+.notebook-checkbox .body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: left;
+}
+
+.notebook-checkbox .text {
+  position: relative;
+  display: inline-block;
+  align-self: flex-start;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.07px;
+  color: var(--color-brand-primary);
+  transition: color 0.3s ease;
+  filter: url(#handDrawnNoise);
+}
+
+.notebook-checkbox .desc {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: -0.06px;
+  color: var(--color-brand-primary);
+}
+
+/* Wavy strikethrough drawn over the label, sized to the text width. */
+.notebook-checkbox .cut-line {
+  position: absolute;
+  left: -4px;
+  top: 0;
+  height: 100%;
+  width: calc(100% + 8px);
+  pointer-events: none;
+  stroke: var(--color-brand-primary);
+  stroke-width: 2;
+  fill: none;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.notebook-checkbox input:checked ~ .body .text .cut-line {
+  transform: scaleX(1);
+}
+
+.notebook-checkbox input:checked ~ .body .text {
+  color: color-mix(in srgb, var(--color-brand-primary) 55%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notebook-checkbox input:checked ~ .checkmark::before {
+    animation: none;
+    background: radial-gradient(
+      var(--color-brand-primary) 50%,
+      transparent 58%
+    );
+  }
+  .notebook-checkbox .cut-line {
+    transition: none;
+  }
+}
