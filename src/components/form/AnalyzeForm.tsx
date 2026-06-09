@@ -5,6 +5,7 @@ import type { FormEvent, ReactElement } from 'react';
 import { usePageTransition } from '@/components/transition/PageTransitionProvider';
 import StickyHeader from '@/components/landing/StickyHeader';
 import Button from '@/components/ui/Button';
+import Checkbox from '@/components/ui/Checkbox';
 import ScrollBackground from '@/components/landing/ScrollBackground';
 import type { ScrollStop } from '@/components/landing/scrollBackground.config';
 import { HEADER_HEIGHT_LARGE } from '@/animations/headerAnimations';
@@ -339,7 +340,7 @@ export default function AnalyzeForm(): ReactElement {
                       setGoal(value);
                       clearError('goal');
                     }}
-                    className="accent-brand-primary size-[18px] shrink-0"
+                    className="border-brand-primary focus-visible:ring-brand-primary/30 checked:before:bg-brand-primary box-border inline-flex size-[18px] shrink-0 appearance-none items-center justify-center rounded-[4px] border bg-white leading-none transition-colors duration-150 outline-none before:block before:size-[10px] before:rounded-[2.5px] before:bg-transparent before:transition-colors before:duration-150 before:content-[''] focus-visible:ring-2"
                   />
                   <span className="text-brand-primary font-sans text-[14px] font-medium tracking-[-0.07px]">
                     {value}
@@ -382,26 +383,23 @@ export default function AnalyzeForm(): ReactElement {
           {/* CTA */}
           <section
             ref={ctaRef}
-            className="bg-brand-primary mt-4 flex w-full max-w-[943px] flex-col items-center justify-center gap-6 rounded-[32px] px-8 py-12 text-center sm:px-12 sm:py-14 md:rounded-[44px] md:py-16"
+            className="bg-brand-primary mt-4 flex w-full max-w-[943px] flex-col items-center justify-center gap-10 rounded-[32px] px-8 py-12 text-center sm:px-12 sm:py-14 md:rounded-[44px] md:py-16"
           >
-            <h2 className="font-sans text-[28px] leading-[1.1] font-bold tracking-[-0.6px] text-white md:text-[32px]">
-              Continue to checkout
+            <h2 className="font-young-serif text-[28px] leading-[1.1] tracking-[-0.6px] text-white md:text-[32px]">
+              continue to checkout
             </h2>
-            {/* Centered, content-width column: the CONSENT header sits centered
-                above the checkbox and consent text. */}
+            {/* Centered, content-width column for the checkbox and consent text. */}
             <div className="mx-auto flex w-fit flex-col items-center gap-3">
-              <FieldLabel label="CONSENT" required onBrand />
               <label className="flex cursor-pointer items-start gap-5 text-left">
-                <input
-                  type="checkbox"
+                <Checkbox
                   name="consent"
                   required
                   checked={agreed}
-                  onChange={(event) => {
-                    setAgreed(event.target.checked);
+                  onChange={(checked) => {
+                    setAgreed(checked);
                     clearError('consent');
                   }}
-                  className="mt-0.5 size-[18px] shrink-0 accent-white"
+                  className="mt-0.5"
                 />
                 <span className="max-w-[600px] font-sans text-[15px] leading-[1.5] font-medium tracking-[-0.075px] text-white">
                   By continuing, you agree that GIA will analyze publicly
@@ -417,6 +415,7 @@ export default function AnalyzeForm(): ReactElement {
               size="default"
               withArrow
               disabled={!canSubmit}
+              className="px-14"
             >
               CONTINUE
             </Button>

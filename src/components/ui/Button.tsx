@@ -86,13 +86,13 @@ const VARIANT_CLASSES: Record<ButtonVariant, VariantStyle> = {
     base: 'border-brand-primary bg-white text-brand-primary hover:bg-brand-primary hover:text-white',
   },
   // White CTA on a brand surface: warms to cream on hover, inverts to a
-  // borderless black pill when pressed, and reads as a soft, inert pill when
-  // disabled so it never blends into the maroon.
+  // borderless black pill when pressed, and reads as a soft, borderless inert
+  // pill when disabled so it never blends into the maroon.
   onBrand: {
     base: 'border-white bg-white text-brand-primary hover:border-brand-cream hover:bg-brand-cream hover:text-brand-primary',
     pressed: 'active:border-transparent active:bg-black active:text-white',
     disabled:
-      'disabled:border-white/40 disabled:bg-white/40 disabled:text-brand-primary/50',
+      'disabled:border-transparent disabled:bg-white/40 disabled:text-brand-primary/50',
   },
   whiteStatic: { base: 'border-black bg-white text-black' },
   adaptive: {
