@@ -23,10 +23,16 @@ const LEGAL_LINKS = [
   { label: 'Terms of Use', href: '/terms' },
 ];
 
+// Mirrors the browser's own [type=email] validity check closely enough to gate
+// the submit button: a single @, non-empty local part, and a dotted domain.
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function Footer(): React.ReactElement {
   const [email, setEmail] = useState('');
   const [codeSent, setCodeSent] = useState(false);
   const pathname = usePathname();
+
+  const isEmailValid = EMAIL_PATTERN.test(email.trim());
 
   // No backend yet — swallow the native submit (which was reloading the page
   // and jumping to the top) and just confirm the send in place. The email is
@@ -79,8 +85,15 @@ export default function Footer(): React.ReactElement {
               type="submit"
               variant="onBrand"
               size="default"
-              disabled={codeSent}
-              className="w-[210px] disabled:border-transparent! disabled:bg-black! disabled:text-white!"
+              // Disabled until the input reads a valid email; stays disabled as
+              // the black CODE SENT pill once submitted.
+              disabled={codeSent || !isEmailValid}
+              // The black-pill override is only for the sent state; while the
+              // email is still invalid the variant's default disabled dim reads
+              // correctly as "not yet actionable".
+              className={`w-[210px] disabled:border-transparent! ${
+                codeSent ? 'disabled:bg-black! disabled:text-white!' : ''
+              }`}
             >
               {codeSent ? (
                 <>
