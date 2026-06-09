@@ -44,6 +44,22 @@ function getHashScrollOffsetVh(id: string): number {
 }
 
 /**
+ * Jump to the top of the page via Lenis (falls back to a native scroll when
+ * Lenis isn't mounted). Used by the header logo on the landing page, where a
+ * `<Link href="/">` click is a no-op. `immediate` snaps without the eased
+ * animation — a fresh-load-style landing rather than scrubbing back up through
+ * every scroll-driven section.
+ */
+export function scrollToTop(immediate = true): void {
+  const lenis = getLenisSnapshot();
+  if (lenis) {
+    lenis.scrollTo(0, { immediate });
+  } else {
+    window.scrollTo({ top: 0, behavior: immediate ? 'auto' : 'smooth' });
+  }
+}
+
+/**
  * Eased scroll to a same-page hash target via Lenis (falls back to native
  * smooth scroll when Lenis isn't mounted, e.g. on the sub-pages). Returns
  * false when the target isn't in the current document.
