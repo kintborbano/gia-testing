@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react';
 import type { FormEvent, ReactElement } from 'react';
-import { Hammer } from 'lucide-react';
 import { usePageTransition } from '@/components/transition/PageTransitionProvider';
 import StickyHeader from '@/components/landing/StickyHeader';
 import Button from '@/components/ui/Button';
@@ -46,27 +45,10 @@ const GOALS = [
 const TIKTOK_HANDLE = /^[a-z0-9_.]{1,24}$/i;
 
 /**
- * Pull a TikTok handle out of a profile URL. The input must be a tiktok.com
- * link (protocol and www optional) with the handle in the /@username path
- * segment — a bare username or @handle is rejected. Returns null otherwise so
- * the caller can reject it.
- */
-function getReportHandle(value: string): string | null {
-  const match = value
-    .trim()
-    .match(/^(?:https?:\/\/)?(?:www\.)?tiktok\.com\/@([^/?#]+)/i);
-  if (!match) return null;
-
-  const handle = match[1];
-  return TIKTOK_HANDLE.test(handle) ? handle : null;
-}
-
-/**
- * Lenient counterpart to getReportHandle: pulls a handle out of the loose
- * things people actually type — a bare `username`, an `@username`, or a
- * tiktok.com link missing its `@`/protocol. Returns the clean handle so the
- * inline "fix" button can rebuild a proper profile link, or null when there's
- * nothing recoverable.
+ * Pull a TikTok handle out of whatever people actually type — a bare
+ * `username`, an `@username`, or a tiktok.com link (with or without the
+ * protocol/`www`/`@`). Returns the clean handle, or null when there's nothing
+ * recoverable so the caller can reject it.
  */
 function extractHandle(value: string): string | null {
   let handle = value.trim();
@@ -181,9 +163,9 @@ export default function AnalyzeForm(): ReactElement {
     }
     if (!tiktok.trim()) {
       e.tiktok = 'Paste the TikTok account you want GIA to analyze.';
-    } else if (!getReportHandle(tiktok)) {
+    } else if (!extractHandle(tiktok)) {
       e.tiktok =
-        'That doesn’t look like a TikTok profile link (e.g. https://www.tiktok.com/@username).';
+        'That doesn’t look like a TikTok account — try a username or profile link.';
     }
     if (!accountType) {
       e.accountType =
@@ -215,7 +197,7 @@ export default function AnalyzeForm(): ReactElement {
 
     // Flood the screen with maroon out of the CTA section, then swipe up into
     // the loading screen (which carries the handle on to the report).
-    const handle = getReportHandle(tiktok);
+    const handle = extractHandle(tiktok);
     const rect = ctaRef.current?.getBoundingClientRect();
     const flood = rect
       ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
@@ -225,19 +207,6 @@ export default function AnalyzeForm(): ReactElement {
 
   // No outstanding errors — gates the submit button's disabled state.
   const canSubmit = Object.keys(validate()).length === 0;
-
-  // A handle we could turn into a proper link, but only when what's typed isn't
-  // already a valid profile link — this gates the inline "fix" button.
-  const fixableHandle =
-    tiktok.trim() && !getReportHandle(tiktok) ? extractHandle(tiktok) : null;
-
-  // Rewrite whatever the user typed into a canonical profile link and clear the
-  // field's error so the form can validate cleanly.
-  const fixTiktokLink = (): void => {
-    if (!fixableHandle) return;
-    setTiktok(`https://www.tiktok.com/@${fixableHandle}`);
-    clearError('tiktok');
-  };
 
   return (
     <main
@@ -310,39 +279,19 @@ export default function AnalyzeForm(): ReactElement {
               helper="paste the tiktok account you want gia to analyze"
               required
             />
-            <div className="relative w-full max-w-[459px]">
-              <input
-                type="text"
-                name="tiktok"
-                placeholder="https://www.tiktok.com/@username"
-                required
-                value={tiktok}
-                onChange={(event) => {
-                  setTiktok(event.target.value);
-                  clearError('tiktok');
-                }}
-                onBlur={() => handleBlur('tiktok')}
-                className={`${INPUT_CLASSES} max-w-none ${fixableHandle ? 'pr-12' : ''}`}
-              />
-              {/* Sits where a show/hide-password toggle would: one tap rewrites a
-                  bare username into a full profile link. */}
-              {fixableHandle && (
-                <button
-                  type="button"
-                  onClick={fixTiktokLink}
-                  aria-label="Fix this into a proper TikTok profile link"
-                  title="Fix link"
-                  className="text-brand-primary absolute top-1/2 right-4 -translate-y-1/2 transition-opacity duration-200 hover:opacity-70"
-                >
-                  <Hammer
-                    aria-hidden
-                    fill="currentColor"
-                    strokeWidth={1.5}
-                    className="size-[18px]"
-                  />
-                </button>
-              )}
-            </div>
+            <input
+              type="text"
+              name="tiktok"
+              placeholder="@username or https://www.tiktok.com/@username"
+              required
+              value={tiktok}
+              onChange={(event) => {
+                setTiktok(event.target.value);
+                clearError('tiktok');
+              }}
+              onBlur={() => handleBlur('tiktok')}
+              className={INPUT_CLASSES}
+            />
             <FieldError message={errors.tiktok} />
           </div>
 
@@ -432,10 +381,10 @@ export default function AnalyzeForm(): ReactElement {
             <h2 className="font-sans text-[28px] leading-[1.1] font-bold tracking-[-0.6px] text-white md:text-[32px]">
               Continue to checkout
             </h2>
-            {/* Header, checkbox and error share one centered, content-width
-                column so the header's left edge lines up with the checkbox. */}
-            <div className="mx-auto flex w-fit flex-col items-start gap-3">
-              <FieldLabel label="CONSENT" required onBrand align="left" />
+            {/* Centered, content-width column: the CONSENT header sits centered
+                above the checkbox and consent text. */}
+            <div className="mx-auto flex w-fit flex-col items-center gap-3">
+              <FieldLabel label="CONSENT" required onBrand />
               <label className="flex cursor-pointer items-start gap-5 text-left">
                 <input
                   type="checkbox"
