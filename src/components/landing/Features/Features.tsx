@@ -60,10 +60,17 @@ function Headline(): React.ReactElement {
 
 export default function Features(): React.ReactElement {
   // Desktop-first so the server HTML and the common case skip the re-render.
-  // md+ gets the sticky scroll-explode; lg+ swaps the tablet "ring" for the
-  // wider desktop "scatter" arc (Figma 61:1563).
+  // md+ gets the sticky scroll-explode. The tablet "ring" (Figma 61:1676) is a
+  // tall arc that needs vertical room, so it's reserved for portrait tablets in
+  // the 768–1024 band (e.g. iPad Pro's 1024px portrait); everything wider, plus
+  // ANY landscape viewport, takes the flat desktop "scatter" (Figma 61:1563).
+  // A short, wide panel like the Nest Hub (1024×600) is landscape: forcing it
+  // onto the ring crushes the arc and the icons pile onto Gia, so it scatters.
   const isDesktop = useMediaQuery('(min-width: 768px)', true);
-  const isWide = useMediaQuery('(min-width: 1024px)', true);
+  const isWide = useMediaQuery(
+    '(min-width: 1025px), (min-width: 768px) and (orientation: landscape)',
+    true
+  );
   const { sectionRef, containerStyle, onFrame } = useFeatureSectionAnimation();
 
   // Mobile (Figma 61:1789): a static 3x2 feature grid above a full-width
