@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactElement } from 'react';
-import { Check } from 'lucide-react';
 
 type CheckboxProps = {
   /** Form field name submitted with the surrounding form. */
@@ -14,14 +13,16 @@ type CheckboxProps = {
   required?: boolean;
   /** Accessible label when there's no associated visible <label> text. */
   'aria-label'?: string;
-  /** Extra classes merged onto the 18px box (e.g. `mt-0.5` for text alignment). */
+  /** Extra classes merged onto the box wrapper (e.g. `mt-0.5` for alignment). */
   className?: string;
 };
 
 /**
- * Minimal square checkbox for the brand-maroon surface: a thin white-bordered
- * box that reveals a white check when ticked — no fill, no chrome. Render it
- * inside a <label> alongside the caption text.
+ * Square consent checkbox for the brand-maroon surface: a white-outlined box
+ * with a hard offset shadow that fills gold and reveals a maroon tick when
+ * ticked. Structural styles live under `.consent-checkbox` in globals.css.
+ * Render it inside a <label> alongside the caption text — the root is a <span>
+ * so it never nests a second <label>.
  */
 export default function Checkbox({
   name,
@@ -32,9 +33,7 @@ export default function Checkbox({
   'aria-label': ariaLabel,
 }: CheckboxProps): ReactElement {
   return (
-    <span
-      className={`relative inline-flex size-[18px] shrink-0 items-center justify-center ${className}`}
-    >
+    <span className={`consent-checkbox ${className}`}>
       <input
         type="checkbox"
         name={name}
@@ -42,13 +41,8 @@ export default function Checkbox({
         checked={checked}
         aria-label={ariaLabel}
         onChange={(event) => onChange(event.target.checked)}
-        className="peer absolute inset-0 size-full cursor-pointer appearance-none rounded-[4px] border border-white bg-transparent transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-white/40"
       />
-      <Check
-        aria-hidden
-        strokeWidth={3}
-        className="pointer-events-none relative size-[12px] text-white opacity-0 transition-opacity duration-150 peer-checked:opacity-100"
-      />
+      <span className="checkmark" aria-hidden="true" />
     </span>
   );
 }

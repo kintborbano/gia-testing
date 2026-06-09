@@ -419,7 +419,7 @@ export default function AnalyzeForm(): ReactElement {
                   }}
                   className="mt-0.5"
                 />
-                <span className="max-w-[600px] font-sans text-[15px] leading-[1.5] font-medium tracking-[-0.075px] text-white">
+                <span className="max-w-[600px] font-sans text-[17px] leading-[1.5] font-medium tracking-[-0.075px] text-white">
                   By continuing, you agree that GIA will analyze publicly
                   available TikTok content and engagement data to generate your
                   personalized report.
@@ -433,7 +433,7 @@ export default function AnalyzeForm(): ReactElement {
               size="default"
               withArrow
               disabled={!canSubmit}
-              className="px-14"
+              className="-mt-4 px-14"
             >
               CONTINUE
             </Button>

@@ -245,3 +245,62 @@ canvas {
     transition: none;
   }
 }
+
+/*
+ * Consent checkbox — the square "continue to checkout" tick on the maroon CTA.
+ * Uiverse-style hard-shadow box (andrew-demchenk0), recolored for the brand:
+ * white outline + offset maroon shadow, fills gold and reveals a maroon tick
+ * when checked. Markup is the <span> root in ui/Checkbox.tsx; behaviour is
+ * driven by the native input's :checked state via sibling selectors.
+ */
+.consent-checkbox {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.consent-checkbox input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.consent-checkbox .checkmark {
+  position: relative;
+  display: block;
+  height: 21px;
+  width: 21px;
+  border: 2px solid var(--color-white);
+  border-radius: 5px;
+  box-shadow: 3px 3px var(--color-brand-primary-dark);
+  background-color: transparent;
+  transition: all 0.3s;
+}
+
+.consent-checkbox input:checked ~ .checkmark {
+  background-color: var(--color-brand-primary-dark);
+}
+
+.consent-checkbox .checkmark::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 7px;
+  display: none;
+  height: 11px;
+  width: 5px;
+  border: solid var(--color-white);
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+
+.consent-checkbox input:checked ~ .checkmark::after {
+  display: block;
+}
+
+.consent-checkbox input:focus-visible ~ .checkmark {
+  outline: 2px solid color-mix(in srgb, var(--color-white) 60%, transparent);
+  outline-offset: 2px;
+}
