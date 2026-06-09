@@ -80,11 +80,10 @@ const FEATURES: Feature[] = [
   },
   {
     area: 'story',
-    label: 'Shareable Story Card',
+    label: 'GIA Wrapped',
     width: 118,
     height: 107,
-    description:
-      'A polished, screenshot-ready summary of your growth wins, designed to drop straight into your Stories.',
+    description: ' A sharable recap on your wins.',
     tablet: { left: 82.8, top: 53.9 },
     desktop: { left: 89.4, top: 8.6 },
   },

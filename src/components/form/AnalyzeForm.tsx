@@ -9,18 +9,11 @@ import ScrollBackground from '@/components/landing/ScrollBackground';
 import type { ScrollStop } from '@/components/landing/scrollBackground.config';
 import { HEADER_HEIGHT_LARGE } from '@/animations/headerAnimations';
 
-// White → cream as you scroll past the first screen — the exact transition the
-// landing uses from the hero into features: the cream stop is anchored to its
-// section TOP (align 0) nudged +0.5vh, fading over the last 55% of the gap.
+// Static white background — no scroll-driven transition. A single stop keeps the
+// fixed page-background fill and the header palette (white bg / maroon text)
+// without ever changing color as you scroll.
 const FORM_BG_STOPS: ScrollStop[] = [
   { anchorId: 'form-bg-hero', color: 'white' },
-  {
-    anchorId: 'form-bg-cream',
-    color: 'cream',
-    align: 0,
-    offsetVh: 0.5,
-    fade: 0.55,
-  },
 ];
 
 /** Single-select radio groups rendered in the form. */
@@ -139,6 +132,7 @@ export default function AnalyzeForm(): ReactElement {
   const [accountType, setAccountType] = useState<string>('');
   const [goal, setGoal] = useState<string>('');
   const [focus, setFocus] = useState('');
+  const [instagram, setInstagram] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -213,7 +207,7 @@ export default function AnalyzeForm(): ReactElement {
       className="flex w-full flex-1 flex-col"
       style={{ paddingTop: `${HEADER_HEIGHT_LARGE}px` }}
     >
-      <ScrollBackground stops={FORM_BG_STOPS} />
+      <ScrollBackground stops={FORM_BG_STOPS} realBgStopCount={1} />
       <StickyHeader />
 
       <form
@@ -244,12 +238,8 @@ export default function AnalyzeForm(): ReactElement {
             </p>
           </div>
 
-          {/* Email — also the cream stop: the background is fully cream once
-              this block's top reaches the viewport top. */}
-          <div
-            id="form-bg-cream"
-            className="mt-8 flex w-full flex-col items-center gap-3.5"
-          >
+          {/* Email */}
+          <div className="mt-8 flex w-full flex-col items-center gap-3.5">
             <FieldLabel
               label="EMAIL ADDRESS"
               helper="we'll send your report here"
@@ -370,6 +360,22 @@ export default function AnalyzeForm(): ReactElement {
               value={focus}
               onChange={(event) => setFocus(event.target.value)}
               className="border-brand-primary text-brand-primary placeholder:text-brand-primary/50 focus:ring-brand-primary/30 w-full max-w-[459px] resize-none rounded-[25px] border bg-white px-7 py-3.5 font-sans text-[15px] tracking-[-0.3px] transition-shadow duration-200 outline-none focus:ring-2"
+            />
+          </div>
+
+          {/* Instagram handle (Figma 111:224) */}
+          <div className="flex w-full flex-col items-center gap-3.5">
+            <FieldLabel
+              label="INSTAGRAM HANDLE (OPTIONAL)"
+              helper="we'll send your report here"
+            />
+            <input
+              type="text"
+              name="instagram"
+              placeholder="@yourinstagramhandle"
+              value={instagram}
+              onChange={(event) => setInstagram(event.target.value)}
+              className={INPUT_CLASSES}
             />
           </div>
 

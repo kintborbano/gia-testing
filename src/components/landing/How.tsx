@@ -16,7 +16,7 @@ const steps = [
   {
     number: 2,
     title: 'unlock your report',
-    description: 'Complete checkout through our secure Payrex payment portal.',
+    description: 'Complete checkout through our secure payment portal.',
     descriptionWidth: 224,
   },
   {
@@ -28,7 +28,7 @@ const steps = [
       </>
     ),
     description:
-      'Receive your personalized report with recommendations, content roadmap, and audience insights.',
+      'Receive your personalized report with recommendations and audience insights.',
     descriptionWidth: 468,
   },
 ];
