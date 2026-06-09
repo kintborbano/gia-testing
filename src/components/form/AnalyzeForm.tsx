@@ -260,7 +260,7 @@ export default function AnalyzeForm(): ReactElement {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/gia-on-laptop.png"
+              src="/images/gia-writing-notebook.png"
               alt="GIA studying a TikTok account at her laptop"
               className="h-auto w-[380px] max-w-full sm:w-[490px] md:w-[600px]"
             />

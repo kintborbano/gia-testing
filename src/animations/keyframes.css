@@ -111,6 +111,41 @@
   }
 }
 
+/* ── Footer broadcast popup ─────────────────────────────────────────────────
+   The maroon "which TikTok profile?" card swipes up from below the viewport to
+   its centered resting spot, while the backdrop fades in behind it. Both run
+   once on open; markup is in BroadcastPopup.tsx. */
+.broadcast-popup-backdrop {
+  animation: broadcast-popup-fade 300ms ease-out forwards;
+}
+.broadcast-popup-card {
+  animation: broadcast-popup-rise 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes broadcast-popup-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes broadcast-popup-rise {
+  from {
+    opacity: 0;
+    transform: translateY(100vh);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .broadcast-popup-card {
+    animation: broadcast-popup-fade 300ms ease-out forwards;
+  }
+}
+
 /* ── Page keyframes ─────────────────────────────────────────────────────── */
 
 @keyframes chibi-float {

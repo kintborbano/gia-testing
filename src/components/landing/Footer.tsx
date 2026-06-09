@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Check } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import BroadcastPopup from '@/components/landing/BroadcastPopup';
 import { scrollToHashTarget } from '@/lib/scroll/navScroll';
 
 // Hash entries are stored bare (no leading slash) so the same-page handler can
@@ -23,23 +23,26 @@ const LEGAL_LINKS = [
   { label: 'Terms of Use', href: '/terms' },
 ];
 
-// Mirrors the browser's own [type=email] validity check closely enough to gate
-// the submit button: a single @, non-empty local part, and a dotted domain.
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Instagram handle rules: 1–30 chars of letters, numbers, periods, or
+// underscores. A single leading '@' is tolerated and stripped before checking
+// so users can type their handle either way.
+const INSTAGRAM_PATTERN = /^[a-zA-Z0-9._]{1,30}$/;
 
 export default function Footer(): React.ReactElement {
-  const [email, setEmail] = useState('');
-  const [codeSent, setCodeSent] = useState(false);
+  const [username, setUsername] = useState('');
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const pathname = usePathname();
 
-  const isEmailValid = EMAIL_PATTERN.test(email.trim());
+  const isUsernameValid = INSTAGRAM_PATTERN.test(
+    username.trim().replace(/^@/, '')
+  );
 
-  // No backend yet — swallow the native submit (which was reloading the page
-  // and jumping to the top) and just confirm the send in place. The email is
-  // kept controlled so it stays put after sending.
+  // CONTINUE is step one of the lead magnet: capture the Instagram handle, then
+  // open the popup that asks which TikTok profile to analyze. preventDefault
+  // stops the native submit from reloading the page and jumping to the top.
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    setCodeSent(true);
+    setIsPopupOpen(true);
   };
 
   return (
@@ -58,51 +61,33 @@ export default function Footer(): React.ReactElement {
             className="flex w-[480px] max-w-full flex-col gap-[18px]"
           >
             <p className="font-sans text-[22px] leading-[1.35] font-semibold tracking-[-0.11px]">
-              Not ready yet?
+              Want to be featured?
             </p>
             <p className="font-sans text-[14px] leading-[1.5] tracking-[-0.07px]">
-              <span className="font-bold">Get the Superpower Code.</span> A free
-              creator guide on understanding audience psychology, content
-              signals, and growth patterns.
+              Enter your <span className="font-bold">Instagram</span> username,
+              then tell us which TikTok Profile you want analyzed, and get a
+              chance to get featured on our broadcast channel.
             </p>
 
             <input
-              type="email"
-              name="email"
-              placeholder="user@mail.com"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              // Locked once sent — the email stays visible but can't be edited
-              // without a page refresh.
-              readOnly={codeSent}
-              className="text-brand-primary placeholder:text-brand-primary/50 h-[44px] w-full rounded-[25px] border border-white bg-white px-5 font-sans text-[14px] tracking-[-0.28px] read-only:cursor-not-allowed read-only:opacity-70"
+              type="text"
+              name="username"
+              placeholder="@username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              className="text-brand-primary placeholder:text-brand-primary/50 h-[44px] w-full rounded-[25px] border border-white bg-white px-5 font-sans text-[14px] tracking-[-0.28px]"
             />
-            {/* Fixed width so the label swap doesn't reflow the column. Once
-                sent, the button rests disabled — overridden here to a black
-                pill (the variant's default disabled dim stays for other onBrand
-                buttons like the form's CONTINUE). */}
+            {/* Fixed width keeps the column from reflowing. Disabled until the
+                input reads a valid handle; clicking opens the TikTok-profile
+                popup (BroadcastPopup) rather than submitting anywhere. */}
             <Button
               type="submit"
               variant="onBrand"
               size="default"
-              // Disabled until the input reads a valid email; stays disabled as
-              // the black CODE SENT pill once submitted.
-              disabled={codeSent || !isEmailValid}
-              // The black-pill override is only for the sent state; while the
-              // email is still invalid the variant's default disabled dim reads
-              // correctly as "not yet actionable".
-              className={`w-[210px] disabled:border-transparent! ${
-                codeSent ? 'disabled:bg-black! disabled:text-white!' : ''
-              }`}
+              disabled={!isUsernameValid}
+              className="w-[180px] disabled:border-transparent!"
             >
-              {codeSent ? (
-                <>
-                  CODE SENT
-                  <Check aria-hidden className="h-[16px] w-[16px]" />
-                </>
-              ) : (
-                'RECEIVE CODE'
-              )}
+              CONTINUE
             </Button>
           </form>
 
@@ -202,6 +187,11 @@ export default function Footer(): React.ReactElement {
           </div>
         </div>
       </div>
+
+      <BroadcastPopup
+        open={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+      />
     </footer>
   );
 }
