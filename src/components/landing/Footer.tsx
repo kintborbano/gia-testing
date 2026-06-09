@@ -113,8 +113,11 @@ export default function Footer(): React.ReactElement {
             </p>
             {NAV_LINKS.map((link) => {
               const isHash = link.href.startsWith('#');
+              // active:text-white gives a click flash — the link snaps to full
+              // white while pressed, eased by transition-colors, before the
+              // navigation/reload fires.
               const linkClassName =
-                'font-sans text-[16px] leading-[1.45] font-medium tracking-[-0.08px] text-white/50 transition-colors hover:text-white';
+                'font-sans text-[16px] leading-[1.45] font-medium tracking-[-0.08px] text-white/50 transition-colors hover:text-white active:text-white';
 
               // Same-page hash click: ease to the section via Lenis. Going
               // through scrollToHashTarget (rather than letting the hash drive
