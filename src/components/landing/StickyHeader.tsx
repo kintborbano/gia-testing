@@ -16,7 +16,7 @@ import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useInSection } from '@/hooks/useInSection';
 import { useNavWrapDetection } from '@/hooks/useNavWrapDetection';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
-import { scrollToHashTarget } from '@/lib/scroll/navScroll';
+import { scrollToHashTarget, scrollToTop } from '@/lib/scroll/navScroll';
 import { startLenis, stopLenis } from '@/lib/scroll/lenisControls';
 import {
   EXIT_EASING,
@@ -330,16 +330,22 @@ export default function StickyHeader(): React.ReactElement {
   }, [overlayActive]);
 
   // On the landing page a `<Link href="/">` click is a no-op (same route), so
-  // the logo neither scrolls up nor refreshes. Intercept it and force a full
-  // reload of '/', which lands at the top with fresh state. From any other page
-  // the Link routes home as usual.
+  // the logo neither scrolls up nor refreshes. Intercept it and refresh in
+  // place: snap to the top and re-fetch the route. A full `location.assign('/')`
+  // reload was the obvious choice, but it tears the document down and the
+  // server always re-renders the intro overlay (a white panel — sessionStorage,
+  // which records that the intro already played, can't be read during SSR), so
+  // mobile devices flash a white screen until hydration hides it. `router.refresh`
+  // re-fetches without unmounting, so there's no blank frame. From any other
+  // page the Link routes home as usual.
   const handleLogoClick = (
     event: React.MouseEvent<HTMLAnchorElement>
   ): void => {
     setMenuOpen(false);
     if (pathname === '/') {
       event.preventDefault();
-      window.location.assign('/');
+      scrollToTop();
+      router.refresh();
     }
   };
 
