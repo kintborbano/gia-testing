@@ -141,6 +141,16 @@ export default function Footer(): React.ReactElement {
                 <Link
                   key={link.label}
                   href={linkHref}
+                  // A `<Link>` to the route you're already on is a no-op, so
+                  // clicking e.g. ABOUT US from the footer of /about does
+                  // nothing. Force a full reload, which lands back at the top
+                  // with fresh state (mirrors the logo handler in StickyHeader).
+                  onClick={(event) => {
+                    if (pathname === linkHref) {
+                      event.preventDefault();
+                      window.location.assign(linkHref);
+                    }
+                  }}
                   className={linkClassName}
                 >
                   {link.label}
