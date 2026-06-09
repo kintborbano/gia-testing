@@ -10,11 +10,18 @@ import ScrollBackground from '@/components/landing/ScrollBackground';
 import type { ScrollStop } from '@/components/landing/scrollBackground.config';
 import { HEADER_HEIGHT_LARGE } from '@/animations/headerAnimations';
 
-// Static white background — no scroll-driven transition. A single stop keeps the
-// fixed page-background fill and the header palette (white bg / maroon text)
-// without ever changing color as you scroll.
+// White → cream as you scroll past the first screen — the exact transition the
+// landing uses from the hero into features: the cream stop is anchored to its
+// section TOP (align 0) nudged +0.5vh, fading over the last 55% of the gap.
 const FORM_BG_STOPS: ScrollStop[] = [
   { anchorId: 'form-bg-hero', color: 'white' },
+  {
+    anchorId: 'form-bg-cream',
+    color: 'cream',
+    align: 0,
+    offsetVh: 0.5,
+    fade: 0.55,
+  },
 ];
 
 /** Single-select radio groups rendered in the form. */
@@ -69,13 +76,16 @@ type FormErrors = {
 };
 
 const INPUT_CLASSES =
-  'h-[44px] w-full max-w-[459px] rounded-[25px] border border-brand-primary bg-white px-7 font-sans text-[15px] tracking-[-0.3px] text-brand-primary outline-none transition-shadow duration-200 placeholder:text-brand-primary/50 focus:ring-2 focus:ring-brand-primary/30';
+  'h-[52px] w-full max-w-[459px] rounded-[15px] border-[3px] border-brand-gold bg-white px-6 font-sans text-[15px] tracking-[-0.3px] text-text outline-none shadow-[inset_0_0_0_2px_var(--color-text),inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_var(--color-brand-gold-shadow)] placeholder:text-text/50';
 
 /** Inline validation message shown beneath a field. */
 function FieldError({ message }: { message?: string }): ReactElement | null {
   if (!message) return null;
   return (
-    <p role="alert" className="font-sans text-[13px] text-red-500">
+    <p
+      role="alert"
+      className="font-pixelify text-[14px] tracking-[0.3px] text-red-500"
+    >
       {message}
     </p>
   );
@@ -100,7 +110,7 @@ function FieldLabel({
   return (
     <div className={`flex w-full flex-col gap-1.5 ${alignment}`}>
       <p
-        className={`font-sans text-[15px] font-bold tracking-[-0.075px] ${textColor}`}
+        className={`font-young-serif text-[17px] tracking-[-0.075px] ${textColor}`}
       >
         {label}
         {required && (
@@ -110,9 +120,7 @@ function FieldLabel({
         )}
       </p>
       {helper && (
-        <p
-          className={`font-sans text-[15px] leading-[1.45] font-medium tracking-[-0.075px] ${textColor}`}
-        >
+        <p className="font-sans text-[15px] leading-[1.45] tracking-[-0.075px] text-[#1A1208]">
           {helper}
         </p>
       )}
@@ -208,7 +216,7 @@ export default function AnalyzeForm(): ReactElement {
       className="flex w-full flex-1 flex-col"
       style={{ paddingTop: `${HEADER_HEIGHT_LARGE}px` }}
     >
-      <ScrollBackground stops={FORM_BG_STOPS} realBgStopCount={1} />
+      <ScrollBackground stops={FORM_BG_STOPS} />
       <StickyHeader />
 
       <form
@@ -239,8 +247,12 @@ export default function AnalyzeForm(): ReactElement {
             </p>
           </div>
 
-          {/* Email */}
-          <div className="mt-8 flex w-full flex-col items-center gap-3.5">
+          {/* Email — also the cream stop: the background is fully cream once
+              this block's top reaches the viewport top. */}
+          <div
+            id="form-bg-cream"
+            className="mt-8 flex w-full flex-col items-center gap-3.5"
+          >
             <FieldLabel
               label="EMAIL ADDRESS"
               helper="we'll send your report here"
@@ -266,8 +278,8 @@ export default function AnalyzeForm(): ReactElement {
           {/* TikTok profile link */}
           <div className="flex w-full flex-col items-center gap-3.5">
             <FieldLabel
-              label="TIKTOK PROFILE LINK"
-              helper="paste the tiktok account you want gia to analyze"
+              label="TIKTOK USERNAME"
+              helper="enter the @username you want gia to analyze"
               required
             />
             <input
@@ -360,7 +372,7 @@ export default function AnalyzeForm(): ReactElement {
               placeholder="like... why are my views dropping? or... why don't people follow after watching?... or what content should i make next?"
               value={focus}
               onChange={(event) => setFocus(event.target.value)}
-              className="border-brand-primary text-brand-primary placeholder:text-brand-primary/50 focus:ring-brand-primary/30 w-full max-w-[459px] resize-none rounded-[25px] border bg-white px-7 py-3.5 font-sans text-[15px] tracking-[-0.3px] transition-shadow duration-200 outline-none focus:ring-2"
+              className="border-brand-gold text-text placeholder:text-text/50 mx-auto w-full max-w-[680px] resize-none rounded-[15px] border-[3px] bg-white px-8 py-5 text-left font-sans text-[14px] leading-[1.45] tracking-[-0.2px] shadow-[inset_0_0_0_2px_var(--color-text),inset_0_3px_5px_rgba(255,240,190,0.45),0_5px_0_var(--color-brand-gold-shadow)] outline-none md:text-[15px]"
             />
           </div>
 
