@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import SubPageShell from '@/components/landing/SubPageShell';
 import AboutUs from '@/components/landing/AboutUs';
+import { BRAND } from '@/styles/palette';
 
 export const metadata: Metadata = {
   title: 'About Us',
@@ -10,7 +11,14 @@ export const metadata: Metadata = {
 
 export default function AboutPage(): React.ReactElement {
   return (
-    <SubPageShell>
+    // Dark page: flip the sticky header to its black/cream palette (the same
+    // dark version it wears over the How section) and paint the shell black.
+    <SubPageShell
+      headerBackground="rgb(0, 0, 0)"
+      headerForeground={BRAND.cream}
+      surfaceClassName="bg-black"
+      showFooter={false}
+    >
       <AboutUs />
     </SubPageShell>
   );

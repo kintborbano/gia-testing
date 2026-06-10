@@ -86,6 +86,18 @@ function floodRadius(x: number, y: number): number {
   return Math.hypot(dx, dy);
 }
 
+// True when a published page background reads as (near-)black. The header uses
+// this to switch the SOFI pill to its gold/on-dark tone over genuinely dark
+// surfaces (the How section, the whole About page) while leaving it light over
+// maroon (the Action section, max channel 140 — well above the threshold).
+// Parses the `rgb(r, g, b)` strings the page-color store publishes; anything it
+// can't read is treated as not-dark.
+function isNearBlack(color: string): boolean {
+  const match = /(\d+)\D+(\d+)\D+(\d+)/.exec(color);
+  if (!match) return false;
+  return Math.max(Number(match[1]), Number(match[2]), Number(match[3])) < 40;
+}
+
 // Phases of the header's post-close re-entrance. `hidden` parks it off-screen
 // with no transition; `sliding` eases it back down; `idle` is normal behaviour.
 type HeaderEntry = 'idle' | 'hidden' | 'sliding';
@@ -352,8 +364,8 @@ export default function StickyHeader(): React.ReactElement {
   // While the Features scroll-scene owns the top of the viewport, keep the
   // header hidden even when scrolling up — it only reappears in other sections.
   const inFeatures = useInSection('features-section');
-  // The How section is black with gold accents — switch the SOFI pill to its
-  // dark/gold tone only while the header sits over it.
+  // The How section is black with gold accents; keep its IntersectionObserver
+  // signal as the explicit landing-page trigger for the dark/gold SOFI pill.
   const inHow = useInSection('bg-stop-how');
   // `transitioning` (from usePageTransition, read at the top): stay hidden for
   // the whole page transition, then slide in once it ends — when `active` flips
@@ -367,6 +379,14 @@ export default function StickyHeader(): React.ReactElement {
     getPageColorsSnapshot,
     getPageColorsServerSnapshot
   );
+
+  // The "powered by SOFI" pill switches to its gold/on-dark tone over a black
+  // header background — the How section AND a fully dark page like About, which
+  // sets the header background black for its whole length. Deriving this from
+  // the background (rather than a section IntersectionObserver) means it holds
+  // for the entire About page, not just while a section crosses the top edge.
+  // Maroon (the Action section) is NOT near-black, so it keeps the white pill.
+  const onDarkPill = inHow || isNearBlack(pageBg);
 
   // The post-close re-entrance overrides the normal hidden/visible transform:
   // `hidden` parks it up with no transform transition (so it snaps off-screen),
@@ -421,7 +441,7 @@ export default function StickyHeader(): React.ReactElement {
         >
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <GiaLogo className="mt-2 h-[34px] w-auto sm:h-[40px]" />
-            <PoweredByPill size="sm" tone={inHow ? 'onDark' : 'default'} />
+            <PoweredByPill size="sm" tone={onDarkPill ? 'onDark' : 'default'} />
           </div>
           <div className="flex shrink-0 items-center gap-8">
             {NAV_LINKS.map(({ label, href }) => (
@@ -442,7 +462,7 @@ export default function StickyHeader(): React.ReactElement {
           onClick={handleLogoClick}
         >
           <GiaLogo className="mt-2 h-[34px] w-auto sm:h-[40px]" />
-          <PoweredByPill size="sm" tone={inHow ? 'onDark' : 'default'} />
+          <PoweredByPill size="sm" tone={onDarkPill ? 'onDark' : 'default'} />
         </Link>
 
         {/* Desktop nav. Hidden on phone by the `md:` baseline, and additionally
