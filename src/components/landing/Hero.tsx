@@ -32,7 +32,7 @@ export default function Hero(): React.ReactElement {
         style={{ marginBottom: HEADER_HEIGHT_LARGE }}
       >
         <div className="text-brand-primary flex w-full flex-col items-center justify-center gap-8 text-center sm:gap-11 md:gap-14">
-          <h1 className="font-itc-garamond text-[50px] leading-[1.1] tracking-[-1.12px] text-[#151515] sm:text-[68px] md:text-[86px]">
+          <h1 className="font-itc-garamond text-[clamp(38px,11vw,50px)] leading-[1.1] tracking-[-1.12px] text-[#151515] sm:text-[68px] md:text-[86px]">
             Finally understand
             <br />
             why your{' '}
@@ -47,7 +47,7 @@ export default function Hero(): React.ReactElement {
                 optically centred; as it shows, the tail slides back so the full
                 phrase is centred. Tune --tail-slot to the rendered " or flops"
                 width. */}
-            <span className="hero-tail inline-block [--tail-slot:3.2em]">
+            <span className="hero-tail inline-block whitespace-nowrap [--tail-slot:3.2em]">
               succeeds
               <span aria-hidden="true" className="hero-dot-1">
                 .
