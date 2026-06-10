@@ -18,6 +18,7 @@ export default function AboutPage(): React.ReactElement {
       headerForeground={BRAND.cream}
       surfaceClassName="bg-black"
       showFooter={false}
+      flushContent
     >
       <AboutUs />
     </SubPageShell>

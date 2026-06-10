@@ -26,6 +26,7 @@ export default function SubPageShell({
   headerForeground,
   surfaceClassName = '',
   showFooter = true,
+  flushContent = false,
 }: {
   children: React.ReactNode;
   /** Header background the sticky header adopts for this page. */
@@ -36,6 +37,12 @@ export default function SubPageShell({
   surfaceClassName?: string;
   /** Render the shared footer. Set false on pages that stand on their own (e.g. the dark About page). */
   showFooter?: boolean;
+  /**
+   * Drop the default centered `py-10` content wrapper so the page sits flush
+   * under the header and owns its own top spacing — matching the form, whose
+   * hero image sits just below the header. Used by the About page.
+   */
+  flushContent?: boolean;
 }): React.ReactElement {
   useEffect(() => {
     if (headerForeground) {
@@ -54,7 +61,13 @@ export default function SubPageShell({
       style={{ paddingTop: `${HEADER_HEIGHT_LARGE}px` }}
     >
       <StickyHeader />
-      <div className="flex flex-1 flex-col justify-center py-10">
+      <div
+        className={
+          flushContent
+            ? 'flex flex-1 flex-col'
+            : 'flex flex-1 flex-col justify-center py-10'
+        }
+      >
         {children}
       </div>
       {showFooter && <Footer />}

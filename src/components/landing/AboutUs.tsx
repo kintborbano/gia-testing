@@ -69,18 +69,19 @@ export default function AboutUs(): React.ReactElement {
   return (
     <section
       id="bg-stop-about"
-      className="flex w-full flex-col items-center gap-20 bg-black px-5 py-10 text-white sm:px-8 md:gap-[93px] md:px-12"
+      className="flex w-full flex-col items-center gap-20 bg-black px-5 pt-2 pb-10 text-white sm:px-8 md:gap-[93px] md:px-12"
     >
-      {/* Hero — illustration, eyebrow, headline, and the pull-quote. */}
-      <div className="flex w-full max-w-[1152px] flex-col items-center gap-10 py-6">
-        <div className="flex flex-col items-center gap-6 text-center">
+      {/* Hero — illustration, eyebrow, headline, and the pull-quote. The image
+          sits flush under the header, sized and spaced like the form's hero. */}
+      <div className="flex w-full max-w-[1152px] flex-col items-center gap-10">
+        <div className="flex flex-col items-center gap-5 text-center">
           <Image
             src="/images/about/gia-hero.png"
             alt="GIA, the SOFI AI analyst, working at her desk"
             width={522}
             height={348}
             priority
-            className="h-auto w-[260px] sm:w-[380px] md:w-[522px]"
+            className="h-auto w-[380px] max-w-full sm:w-[490px] md:w-[600px]"
           />
           <p className="font-sans text-[15px] leading-[1.45] font-bold tracking-[-0.075px]">
             ABOUT US
@@ -115,28 +116,28 @@ export default function AboutUs(): React.ReactElement {
         cta={<AboutCta href="/">LEARN MORE</AboutCta>}
       >
         <p>
-          <span className="text-brand-secondary font-bold">
+          <span className="text-brand-gold font-bold">
             SOFI AI Tech Solution Inc.
           </span>
           {` is an AI solutions company helping businesses implement AI — from `}
-          <span className="text-brand-secondary font-bold">
+          <span className="text-brand-gold font-bold">
             sales to operations to customer experience.
           </span>
           {` We build systems that make companies scale smarter, faster, and more efficient.`}
         </p>
         <p>
           {`But we also believe that `}
-          <span className="text-brand-secondary font-bold">
+          <span className="text-brand-gold font-bold">
             AI should work for the individuals…not just the enterprises.
           </span>
         </p>
         <p>
           {`GIA is that belief, built into a product. Created for creators and businesses who want to understand not just how their content is performing, but why. Because behind every view count, every save, every comment — there’s a story. And `}
-          <span className="text-brand-secondary font-bold">
+          <span className="text-brand-gold font-bold">
             most tools stop at the numbers. We don’t.
           </span>
         </p>
-        <p className="text-brand-secondary font-bold">
+        <p className="text-brand-gold font-bold">
           Data tells stories. GIA is here to help you understand them.
         </p>
       </InfoSection>
@@ -163,7 +164,7 @@ export default function AboutUs(): React.ReactElement {
           {`During an internship interview for SOFI AI, an applicant stood out during her interview by mentioning that she was also a content creator on Tiktok. Her name was Gia. Intrigued, Sophia Sy, co-founder of SOFI AI spent that night scrolling through her videos.`}
         </p>
         <p>She got the role.</p>
-        <p className="text-brand-secondary font-bold">
+        <p className="text-brand-gold font-bold">
           {`In a saturated market with equally qualified candidates, Gia’s content and personal branding was what set her apart.`}
         </p>
         <p>
@@ -171,7 +172,7 @@ export default function AboutUs(): React.ReactElement {
         </p>
         <p>
           {`GIA is named after that realization. `}
-          <span className="text-brand-secondary font-bold">
+          <span className="text-brand-gold font-bold">
             An AI analyst built to help you understand your audience, own your
             narrative, and stand out… with purpose.
           </span>
