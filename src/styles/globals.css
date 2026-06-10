@@ -3,11 +3,13 @@
 
 html {
   scroll-behavior: auto;
-  scrollbar-width: none;
-}
-
-html::-webkit-scrollbar {
-  display: none;
+  /* Always render the vertical scrollbar. When the page is taller than the
+     viewport it scrolls; when it fits, the same track stays as an inert,
+     non-scrollable version. Reserving this gutter on every page means
+     navigating between a tall page and a short one never shifts the layout.
+     (scrollbar-gutter: stable was tried here but is redundant — it reserves no
+     visible track and, like overflow-y, collapses under the scroll locks.) */
+  overflow-y: scroll;
 }
 
 .lenis,
