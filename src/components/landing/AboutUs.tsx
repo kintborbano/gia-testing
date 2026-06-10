@@ -50,7 +50,7 @@ function InfoSection({
   return (
     <div className="flex w-full max-w-[1152px] flex-col gap-10 md:flex-row md:items-start md:justify-center md:gap-[54px]">
       <div className="flex flex-col gap-6 md:w-[460px] md:shrink-0">
-        <p className="text-brand-gold font-sans text-[15px] leading-[1.45] font-bold tracking-[-0.075px]">
+        <p className="text-brand-secondary font-sans text-[15px] leading-[1.45] font-bold tracking-[-0.075px]">
           {eyebrow}
         </p>
         <h2 className="font-young-serif text-[40px] leading-[1.1] tracking-[-1.12px] md:text-[56px]">
@@ -87,7 +87,7 @@ export default function AboutUs(): React.ReactElement {
           </p>
           <h1 className="font-young-serif text-[32px] leading-[1.1] tracking-[-1.12px] sm:text-[44px] md:text-[56px]">
             {`your data, finally `}
-            <span className="text-brand-gold">making sense.</span>
+            <span className="text-brand-secondary">making sense.</span>
           </h1>
         </div>
         <p className="max-w-[749px] text-center font-sans text-[16px] leading-[1.5] md:text-[20px]">
@@ -109,34 +109,34 @@ export default function AboutUs(): React.ReactElement {
           <>
             {`powered by `}
             <br />
-            <span className="text-brand-gold">SOFI AI</span>
+            <span className="text-brand-secondary">SOFI AI</span>
           </>
         }
         cta={<AboutCta href="/">LEARN MORE</AboutCta>}
       >
         <p>
-          <span className="text-brand-gold font-bold">
+          <span className="text-brand-secondary font-bold">
             SOFI AI Tech Solution Inc.
           </span>
           {` is an AI solutions company helping businesses implement AI — from `}
-          <span className="text-brand-gold font-bold">
+          <span className="text-brand-secondary font-bold">
             sales to operations to customer experience.
           </span>
           {` We build systems that make companies scale smarter, faster, and more efficient.`}
         </p>
         <p>
           {`But we also believe that `}
-          <span className="text-brand-gold font-bold">
+          <span className="text-brand-secondary font-bold">
             AI should work for the individuals…not just the enterprises.
           </span>
         </p>
         <p>
           {`GIA is that belief, built into a product. Created for creators and businesses who want to understand not just how their content is performing, but why. Because behind every view count, every save, every comment — there’s a story. And `}
-          <span className="text-brand-gold font-bold">
+          <span className="text-brand-secondary font-bold">
             most tools stop at the numbers. We don’t.
           </span>
         </p>
-        <p className="text-brand-gold font-bold">
+        <p className="text-brand-secondary font-bold">
           Data tells stories. GIA is here to help you understand them.
         </p>
       </InfoSection>
@@ -148,7 +148,7 @@ export default function AboutUs(): React.ReactElement {
           <>
             {`GIA is `}
             <br />
-            <span className="text-brand-gold">
+            <span className="text-brand-secondary">
               Generative
               <br />
               Influencer
@@ -163,7 +163,7 @@ export default function AboutUs(): React.ReactElement {
           {`During an internship interview for SOFI AI, an applicant stood out during her interview by mentioning that she was also a content creator on Tiktok. Her name was Gia. Intrigued, Sophia Sy, co-founder of SOFI AI spent that night scrolling through her videos.`}
         </p>
         <p>She got the role.</p>
-        <p className="text-brand-gold font-bold">
+        <p className="text-brand-secondary font-bold">
           {`In a saturated market with equally qualified candidates, Gia’s content and personal branding was what set her apart.`}
         </p>
         <p>
@@ -171,7 +171,7 @@ export default function AboutUs(): React.ReactElement {
         </p>
         <p>
           {`GIA is named after that realization. `}
-          <span className="text-brand-gold font-bold">
+          <span className="text-brand-secondary font-bold">
             An AI analyst built to help you understand your audience, own your
             narrative, and stand out… with purpose.
           </span>
