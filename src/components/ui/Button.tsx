@@ -11,13 +11,14 @@ export type ButtonVariant =
   | 'outlined'
   | 'onBrand'
   | 'onGold'
+  | 'onCream'
   | 'whiteStatic'
   | 'adaptive';
 export type ButtonSize = 'sm' | 'default' | 'lg';
 
 type BaseProps = {
   children: ReactNode;
-  /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. `onBrand` = white fill with brand text for use on a brand-colored surface; warms to cream on hover so it never blends in. `onGold` = cream fill with dark text for use on a gold surface (the dark-page footer); brightens to white on hover. `whiteStatic` = white fill, black border and text, no color change on hover (only the arrow moves). `adaptive` = fills with the live `--page-fg`/`--page-bg` CSS vars so it tracks the section palette (used in the sticky header); inverts on hover. */
+  /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. `onBrand` = white fill with brand text for use on a brand-colored surface; warms to cream on hover so it never blends in. `onGold` = cream fill with dark text for use on a gold surface (the dark-page footer); brightens to white on hover. `onCream` = maroon fill with white text for use on a cream surface (the dark-page footer's cream panel); deepens to the darker maroon on hover. `whiteStatic` = white fill, black border and text, no color change on hover (only the arrow moves). `adaptive` = fills with the live `--page-fg`/`--page-bg` CSS vars so it tracks the section palette (used in the sticky header); inverts on hover. */
   variant?: ButtonVariant;
   /** sm 38px/13px · default 48px/14px · lg 60px/16px. */
   size?: ButtonSize;
@@ -102,6 +103,15 @@ const VARIANT_CLASSES: Record<ButtonVariant, VariantStyle> = {
     pressed: 'active:border-transparent active:bg-black active:text-white',
     disabled:
       'disabled:border-transparent disabled:bg-brand-cream/40 disabled:text-brand-text/50',
+  },
+  // Maroon CTA on a cream surface (the dark-page footer's cream panel): maroon
+  // fill with white text, deepening to the darker maroon on hover so it never
+  // washes into the cream the way a white-hover would.
+  onCream: {
+    base: 'border-brand-primary bg-brand-primary text-white hover:border-brand-primary-dark hover:bg-brand-primary-dark hover:text-white',
+    pressed: 'active:border-transparent active:bg-black active:text-white',
+    disabled:
+      'disabled:border-transparent disabled:bg-brand-primary/30 disabled:text-brand-text/40',
   },
   whiteStatic: { base: 'border-black bg-white text-black' },
   adaptive: {

@@ -12,7 +12,7 @@ import { scrollToHashTarget } from '@/lib/scroll/navScroll';
  * the rounded panel) and the panel itself. `light` is the default maroon panel
  * on a white band — right for the light pages. `dark` drops the band to
  * transparent so it melts into a dark page (e.g. About) instead of stamping a
- * stale white block, and swaps the panel to the gold/cream combo.
+ * stale white block, and swaps the panel to a cream card with maroon accents.
  */
 export type FooterVariant = 'light' | 'dark';
 
@@ -46,14 +46,13 @@ const FOOTER_THEME: Record<FooterVariant, FooterTheme> = {
   },
   dark: {
     band: 'bg-transparent',
-    panel: 'bg-brand-gold text-brand-cream',
+    panel: 'bg-brand-cream text-brand-text',
     input:
-      'border-brand-cream bg-brand-cream text-brand-text placeholder:text-brand-text/50',
-    button: 'onGold',
-    logo: 'bg-brand-cream',
-    navLink:
-      'text-brand-cream/60 hover:text-brand-cream active:text-brand-cream',
-    meta: 'text-brand-cream/80',
+      'border-brand-gold/40 bg-white text-brand-text placeholder:text-brand-text/40',
+    button: 'onCream',
+    logo: 'bg-brand-primary',
+    navLink: 'text-brand-text/55 hover:text-brand-text active:text-brand-text',
+    meta: 'text-brand-text/65',
   },
 };
 
@@ -207,7 +206,7 @@ export default function Footer({
         {/* Bottom row: logo (left) + legal & attribution (right) */}
         <div className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between md:gap-16">
           {/* GIA logo — masked so the SVG paints in the theme's logo colour
-              (white on the maroon panel, cream on the gold one). */}
+              (white on the maroon panel, maroon on the cream one). */}
           <div
             role="img"
             aria-label="GIA"

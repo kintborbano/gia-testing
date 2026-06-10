@@ -38,7 +38,7 @@ export default function SubPageShell({
   surfaceClassName?: string;
   /** Render the shared footer. Set false on pages that stand on their own. */
   showFooter?: boolean;
-  /** Footer palette. `dark` drops the white band and swaps the maroon panel for the gold/cream combo on dark pages (e.g. About). */
+  /** Footer palette. `dark` drops the white band and swaps the maroon panel for a cream card with maroon accents on dark pages (e.g. About). */
   footerVariant?: FooterVariant;
   /**
    * Drop the default centered `py-10` content wrapper so the page sits flush
