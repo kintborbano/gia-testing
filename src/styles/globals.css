@@ -200,7 +200,6 @@ canvas {
   letter-spacing: -0.07px;
   color: var(--color-brand-primary);
   transition: color 0.3s ease;
-  filter: url(#handDrawnNoise);
 }
 
 .notebook-checkbox .desc {
