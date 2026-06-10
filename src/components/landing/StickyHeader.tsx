@@ -33,6 +33,11 @@ import {
   getPageColorsSnapshot,
   subscribeToPageColors,
 } from '@/stores/pageBackgroundStore';
+import {
+  consumeHeaderEntry,
+  peekHeaderEntry,
+  requestHeaderEntry,
+} from '@/stores/headerEntrySignal';
 import GiaLogo from '@/components/ui/GiaLogo';
 import PoweredByPill from '@/components/ui/PoweredByPill';
 import Button from '@/components/ui/Button';
@@ -70,13 +75,17 @@ const linkClassName =
 const mobileLinkClassName =
   'font-sans text-[15px] font-bold tracking-[-0.075px] text-white transition-opacity hover:opacity-70';
 
-// Close choreography: the X spins away while the maroon flood drains (both start
-// together), then the bare header slides back in like the intro reveal. The
-// close starts from an exact screen-covering disc (no off-screen overshoot) and
-// retracts at a constant rate, so it begins on frame one and finishes cleanly —
-// no slow tail, no "wait". A touch quicker than the open so it feels snappy.
-const FLOOD_CLOSE_DURATION = 420;
-const HEADER_REENTRY_MS = 700;
+// Close choreography: the X spins away while the maroon flood drains, then the
+// bare header slides back in like the intro reveal. The open *feels* instant
+// because its disc overshoots to 200% — the screen is fully covered in the first
+// ~150ms and the rest of the easing plays out off-screen. The close has nowhere
+// to hide its tail (the disc shrinks fully on-screen), so to match that snap it
+// retracts fast with the same burst easing over a shorter window rather than at a
+// plodding constant rate. The header re-entry is the slide-in the user reads as
+// "the header arrives after the page" — on navigation it now plays on the
+// destination page (see headerEntrySignal), not on the outgoing one.
+const FLOOD_CLOSE_DURATION = 300;
+const HEADER_REENTRY_MS = 480;
 
 // Radius that guarantees a disc centred at (x, y) covers the whole viewport —
 // the distance from the origin to its farthest corner.
@@ -170,14 +179,26 @@ export default function StickyHeader(): React.ReactElement {
   // unmounts.
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuMounted, setMenuMounted] = useState(false);
-  // Drives the header's slide-back-in after the closing flood drains.
-  const [headerEntry, setHeaderEntry] = useState<HeaderEntry>('idle');
+  // Drives the header's slide-back-in after the closing flood drains. A fresh
+  // header that the outgoing page asked to animate (mobile-menu navigation)
+  // starts `hidden` so it slides in once this new page has rendered, instead of
+  // appearing at rest. Peek (not consume) here — the initializer can run more
+  // than once (StrictMode/hydration); the consume effect below clears it once.
+  const [headerEntry, setHeaderEntry] = useState<HeaderEntry>(() =>
+    peekHeaderEntry() ? 'hidden' : 'idle'
+  );
   const overlayRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
-  // A nav target captured from an overlay link, fired only once the close
-  // choreography (flood retract + header slide-in) has fully played out — so a
-  // cached/prefetched route can't swap the page out mid-animation.
+  // A nav target captured from an overlay link, fired once the maroon flood has
+  // finished draining — late enough that a cached/prefetched route can't swap the
+  // page out while the drain is still on screen, but without waiting on the
+  // header slide-in too (that now plays on the destination page).
   const pendingNavRef = useRef<string | null>(null);
+  // Releases the overlay's scroll-freeze (restart Lenis, restore overflow). Held
+  // in a ref so the close can lift the freeze *before* it runs a same-page hash
+  // scroll — that scroll needs Lenis live, and the effect cleanup that would
+  // normally lift it hasn't committed yet at the moment we navigate.
+  const releaseFreezeRef = useRef<(() => void) | null>(null);
   const pathname = usePathname();
   const router = useRouter();
   const { active: transitioning } = usePageTransition();
@@ -197,25 +218,37 @@ export default function StickyHeader(): React.ReactElement {
 
   // Run the nav captured from an overlay link. Same-page hash → ease via Lenis;
   // a route (or cross-page hash) → a plain client navigation, no special
-  // transition or loading screen. Stable identity so the re-entry effect's
-  // timeout isn't reset by re-renders.
+  // transition or loading screen. Stable identity so the flood effect that calls
+  // it isn't needlessly re-subscribed on every render.
   const runPendingNav = useCallback((): void => {
     const href = pendingNavRef.current;
     if (!href) return;
     pendingNavRef.current = null;
     if (href.startsWith('#')) {
       if (pathname === '/') {
+        // Same page: ease to the section. No remount, so the header slides back
+        // in locally via the `hidden` state set when the close finished.
         scrollToHashTarget(href);
       } else {
+        // Cross-page: the destination remounts the header — hand its slide-in to
+        // that fresh instance so it plays after the new page renders.
+        requestHeaderEntry();
         router.push(`/${href}`);
       }
     } else {
+      requestHeaderEntry();
       router.push(href);
     }
   }, [pathname, router]);
 
+  // Clear the cross-navigation entry flag once this header has taken it (the
+  // initializer above only peeked). A mount effect, so it can't leak the slide-in
+  // to a later, unrelated header mount.
+  useEffect(() => consumeHeaderEntry(), []);
+
   // Overlay link handler: swallow the click's own navigation, remember where it
-  // was headed, and start closing. `runPendingNav` fires when the close ends.
+  // was headed, and start closing. `runPendingNav` fires the moment the drain
+  // finishes (see the flood effect), so the page swaps right as the menu clears.
   const deferNavigate =
     (href: string) =>
     (event: React.MouseEvent<HTMLAnchorElement>): void => {
@@ -272,29 +305,39 @@ export default function StickyHeader(): React.ReactElement {
         ? [{ clipPath: hidden }, { clipPath: openCover }]
         : [{ clipPath: closeCover }, { clipPath: hidden }],
       {
-        // The open bursts out (ease-out) and hides its slow tail off-screen. The
-        // close retracts on-screen the whole way, so it uses a constant rate over
-        // a shorter duration — it starts instantly with the X and finishes clean,
-        // with no slow tail to read as sluggish.
+        // Both directions use the same ease-out burst: the open clears the screen
+        // in its first frames, and the close clears it just as fast, dumping most
+        // of the disc in the opening beat so the retract reads as snappy as the
+        // open instead of a steady, sluggish shrink. The small remnant left near
+        // the toggle finishes during the X spin and is barely noticeable.
         duration: menuOpen ? FLOOD_DURATION : FLOOD_CLOSE_DURATION,
-        easing: menuOpen ? FLOOD_EASING : 'linear',
+        easing: FLOOD_EASING,
         fill: 'forwards',
       }
     );
 
-    // On close, once the disc has drained: unmount the overlay and hand off to
-    // the header re-entrance (parked off-screen, then it slides back in).
+    // On close, once the disc has drained: unmount the overlay and park the
+    // header off-screen. With a nav queued, navigate now — the drain (the only
+    // part the user watches) is done, so there's no reason to sit through the
+    // header slide first. The header's entrance moves to the destination page
+    // (via runPendingNav → requestHeaderEntry), so it arrives after the new page
+    // renders. A plain dismiss has no nav: the `hidden` park then slides the
+    // header back in on this same page.
     if (!menuOpen) {
       anim.finished
         .catch(() => {})
         .finally(() => {
           setMenuMounted(false);
           setHeaderEntry('hidden');
+          // Lift the scroll-freeze now (don't wait for the effect cleanup to
+          // commit) so a same-page hash scroll runs with Lenis already live.
+          releaseFreezeRef.current?.();
+          runPendingNav();
         });
     }
 
     return () => anim.cancel();
-  }, [menuOpen, menuMounted]);
+  }, [menuOpen, menuMounted, runPendingNav]);
 
   // Header re-entrance after a close: park it off-screen (no transition), then
   // on the next frame ease it back down — the intro's slide-in, replayed.
@@ -310,15 +353,15 @@ export default function StickyHeader(): React.ReactElement {
       };
     }
     if (headerEntry === 'sliding') {
-      const id = window.setTimeout(() => {
-        setHeaderEntry('idle');
-        // The full close has now played out (flood drained + header slid down):
-        // safe to navigate to the link the user picked, if any.
-        runPendingNav();
-      }, HEADER_REENTRY_MS);
+      // Settle back to normal once the slide finishes. Navigation already fired
+      // when the drain ended, so there's nothing to defer here anymore.
+      const id = window.setTimeout(
+        () => setHeaderEntry('idle'),
+        HEADER_REENTRY_MS
+      );
       return () => window.clearTimeout(id);
     }
-  }, [headerEntry, runPendingNav]);
+  }, [headerEntry]);
 
   // While the overlay is on screen, freeze the page behind it: stop Lenis and
   // pin overflow so the brand overlay owns the viewport. Escape also closes it.
@@ -333,12 +376,18 @@ export default function StickyHeader(): React.ReactElement {
       if (event.key === 'Escape') setMenuOpen(false);
     };
     window.addEventListener('keydown', handleKey);
-    return () => {
+    // Idempotent: the close lifts the freeze imperatively before navigating, and
+    // the effect cleanup runs it again on unmount — both must be safe.
+    const release = (): void => {
+      if (releaseFreezeRef.current === null) return;
+      releaseFreezeRef.current = null;
       window.removeEventListener('keydown', handleKey);
       document.documentElement.style.overflow = prevHtmlOverflow;
       document.body.style.overflow = prevBodyOverflow;
       startLenis();
     };
+    releaseFreezeRef.current = release;
+    return release;
   }, [overlayActive]);
 
   // On the landing page a `<Link href="/">` click is a no-op (same route), so
