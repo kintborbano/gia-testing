@@ -51,6 +51,13 @@ const CONTAINER_STYLE: CSSProperties = {
   height: '100vh',
   overflow: 'hidden',
   zIndex: 1,
+  // Pin the pinned scene to its own compositor layer so the canvas scrub +
+  // exploding icons don't re-rasterise against the page during a scrollbar
+  // drag (native, un-smoothed scroll). translateZ(0) here is a no-op visually
+  // but stops the sticky box from sharing a repaint surface with the sections
+  // scrolling past it.
+  transform: 'translateZ(0)',
+  backfaceVisibility: 'hidden',
 };
 
 export function useFeatureSectionAnimation(): FeatureSectionAnimation {

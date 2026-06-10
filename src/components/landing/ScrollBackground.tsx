@@ -190,6 +190,13 @@ export default function ScrollBackground({
         inset: 0,
         zIndex: -1,
         backgroundColor: toRgb(rgbStops[0]),
+        // Force this onto its own compositor layer. A `z-index: -1` fixed fill
+        // behind the transparent hero/features is a known Chrome scroll-repaint
+        // trigger — most visible while dragging the scrollbar (compositor-driven
+        // scroll), where re-rasterising it each frame can flash. Promoting it
+        // keeps the color tween a pure compositor recolor with no repaint.
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden',
       }}
     />
   );

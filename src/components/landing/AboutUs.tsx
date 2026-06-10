@@ -106,7 +106,7 @@ function InfoSection({
         </h2>
         {cta}
       </div>
-      <div className="flex flex-col gap-5 font-sans text-[16px] leading-[1.4] md:w-[449px] md:shrink-0 md:text-[20px]">
+      <div className="flex flex-col gap-5 font-sans text-[16px] leading-[1.55] md:w-[449px] md:shrink-0 md:text-[20px]">
         {children}
       </div>
     </div>
