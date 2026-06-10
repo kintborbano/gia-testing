@@ -33,16 +33,39 @@ export default function Hero(): React.ReactElement {
       >
         <div className="text-brand-primary flex w-full flex-col items-center justify-center gap-8 text-center sm:gap-11 md:gap-14">
           <h1 className="font-itc-garamond text-[50px] leading-[1.1] tracking-[-1.12px] text-[#151515] sm:text-[68px] md:text-[86px]">
-            your{' '}
+            Finally understand
+            <br />
+            why your{' '}
             <span className="font-itc-garamond-narrow-italic text-brand-primary italic">
               tiktok
             </span>
-            <br className="sm:hidden" /> finally has
             <br />
-            someone watching
-            <span aria-hidden="true">
-              .<span className="ellipsis-dot-2">.</span>
-              <span className="ellipsis-dot-3">.</span>
+            {/* The whole tail ("succeeds" + dots + "or flops") recentres as one
+                unit. Dots fade in on reserved width (nothing jumps); "or flops"
+                reveals in a fixed-width slot (--tail-slot). While "or flops" is
+                hidden the tail slides right by half that slot so "succeeds…" is
+                optically centred; as it shows, the tail slides back so the full
+                phrase is centred. Tune --tail-slot to the rendered " or flops"
+                width. */}
+            <span className="hero-tail inline-block [--tail-slot:3.2em]">
+              succeeds
+              <span aria-hidden="true" className="hero-dot-1">
+                .
+              </span>
+              <span aria-hidden="true" className="hero-dot-2">
+                .
+              </span>
+              <span aria-hidden="true" className="hero-dot-3">
+                .
+              </span>
+              <span
+                aria-hidden="true"
+                className="inline-block w-[var(--tail-slot)] text-left align-baseline"
+              >
+                <span className="hero-or-flops font-itc-garamond-narrow-italic text-brand-primary whitespace-nowrap italic">
+                  &nbsp;or flops
+                </span>
+              </span>
             </span>
           </h1>
           <p className="font-sans text-[16px] leading-[1.3] font-normal tracking-[-0.12px] text-[#151515] sm:text-[18px] md:text-[20px] md:leading-[1.25]">

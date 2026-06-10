@@ -211,3 +211,118 @@
     opacity: 1;
   }
 }
+
+/* Hero headline animated tail: "succeeds" → "succeeds..." → "succeeds... or
+   flops" → back to "succeeds". The three dots fade in staggered, then clear
+   together; "or flops" reveals AFTER the dots are full and clears AFTER the
+   dots vanish, so it reads as part of the same cycling beat. All elements share
+   the 4s period so they stay in lockstep.
+
+   Alignment: the dots keep their reserved width (opacity, not display) and
+   "or flops" lives in a fixed-width slot, so the tail's box never reflows.
+   To keep the text optically centred in BOTH states, the whole tail slides as
+   a unit (hero-tail-shift): while "or flops" is hidden it sits shifted right by
+   half the slot so "succeeds…" is centred; as "or flops" reveals it slides back
+   to 0 so the full phrase is centred. */
+.hero-tail {
+  animation: hero-tail-shift 10.5s ease infinite;
+  will-change: transform;
+}
+.hero-dot-1 {
+  animation: hero-dot-1 10.5s ease infinite;
+}
+.hero-dot-2 {
+  animation: hero-dot-2 10.5s ease infinite;
+}
+.hero-dot-3 {
+  animation: hero-dot-3 10.5s ease infinite;
+}
+.hero-or-flops {
+  display: inline-block;
+  animation: hero-or-flops 10.5s ease infinite;
+}
+@keyframes hero-tail-shift {
+  0%,
+  8% {
+    transform: translateX(calc(var(--tail-slot) / 2));
+  }
+  14%,
+  88% {
+    transform: translateX(0);
+  }
+  92%,
+  100% {
+    transform: translateX(calc(var(--tail-slot) / 2));
+  }
+}
+/* Dots type in left→right (dot1 → dot2 → dot3); on exit "or flops" fades first,
+   then the dots back out right→left like a backspace (dot3 → dot2 → dot1). */
+@keyframes hero-dot-1 {
+  0%,
+  1% {
+    opacity: 0;
+  }
+  3%,
+  96% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hero-dot-2 {
+  0%,
+  3% {
+    opacity: 0;
+  }
+  5%,
+  94% {
+    opacity: 1;
+  }
+  96%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hero-dot-3 {
+  0%,
+  5% {
+    opacity: 0;
+  }
+  7%,
+  92% {
+    opacity: 1;
+  }
+  94%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hero-or-flops {
+  0%,
+  8% {
+    opacity: 0;
+  }
+  14%,
+  88% {
+    opacity: 1;
+  }
+  92%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Respect users who prefer no motion: settle on the full phrase, no looping. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-tail,
+  .hero-dot-1,
+  .hero-dot-2,
+  .hero-dot-3,
+  .hero-or-flops {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
