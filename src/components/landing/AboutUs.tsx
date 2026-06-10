@@ -96,8 +96,8 @@ function InfoSection({
   children: React.ReactNode;
 }): React.ReactElement {
   return (
-    <div className="flex w-full max-w-[1152px] flex-col gap-10 md:flex-row md:items-start md:justify-center md:gap-[54px]">
-      <div className="flex flex-col gap-6 md:w-[460px] md:shrink-0">
+    <div className="flex w-full max-w-[1152px] flex-col gap-10 lg:flex-row lg:items-start lg:justify-center lg:gap-[54px]">
+      <div className="flex flex-col gap-6 lg:w-[460px] lg:shrink-0">
         <p className="text-brand-secondary font-sans text-[15px] leading-[1.45] font-bold tracking-[-0.075px]">
           {eyebrow}
         </p>
@@ -106,7 +106,7 @@ function InfoSection({
         </h2>
         {cta}
       </div>
-      <div className="flex flex-col gap-5 font-sans text-[16px] leading-[1.55] md:w-[449px] md:shrink-0 md:text-[20px]">
+      <div className="flex flex-col gap-5 font-sans text-[16px] leading-[1.55] md:text-[20px] lg:w-[449px] lg:min-w-0">
         {children}
       </div>
     </div>
