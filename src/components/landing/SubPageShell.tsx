@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import StickyHeader from './StickyHeader';
-import Footer from './Footer';
+import Footer, { type FooterVariant } from './Footer';
 import {
   setPageBackgroundColor,
   setPageColors,
@@ -26,6 +26,7 @@ export default function SubPageShell({
   headerForeground,
   surfaceClassName = '',
   showFooter = true,
+  footerVariant = 'light',
   flushContent = false,
 }: {
   children: React.ReactNode;
@@ -35,8 +36,10 @@ export default function SubPageShell({
   headerForeground?: string;
   /** Classes for the shell `<main>` — e.g. `bg-black` for a dark page. */
   surfaceClassName?: string;
-  /** Render the shared footer. Set false on pages that stand on their own (e.g. the dark About page). */
+  /** Render the shared footer. Set false on pages that stand on their own. */
   showFooter?: boolean;
+  /** Footer palette. `dark` drops the white band and swaps the maroon panel for the gold/cream combo on dark pages (e.g. About). */
+  footerVariant?: FooterVariant;
   /**
    * Drop the default centered `py-10` content wrapper so the page sits flush
    * under the header and owns its own top spacing — matching the form, whose
@@ -70,7 +73,7 @@ export default function SubPageShell({
       >
         {children}
       </div>
-      {showFooter && <Footer />}
+      {showFooter && <Footer variant={footerVariant} />}
     </main>
   );
 }

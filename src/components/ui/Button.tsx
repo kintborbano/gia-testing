@@ -10,13 +10,14 @@ export type ButtonVariant =
   | 'filledStatic'
   | 'outlined'
   | 'onBrand'
+  | 'onGold'
   | 'whiteStatic'
   | 'adaptive';
 export type ButtonSize = 'sm' | 'default' | 'lg';
 
 type BaseProps = {
   children: ReactNode;
-  /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. `onBrand` = white fill with brand text for use on a brand-colored surface; warms to cream on hover so it never blends in. `whiteStatic` = white fill, black border and text, no color change on hover (only the arrow moves). `adaptive` = fills with the live `--page-fg`/`--page-bg` CSS vars so it tracks the section palette (used in the sticky header); inverts on hover. */
+  /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. `onBrand` = white fill with brand text for use on a brand-colored surface; warms to cream on hover so it never blends in. `onGold` = cream fill with dark text for use on a gold surface (the dark-page footer); brightens to white on hover. `whiteStatic` = white fill, black border and text, no color change on hover (only the arrow moves). `adaptive` = fills with the live `--page-fg`/`--page-bg` CSS vars so it tracks the section palette (used in the sticky header); inverts on hover. */
   variant?: ButtonVariant;
   /** sm 38px/13px · default 48px/14px · lg 60px/16px. */
   size?: ButtonSize;
@@ -93,6 +94,14 @@ const VARIANT_CLASSES: Record<ButtonVariant, VariantStyle> = {
     pressed: 'active:border-transparent active:bg-black active:text-white',
     disabled:
       'disabled:border-transparent disabled:bg-white/40 disabled:text-brand-primary/50',
+  },
+  // Cream CTA on a gold surface (the dark-page footer panel): cream fill with
+  // dark text, brightening to white on hover so it never blends into the gold.
+  onGold: {
+    base: 'border-brand-cream bg-brand-cream text-brand-text hover:border-white hover:bg-white hover:text-brand-text',
+    pressed: 'active:border-transparent active:bg-black active:text-white',
+    disabled:
+      'disabled:border-transparent disabled:bg-brand-cream/40 disabled:text-brand-text/50',
   },
   whiteStatic: { base: 'border-black bg-white text-black' },
   adaptive: {

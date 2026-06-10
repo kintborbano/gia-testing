@@ -3,9 +3,59 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Button from '@/components/ui/Button';
+import Button, { type ButtonVariant } from '@/components/ui/Button';
 import BroadcastPopup from '@/components/landing/BroadcastPopup';
 import { scrollToHashTarget } from '@/lib/scroll/navScroll';
+
+/**
+ * The footer paints two layers: an outer band (the page-colored margin around
+ * the rounded panel) and the panel itself. `light` is the default maroon panel
+ * on a white band — right for the light pages. `dark` drops the band to
+ * transparent so it melts into a dark page (e.g. About) instead of stamping a
+ * stale white block, and swaps the panel to the gold/cream combo.
+ */
+export type FooterVariant = 'light' | 'dark';
+
+type FooterTheme = {
+  /** Outer `<footer>` band behind the panel. */
+  band: string;
+  /** Panel background + base text colour everything inherits. */
+  panel: string;
+  /** Lead-magnet input (border + fill + text + placeholder). */
+  input: string;
+  /** CONTINUE button palette. */
+  button: ButtonVariant;
+  /** Masked GIA logo fill. */
+  logo: string;
+  /** Nav link resting/hover/pressed colours. */
+  navLink: string;
+  /** Copyright + legal text colour. */
+  meta: string;
+};
+
+const FOOTER_THEME: Record<FooterVariant, FooterTheme> = {
+  light: {
+    band: 'bg-white',
+    panel: 'bg-brand-primary text-white',
+    input:
+      'border-white bg-white text-brand-primary placeholder:text-brand-primary/50',
+    button: 'onBrand',
+    logo: 'bg-white',
+    navLink: 'text-white/50 hover:text-white active:text-white',
+    meta: 'text-white/80',
+  },
+  dark: {
+    band: 'bg-transparent',
+    panel: 'bg-brand-gold text-brand-cream',
+    input:
+      'border-brand-cream bg-brand-cream text-brand-text placeholder:text-brand-text/50',
+    button: 'onGold',
+    logo: 'bg-brand-cream',
+    navLink:
+      'text-brand-cream/60 hover:text-brand-cream active:text-brand-cream',
+    meta: 'text-brand-cream/80',
+  },
+};
 
 // Hash entries are stored bare (no leading slash) so the same-page handler can
 // pass them straight to scrollToHashTarget; cross-page clicks get a '/' prefix
@@ -28,7 +78,12 @@ const LEGAL_LINKS = [
 // so users can type their handle either way.
 const INSTAGRAM_PATTERN = /^[a-zA-Z0-9._]{1,30}$/;
 
-export default function Footer(): React.ReactElement {
+export default function Footer({
+  variant = 'light',
+}: {
+  variant?: FooterVariant;
+} = {}): React.ReactElement {
+  const theme = FOOTER_THEME[variant];
   const [username, setUsername] = useState('');
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const pathname = usePathname();
@@ -48,11 +103,13 @@ export default function Footer(): React.ReactElement {
   return (
     <footer
       id="bg-stop-footer"
-      className="flex w-full justify-center bg-white px-5 pt-10 pb-12 sm:px-8 md:px-16 md:pt-16 md:pb-20"
+      className={`flex w-full justify-center px-5 pt-10 pb-12 sm:px-8 md:px-16 md:pt-16 md:pb-20 ${theme.band}`}
     >
-      {/* Enclosing maroon panel — generous internal padding so the contents
-          never crowd the rounded edges. */}
-      <div className="bg-brand-primary flex w-[1152px] max-w-full flex-col gap-16 rounded-[32px] p-8 text-white sm:p-12 md:gap-24 md:rounded-[44px] md:p-16">
+      {/* Enclosing panel — generous internal padding so the contents never
+          crowd the rounded edges. Palette comes from the active footer theme. */}
+      <div
+        className={`flex w-[1152px] max-w-full flex-col gap-16 rounded-[32px] p-8 sm:p-12 md:gap-24 md:rounded-[44px] md:p-16 ${theme.panel}`}
+      >
         {/* Top row: lead-magnet (left) + navigation (right) */}
         <div className="flex flex-col gap-12 md:flex-row md:justify-between md:gap-16">
           {/* Lead-magnet column */}
@@ -75,14 +132,14 @@ export default function Footer(): React.ReactElement {
               placeholder="@username"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
-              className="text-brand-primary placeholder:text-brand-primary/50 h-[44px] w-full rounded-[25px] border border-white bg-white px-5 font-sans text-[14px] tracking-[-0.28px]"
+              className={`h-[44px] w-full rounded-[25px] border px-5 font-sans text-[14px] tracking-[-0.28px] ${theme.input}`}
             />
             {/* Fixed width keeps the column from reflowing. Disabled until the
                 input reads a valid handle; clicking opens the TikTok-profile
                 popup (BroadcastPopup) rather than submitting anywhere. */}
             <Button
               type="submit"
-              variant="onBrand"
+              variant={theme.button}
               size="default"
               disabled={!isUsernameValid}
               className="w-[180px] disabled:border-transparent!"
@@ -98,11 +155,10 @@ export default function Footer(): React.ReactElement {
             </p>
             {NAV_LINKS.map((link) => {
               const isHash = link.href.startsWith('#');
-              // active:text-white gives a click flash — the link snaps to full
-              // white while pressed, eased by transition-colors, before the
-              // navigation/reload fires.
-              const linkClassName =
-                'font-sans text-[16px] leading-[1.45] font-medium tracking-[-0.08px] text-white/50 transition-colors hover:text-white active:text-white';
+              // The theme's `navLink` adds a click flash — the link snaps to
+              // full strength while pressed, eased by transition-colors, before
+              // the navigation/reload fires.
+              const linkClassName = `font-sans text-[16px] leading-[1.45] font-medium tracking-[-0.08px] transition-colors ${theme.navLink}`;
 
               // Same-page hash click: ease to the section via Lenis. Going
               // through scrollToHashTarget (rather than letting the hash drive
@@ -150,12 +206,12 @@ export default function Footer(): React.ReactElement {
 
         {/* Bottom row: logo (left) + legal & attribution (right) */}
         <div className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between md:gap-16">
-          {/* GIA logo — masked so the maroon-fill SVG reads as cream on the
-              maroon panel. */}
+          {/* GIA logo — masked so the SVG paints in the theme's logo colour
+              (white on the maroon panel, cream on the gold one). */}
           <div
             role="img"
             aria-label="GIA"
-            className="h-[88px] w-[166px] shrink-0 bg-white md:h-[104px] md:w-[196px]"
+            className={`h-[88px] w-[166px] shrink-0 md:h-[104px] md:w-[196px] ${theme.logo}`}
             style={{
               WebkitMaskImage: 'url(/logos/gia-logo.svg)',
               maskImage: 'url(/logos/gia-logo.svg)',
@@ -170,7 +226,9 @@ export default function Footer(): React.ReactElement {
 
           {/* Copyright + legal links on one row, spaced apart */}
           <div className="flex flex-wrap items-center gap-x-10 gap-y-2.5 md:justify-end">
-            <p className="font-sans text-[13px] leading-[1.5] tracking-[-0.065px] text-white/80">
+            <p
+              className={`font-sans text-[13px] leading-[1.5] tracking-[-0.065px] ${theme.meta}`}
+            >
               © 2026 GIA. All rights reserved. · Powered by SOFI
             </p>
             <div className="flex items-center gap-6">
@@ -178,7 +236,7 @@ export default function Footer(): React.ReactElement {
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="font-sans text-[13px] leading-[1.5] tracking-[-0.065px] text-white/80 transition-opacity hover:opacity-100"
+                  className={`font-sans text-[13px] leading-[1.5] tracking-[-0.065px] transition-opacity hover:opacity-100 ${theme.meta}`}
                 >
                   {link.label}
                 </Link>
