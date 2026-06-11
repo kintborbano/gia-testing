@@ -202,8 +202,8 @@ export default function AnalyzeForm(): ReactElement {
     }
     setErrors({});
 
-    // Flood the screen with maroon out of the CTA section, then swipe up into
-    // the loading screen (which carries the handle on to the report).
+    // Flood the screen with maroon out of the CTA section, then fade into the
+    // maroon loading screen (which carries the handle on to the report).
     const handle = extractHandle(tiktok);
     const rect = ctaRef.current?.getBoundingClientRect();
     const flood = rect

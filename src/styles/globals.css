@@ -73,6 +73,67 @@ canvas {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
+/* Liquid-glass button surface — the `glass` Button variant (Figma "Glass Button"
+   community file, node 1:9). A pale blue-grey frosted pill with a bevelled rim
+   and soft depth (drop shadow + inner highlight). A solid background-color sits
+   UNDER the conic sheen as a fallback, so the surface is always a light pill and
+   the maroon label always legible even if the gradient is stripped/unsupported.
+   A soft white glint sweeps across on a loop for the "shine". The variant
+   supplies the rim colour and the label; this class supplies fill, depth, shine. */
+.btn-glass {
+  position: relative;
+  overflow: hidden;
+  background-color: #d9e0e8;
+  background-image: conic-gradient(
+    from 90deg,
+    rgb(203, 211, 221),
+    rgb(207, 216, 225),
+    rgb(223, 229, 235),
+    rgb(203, 211, 221),
+    rgb(207, 216, 225)
+  );
+  box-shadow:
+    0 6px 18px rgba(35, 45, 65, 0.28),
+    inset 0 2px 2px rgba(255, 255, 255, 0.85),
+    inset 0 -3px 6px rgba(120, 132, 156, 0.3);
+}
+.btn-glass:hover {
+  box-shadow:
+    0 10px 24px rgba(35, 45, 65, 0.32),
+    inset 0 2px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -3px 6px rgba(120, 132, 156, 0.3);
+}
+/* The travelling glint: a soft white band sweeps across in the first ~28% of the
+   loop, then rests off the right edge. Clipped to the pill by overflow:hidden. */
+.btn-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.95) 50%,
+    transparent 65%
+  );
+  transform: translateX(-130%);
+  animation: btn-glass-shine 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes btn-glass-shine {
+  0% {
+    transform: translateX(-130%);
+  }
+  28%,
+  100% {
+    transform: translateX(130%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-glass::after {
+    display: none;
+  }
+}
+
 /* Hero fills the viewport the user actually sees at load: svh (small viewport,
    URL bar shown) with a vh fallback for browsers without small-viewport units.
    On desktop svh == vh, so one class serves all breakpoints. dvh is avoided on
@@ -81,6 +142,23 @@ canvas {
 .hero-viewport {
   min-height: calc(100vh - var(--header-h, 112px));
   min-height: calc(100svh - var(--header-h, 112px));
+}
+
+/* The loading screen is a single, non-scrolling view. Lock it to the visible
+   viewport — svh so it fits even with the mobile URL bar shown (vh fallback;
+   dvh avoided per the reasoning above) — and clip anything taller rather than
+   letting it scroll. The html/body :has() rules override the always-on
+   scrollbar gutter (`html { overflow-y: scroll }` above) and clip the page so it
+   shows no scrollbar at all. Safe here because the screen is only entered/left
+   behind a full-screen transition, so the gutter's removal never shifts visibly. */
+.loading-viewport {
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+html:has(.loading-viewport),
+body:has(.loading-viewport) {
+  overflow: hidden;
 }
 
 /* Portrait tablets (the 768–1024 band the Features scene also treats as
