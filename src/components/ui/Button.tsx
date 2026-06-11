@@ -13,12 +13,13 @@ export type ButtonVariant =
   | 'onGold'
   | 'onCream'
   | 'whiteStatic'
-  | 'adaptive';
+  | 'adaptive'
+  | 'glass';
 export type ButtonSize = 'sm' | 'default' | 'lg';
 
 type BaseProps = {
   children: ReactNode;
-  /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. `onBrand` = white fill with brand text for use on a brand-colored surface; warms to cream on hover so it never blends in. `onGold` = cream fill with dark text for use on a gold surface (the dark-page footer); brightens to white on hover. `onCream` = maroon fill with white text for use on a cream surface (the dark-page footer's cream panel); deepens to the darker maroon on hover. `whiteStatic` = white fill, black border and text, no color change on hover (only the arrow moves). `adaptive` = fills with the live `--page-fg`/`--page-bg` CSS vars so it tracks the section palette (used in the sticky header); inverts on hover. */
+  /** `filled` = brand fill, inverts on hover. `filledStatic` = brand fill, no color change on hover. `outlined` = white fill, inverts on hover. `onBrand` = white fill with brand text for use on a brand-colored surface; warms to cream on hover so it never blends in. `onGold` = cream fill with dark text for use on a gold surface (the dark-page footer); brightens to white on hover. `onCream` = maroon fill with white text for use on a cream surface (the dark-page footer's cream panel); deepens to the darker maroon on hover. `whiteStatic` = white fill, black border and text, no color change on hover (only the arrow moves). `adaptive` = fills with the live `--page-fg`/`--page-bg` CSS vars so it tracks the section palette (used in the sticky header); inverts on hover. `glass` = a pale frosted "liquid glass" pill with a bevelled rim and brand-maroon label (Figma "Glass Button"); lifts slightly on hover. */
   variant?: ButtonVariant;
   /** sm 38px/13px · default 48px/14px · lg 60px/16px. */
   size?: ButtonSize;
@@ -116,6 +117,13 @@ const VARIANT_CLASSES: Record<ButtonVariant, VariantStyle> = {
   whiteStatic: { base: 'border-black bg-white text-black' },
   adaptive: {
     base: 'border-[color:var(--page-fg)] bg-[color:var(--page-fg)] text-[color:var(--page-bg)] hover:bg-[color:var(--page-bg)] hover:text-[color:var(--page-fg)]',
+  },
+  // Liquid-glass pill (Figma "Glass Button"): a pale frosted surface with a
+  // bright bevelled rim and brand-maroon label, so it reads as glass on the
+  // maroon loading screen. The fill + depth live in `.btn-glass`, whose :hover
+  // grows the drop shadow for a soft lift; here we set the white rim + label.
+  glass: {
+    base: 'btn-glass border-white/55 text-brand-primary',
   },
 };
 

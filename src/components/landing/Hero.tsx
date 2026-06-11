@@ -3,7 +3,6 @@
 import AnalyzeTiktokButton from '@/components/ui/AnalyzeTiktokButton';
 import SeeHowItWorksButton from '@/components/ui/SeeHowItWorksButton';
 import { getLenisSnapshot } from '@/stores/lenisStore';
-import { HEADER_HEIGHT_LARGE } from '@/animations/headerAnimations';
 
 export default function Hero(): React.ReactElement {
   const scrollToHow = (): void => {
@@ -24,14 +23,19 @@ export default function Hero(): React.ReactElement {
   return (
     <section
       id="bg-stop-hero"
-      className="relative flex items-center justify-center overflow-hidden px-5 sm:px-8 md:px-16"
-      style={{ minHeight: `calc(100vh - ${HEADER_HEIGHT_LARGE}px)` }}
+      className="hero-viewport relative flex items-center justify-center overflow-hidden px-5 sm:px-8 md:px-16"
     >
-      <div
-        className="relative z-10 flex w-[1152px] max-w-full flex-col items-center justify-center py-10"
-        style={{ marginBottom: HEADER_HEIGHT_LARGE }}
-      >
-        <div className="text-brand-primary flex w-full flex-col items-center justify-center gap-8 text-center sm:gap-11 md:gap-14">
+      {/* The block's bottom margin and the button row's mt (the clamp below)
+          always sum to a constant, so the centred headline/subtext hold their
+          position while the button alone slides down toward the next section.
+          That sum sets where the text sits: 11rem on phones keeps it at the
+          approved height, and the header height (sm+) lands it at true centre of
+          the full viewport — matching the desktop design. At xl (desktop) the
+          button-drift is switched off and the margin returns to the plain header
+          height, restoring the original tight CTA spacing. Keep this calc paired
+          with the button's mt clamp; change the two together. */}
+      <div className="relative z-10 mb-[calc(11rem-clamp(2.5rem,9vh,8rem))] flex w-[1152px] max-w-full flex-col items-center justify-center py-10 sm:mb-[calc(var(--header-h,112px)-clamp(2.5rem,9vh,8rem))] xl:mb-[var(--header-h,112px)]">
+        <div className="text-brand-primary flex w-full flex-col items-center justify-center gap-10 text-center sm:gap-11 md:gap-14">
           <h1 className="font-itc-garamond text-[clamp(38px,11vw,50px)] leading-[1.1] tracking-[-1.12px] text-[#151515] sm:text-[68px] md:text-[86px]">
             Finally understand
             <br />
@@ -76,7 +80,13 @@ export default function Hero(): React.ReactElement {
           </p>
 
           {/* Design calls for Instrument Sans Bold (700); only 400/600 are loaded — falls back to 600 */}
-          <div className="flex w-auto flex-col items-center justify-center gap-7 sm:flex-row sm:gap-[34px]">
+          {/* The button sits a viewport-relative distance below the subtext so
+              it drifts toward the next section (the GIA scene) on tall screens —
+              closing the big void on iPad portrait — while staying compact on
+              short ones (iPhone SE, landscape tablet) where there's no room. The
+              clamp floor keeps it off the fold on the smallest phones; the ceil
+              keeps desktop close to its original spacing. */}
+          <div className="mt-[clamp(2.5rem,9vh,8rem)] flex w-auto flex-col items-center justify-center gap-7 sm:flex-row sm:gap-[34px] xl:mt-0">
             <AnalyzeTiktokButton />
             <SeeHowItWorksButton
               onClick={scrollToHow}

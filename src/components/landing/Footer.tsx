@@ -10,11 +10,13 @@ import { scrollToHashTarget } from '@/lib/scroll/navScroll';
 /**
  * The footer paints two layers: an outer band (the page-colored margin around
  * the rounded panel) and the panel itself. `light` is the default maroon panel
- * on a white band — right for the light pages. `dark` drops the band to
- * transparent so it melts into a dark page (e.g. About) instead of stamping a
- * stale white block, and swaps the panel to a cream card with maroon accents.
+ * on a white band — right for the light pages. `cream` keeps the same maroon
+ * panel but paints the band cream so it melts into the cream pages (e.g.
+ * Pricing). `dark` drops the band to transparent so it melts into a dark page
+ * (e.g. About) instead of stamping a stale white block, and swaps the panel to
+ * a cream card with maroon accents.
  */
-export type FooterVariant = 'light' | 'dark';
+export type FooterVariant = 'light' | 'cream' | 'dark';
 
 type FooterTheme = {
   /** Outer `<footer>` band behind the panel. */
@@ -33,16 +35,25 @@ type FooterTheme = {
   meta: string;
 };
 
+// The maroon panel shared by every light-page variant; only the band differs.
+const MAROON_PANEL: Omit<FooterTheme, 'band'> = {
+  panel: 'bg-brand-primary text-white',
+  input:
+    'border-white bg-white text-brand-primary placeholder:text-brand-primary/50',
+  button: 'onBrand',
+  logo: 'bg-white',
+  navLink: 'text-white/50 hover:text-white active:text-white',
+  meta: 'text-white/80',
+};
+
 const FOOTER_THEME: Record<FooterVariant, FooterTheme> = {
   light: {
     band: 'bg-white',
-    panel: 'bg-brand-primary text-white',
-    input:
-      'border-white bg-white text-brand-primary placeholder:text-brand-primary/50',
-    button: 'onBrand',
-    logo: 'bg-white',
-    navLink: 'text-white/50 hover:text-white active:text-white',
-    meta: 'text-white/80',
+    ...MAROON_PANEL,
+  },
+  cream: {
+    band: 'bg-brand-cream',
+    ...MAROON_PANEL,
   },
   dark: {
     band: 'bg-transparent',

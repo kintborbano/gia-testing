@@ -202,8 +202,8 @@ export default function AnalyzeForm(): ReactElement {
     }
     setErrors({});
 
-    // Flood the screen with maroon out of the CTA section, then swipe up into
-    // the loading screen (which carries the handle on to the report).
+    // Flood the screen with maroon out of the CTA section, then fade into the
+    // maroon loading screen (which carries the handle on to the report).
     const handle = extractHandle(tiktok);
     const rect = ctaRef.current?.getBoundingClientRect();
     const flood = rect
@@ -264,7 +264,7 @@ export default function AnalyzeForm(): ReactElement {
               alt="GIA studying a TikTok account at her laptop"
               className="h-auto w-[380px] max-w-full sm:w-[490px] md:w-[600px]"
             />
-            <h1 className="font-itc-garamond text-brand-primary text-[42px] leading-[1.1] tracking-[-1.12px] sm:text-[56px] md:text-[68px]">
+            <h1 className="font-young-serif text-brand-primary text-[32px] leading-[1.1] tracking-[-1.12px] sm:text-[44px] md:text-[56px]">
               before gia starts watching
               <span aria-hidden="true">
                 .<span className="ellipsis-dot-2">.</span>

@@ -26,6 +26,22 @@ const instrumentSans = localFont({
   variable: '--font-instrument-sans',
 });
 
+const averiaSerifLibre = localFont({
+  src: [
+    {
+      path: '../../public/fonts/AveriaSerifLibre-Bold.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+    {
+      path: '../../public/fonts/AveriaSerifLibre-BoldItalic.woff2',
+      weight: '700',
+      style: 'italic',
+    },
+  ],
+  variable: '--font-averia-serif',
+});
+
 const youngSerif = localFont({
   src: [
     {
@@ -75,7 +91,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${instrumentSans.variable} ${youngSerif.variable} ${itcGaramond.variable} ${itcGaramondNarrowItalic.variable} h-full antialiased`}
+      className={`${instrumentSans.variable} ${averiaSerifLibre.variable} ${youngSerif.variable} ${itcGaramond.variable} ${itcGaramondNarrowItalic.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <ImageGuard />

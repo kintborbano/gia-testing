@@ -26,6 +26,11 @@ import LoopLoader from './LoopLoader';
 // reveal reuses the intro's easing/duration; the cover is a touch quicker.
 const COVER_ENTER_DURATION = 650;
 
+// Flood reveal: the maroon cover and the loading screen behind it are the same
+// colour, and the destination is already in place — so there's nothing to swipe.
+// The cover just fades out, letting the loading screen's content simply appear.
+const FLOOD_REVEAL_DURATION = 400;
+
 // Where a flood transition originates, in viewport coordinates.
 interface FloodOrigin {
   x: number;
@@ -145,7 +150,9 @@ export default function PageTransitionProvider({
         .finally(() => {
           if (pushedRef.current) return;
           pushedRef.current = true;
-          page.style.transform = 'translateY(100vh)';
+          // No park below the fold: the destination is itself maroon, so it
+          // renders exactly where it belongs under the identical-coloured cover,
+          // ready to be revealed by a simple fade rather than a swipe.
           router.push(target);
         });
       return () => {
@@ -190,24 +197,27 @@ export default function PageTransitionProvider({
   // cover off the top (0 → -100vh) and the new page up into place (100vh → 0)
   // together, exactly like the intro reveal. The later animation wins for
   // `transform`, so the held cover frame needs no explicit cancel.
+  // Reset every transition handle back to idle. Shared by both reveal paths.
+  const finishTransition = useCallback(() => {
+    const page = pageRef.current;
+    pageAnimRef.current?.cancel();
+    pageAnimRef.current = null;
+    releaseScrollRef.current?.();
+    releaseScrollRef.current = null;
+    if (page) {
+      page.style.transform = '';
+      page.style.willChange = '';
+    }
+    runningRef.current = false;
+    setFlood(null);
+    setTarget(null);
+  }, []);
+
   const handleLoopFinished = useCallback(() => {
     const overlay = overlayRef.current;
     const page = pageRef.current;
-    const cleanup = () => {
-      pageAnimRef.current?.cancel();
-      pageAnimRef.current = null;
-      releaseScrollRef.current?.();
-      releaseScrollRef.current = null;
-      if (page) {
-        page.style.transform = '';
-        page.style.willChange = '';
-      }
-      runningRef.current = false;
-      setFlood(null);
-      setTarget(null);
-    };
     if (!overlay || !page) {
-      cleanup();
+      finishTransition();
       return;
     }
     const timing = {
@@ -224,17 +234,36 @@ export default function PageTransitionProvider({
       [{ transform: 'translateY(0)' }, { transform: 'translateY(-100vh)' }],
       timing
     );
-    revealOut.finished.catch(() => {}).finally(cleanup);
-  }, []);
+    revealOut.finished.catch(() => {}).finally(finishTransition);
+  }, [finishTransition]);
+
+  // Flood reveal: the destination loading screen is already in place behind an
+  // identical-maroon cover, so there's nothing to swipe. Fade the cover out and
+  // its content simply appears against the unchanging maroon.
+  const handleFloodReveal = useCallback(() => {
+    const overlay = overlayRef.current;
+    if (!overlay) {
+      finishTransition();
+      return;
+    }
+    overlay.style.willChange = 'opacity';
+    const fadeOut = overlay.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: FLOOD_REVEAL_DURATION,
+      easing: 'ease-out',
+      fill: 'forwards' as const,
+    });
+    fadeOut.finished.catch(() => {}).finally(finishTransition);
+  }, [finishTransition]);
 
   // Flood transitions have no loop loader to signal completion, so the reveal is
   // driven by the route mounting under the maroon cover: as soon as it's there,
-  // swipe up. (The default loop cover instead reveals from LoopLoader.onFinished.)
+  // fade the cover away. (The default loop cover instead reveals from
+  // LoopLoader.onFinished with a swipe.)
   useEffect(() => {
     if (!flood || !routeReady || !pushedRef.current) return;
-    const id = requestAnimationFrame(() => handleLoopFinished());
+    const id = requestAnimationFrame(() => handleFloodReveal());
     return () => cancelAnimationFrame(id);
-  }, [flood, routeReady, handleLoopFinished]);
+  }, [flood, routeReady, handleFloodReveal]);
 
   return (
     <TransitionContext.Provider value={{ navigate, active }}>
@@ -265,8 +294,8 @@ export default function PageTransitionProvider({
                 { transform: 'translateY(100vh)' }
           }
         >
-          {/* The flood's destination is itself a loading screen, so it needs no
-              loop loader — the maroon plane just holds, then swipes up. */}
+          {/* The flood's destination is itself a maroon loading screen, so it
+              needs no loop loader — the maroon plane holds, then fades away. */}
           {!flood && (
             <LoopLoader ready={routeReady} onFinished={handleLoopFinished} />
           )}
