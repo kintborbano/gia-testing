@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { SectionLabel } from '@/components/report/Primitives';
+import Emphasis from '@/components/report/Emphasis';
 import type { ApiResult } from '@/types/api';
 
 function intentBadgeStyle(level: string): string {
@@ -128,7 +129,7 @@ export default function AudienceIntelligence({
         <div>
           <h3 className="font-semibold">{current.question}</h3>
           <p className="mt-1.5 text-sm leading-relaxed text-gray-600">
-            {current.text}
+            <Emphasis text={current.text} />
           </p>
         </div>
       </div>

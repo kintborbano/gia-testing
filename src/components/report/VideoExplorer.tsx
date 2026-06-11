@@ -54,8 +54,12 @@ export default function VideoExplorer({
 
   const maxViews = Math.max(...points.map((p) => p.views)) * 1.12;
   const maxEr = Math.max(...points.map((p) => p.erPct)) * 1.18;
+  // Sqrt scale: view counts are heavy-tailed, so a linear axis crushes the
+  // majority of videos into the left edge whenever one goes viral.
   const x = (v: number) =>
-    PAD.left + (v / maxViews) * (W - PAD.left - PAD.right);
+    PAD.left +
+    (Math.sqrt(Math.max(v, 0)) / Math.sqrt(maxViews)) *
+      (W - PAD.left - PAD.right);
   const y = (v: number) =>
     H - PAD.bottom - (v / maxEr) * (H - PAD.top - PAD.bottom);
 
@@ -179,13 +183,13 @@ export default function VideoExplorer({
                 key={p.id}
                 cx={x(p.views)}
                 cy={y(p.erPct)}
-                r={5 + p.hookStrength * 1.3}
+                r={4 + p.hookStrength * 0.8}
                 className={`cursor-pointer ${
                   selected
                     ? 'fill-brand-gold stroke-brand-gold-shadow report-bubble-pulse'
                     : 'fill-brand-primary stroke-brand-primary-dark'
                 }`}
-                fillOpacity={active ? 0.9 : 0.5}
+                fillOpacity={active ? 0.9 : 0.4}
                 strokeWidth="1.5"
                 onClick={() => onSelect(p.id)}
                 onMouseEnter={() => setHovered(p)}

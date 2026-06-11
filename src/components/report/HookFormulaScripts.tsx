@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { SectionLabel } from '@/components/report/Primitives';
+import Emphasis from '@/components/report/Emphasis';
 import type { ApiResult, ScriptVariation } from '@/types/api';
 
 function CopyButton({ getText }: { getText: () => string }) {
@@ -102,7 +103,7 @@ export default function HookFormulaScripts({
             Your ideal hook formula
           </h3>
           <p className="font-averia-serif text-text mt-1.5 text-[16px] leading-relaxed font-bold italic">
-            {ideal_hook_formula}
+            <Emphasis text={ideal_hook_formula} />
           </p>
         </div>
       )}
@@ -110,7 +111,7 @@ export default function HookFormulaScripts({
       {visual_style_recommendation && (
         <p className="text-sm leading-relaxed text-gray-600">
           <span className="font-semibold text-gray-900">Visual style: </span>
-          {visual_style_recommendation}
+          <Emphasis text={visual_style_recommendation} />
         </p>
       )}
 
@@ -153,7 +154,9 @@ export default function HookFormulaScripts({
                   <Mic className="h-3.5 w-3.5" /> Say this
                 </p>
                 <p className="font-averia-serif text-text mt-2 text-[17px] leading-relaxed font-bold italic">
-                  &ldquo;{current.variation.spoken_hook}&rdquo;
+                  &ldquo;
+                  <Emphasis text={current.variation.spoken_hook} />
+                  &rdquo;
                 </p>
               </div>
             )}
@@ -163,7 +166,7 @@ export default function HookFormulaScripts({
                   <Eye className="h-3.5 w-3.5" /> Show this
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                  {current.variation.visual_hook}
+                  <Emphasis text={current.variation.visual_hook} />
                 </p>
               </div>
             )}
@@ -177,6 +180,7 @@ export default function HookFormulaScripts({
                   ]
                     .filter(Boolean)
                     .join('\n\n')
+                    .replace(/\*\*/g, '')
                 }
               />
             </div>

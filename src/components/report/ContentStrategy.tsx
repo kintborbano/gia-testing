@@ -1,5 +1,6 @@
 import { CalendarClock, Check, X } from 'lucide-react';
 import { SectionLabel } from '@/components/report/Primitives';
+import Emphasis from '@/components/report/Emphasis';
 import type { ApiResult } from '@/types/api';
 
 function ThemeList({
@@ -31,7 +32,9 @@ function ThemeList({
             >
               <Icon className="h-3 w-3" strokeWidth={3} />
             </span>
-            <span>{item}</span>
+            <span>
+              <Emphasis text={item} />
+            </span>
           </li>
         ))}
       </ul>
@@ -67,7 +70,7 @@ export default function ContentStrategy({
               Posting strategy
             </h3>
             <p className="text-brand-primary-dark mt-1.5 text-sm leading-relaxed">
-              {posting_strategy}
+              <Emphasis text={posting_strategy} />
             </p>
           </div>
         </div>

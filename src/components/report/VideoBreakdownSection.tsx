@@ -9,19 +9,14 @@ import { formatCount } from '@/lib/format';
 import type { ApiResult, VideoAnalysis } from '@/types/api';
 import type { Video } from '@/types/report';
 
-// Gemini bullet strings arrive as '• point one\n• point two' with **emphasis**
-// markers — split into clean list items.
+// Gemini bullet strings arrive as '• point one\n• point two' — split into
+// list items. **emphasis** markers stay in; <Emphasis> renders them bold.
 function bullets(s: string | null | undefined): string[] {
   if (!s) return [];
   return s
-    .replace(/\*\*/g, '')
     .split('•')
     .map((b) => b.trim())
     .filter(Boolean);
-}
-
-function clean(s: string | null | undefined): string {
-  return (s ?? '').replace(/\*\*/g, '');
 }
 
 // Display order + weights mirror compute_gia_score in the backend.
@@ -58,10 +53,10 @@ function toVideo(a: VideoAnalysis): Video {
         saves: formatCount(a.bookmarks),
         comments: formatCount(a.comment_count),
       },
-      hookTrigger: a.hook_trigger_3s ? clean(a.hook_trigger_3s) : null,
+      hookTrigger: a.hook_trigger_3s || null,
       whyItWorks: bullets(a.why_it_works),
       improvements: bullets(a.improvement),
-      commentInsights: clean(a.comment_insights),
+      commentInsights: a.comment_insights ?? '',
       positive: a.comment_sentiment?.positive ?? [],
     },
   };

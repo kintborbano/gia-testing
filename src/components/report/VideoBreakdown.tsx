@@ -11,6 +11,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import Emphasis from '@/components/report/Emphasis';
 import type { Video, VideoDetails } from '@/types/report';
 
 const countIcons: {
@@ -82,7 +83,7 @@ function ExpandedDetails({
         <div className="space-y-1">
           <DetailLabel>Hook Trigger (0-3s)</DetailLabel>
           <p className="text-sm leading-relaxed text-gray-800">
-            {details.hookTrigger}
+            <Emphasis text={details.hookTrigger} />
           </p>
         </div>
       )}
@@ -102,7 +103,9 @@ function ExpandedDetails({
                       aria-hidden
                       className="bg-verdict-strong mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
                     />
-                    <span>{item}</span>
+                    <span>
+                      <Emphasis text={item} />
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -121,7 +124,9 @@ function ExpandedDetails({
                       aria-hidden
                       className="bg-brand-gold mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
                     />
-                    <span>{item}</span>
+                    <span>
+                      <Emphasis text={item} />
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -133,7 +138,7 @@ function ExpandedDetails({
       <div className="space-y-2">
         <DetailLabel>Comment Insights</DetailLabel>
         <p className="text-sm leading-relaxed text-gray-700">
-          {details.commentInsights}
+          <Emphasis text={details.commentInsights} />
         </p>
         {details.positive.length > 0 && (
           <div className="space-y-1">
