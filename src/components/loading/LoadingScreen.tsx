@@ -3,45 +3,33 @@
 import { useState } from 'react';
 import type { ReactElement } from 'react';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import Button from '@/components/ui/Button';
+import { useJobPolling } from '@/hooks/useJobPolling';
 
-// GIA's Instagram Broadcast Channel.
 const BROADCAST_CHANNEL_URL =
   'https://www.instagram.com/channel/AbaXwsrEEM1hoSpY/';
 
-interface Props {
-  /** The analyzed TikTok handle, carried from the form via ?handle=…. */
-  handle?: string;
-}
+export default function LoadingScreen(): ReactElement {
+  const searchParams = useSearchParams();
+  const handle = searchParams.get('handle') ?? '';
+  const jobId = searchParams.get('job_id');
 
-/**
- * Full-screen maroon loading screen shown after the analyze form (Figma 90:138).
- * The page-transition flood fades into it, so the maroon background reads as one
- * continuous surface. While loading, a placeholder illustration sits above a
- * gold progress bar that fills once; when it completes the screen flips to its
- * "done" state — the illustration and bar are removed, leaving the updated copy
- * and two CTAs (see your GIA Wrapped, proceed to dashboard).
- */
-export default function LoadingScreen({ handle }: Props): ReactElement {
-  const [done, setDone] = useState(false);
-  const reportHref = handle ? `/report/${handle}` : '/form';
-  // GIA Wrapped — carries the handle on the same way the loading route received
-  // it. The /wrapped page itself is a separate build.
+  const [animDone, setAnimDone] = useState(false);
+  const { messages, done: pollDone, error } = useJobPolling(jobId);
+
+  const done = jobId ? animDone && pollDone : animDone;
+
+  const reportHref = handle
+    ? `/report?handle=${encodeURIComponent(handle)}&job=${jobId ?? ''}`
+    : '/form';
   const wrappedHref = handle ? `/wrapped?handle=${handle}` : '/form';
 
   return (
     <main className="loading-viewport bg-brand-primary flex w-full flex-col">
       <section className="flex flex-1 flex-col items-center justify-center gap-12 px-6 py-16 text-center">
-        {/* While loading: a placeholder illustration above a progress bar that
-            fills once. Both are removed the instant loading completes — the done
-            state is just copy + CTAs. (The bar's animation-end flips `done`, so
-            it has to render during loading to drive that transition.) */}
         {!done && (
-          // Image + progress bar as one tight unit (gap-2), so the larger
-          // illustration sits close to the bar; the section's gap-12 still sets
-          // the pair apart from the copy below.
           <div className="flex flex-col items-center gap-2">
-            {/* GIA, mid-analysis — sits just above the progress bar. */}
             <Image
               src="/images/gia-thought-thinking.png"
               alt="GIA, the SOFI AI analyst, thinking as she works"
@@ -51,7 +39,6 @@ export default function LoadingScreen({ handle }: Props): ReactElement {
               className="h-auto w-[320px] max-w-full sm:w-[360px] md:w-[400px]"
             />
 
-            {/* Progress bar — gold→yellow fill that runs once, then locks full. */}
             <div
               role="status"
               aria-label="Generating your report"
@@ -59,13 +46,22 @@ export default function LoadingScreen({ handle }: Props): ReactElement {
             >
               <div
                 className="loading-progress rounded-full border border-black bg-[#c9920a]"
-                onAnimationEnd={() => setDone(true)}
+                onAnimationEnd={() => setAnimDone(true)}
               />
             </div>
           </div>
         )}
 
-        {/* 3. Copy + CTA — broadcast invite while loading, report handoff once done. */}
+        {messages.length > 0 && (
+          <p className="max-w-[480px] font-sans text-[13px] leading-[1.4] text-white/70">
+            {messages[messages.length - 1]}
+          </p>
+        )}
+
+        {error && (
+          <p className="font-pixelify text-[14px] text-red-300">{error}</p>
+        )}
+
         <div className="flex flex-col items-center gap-8">
           <div className="flex flex-col items-center gap-4 text-white">
             <h1 className="font-young-serif text-[28px] leading-[1.1] tracking-[-1.12px] sm:text-[36px]">
@@ -73,13 +69,12 @@ export default function LoadingScreen({ handle }: Props): ReactElement {
             </h1>
             <p className="max-w-[580px] font-sans text-[14px] leading-[1.3] font-normal tracking-[-0.12px] sm:text-[15px] md:text-[16px] md:leading-[1.25]">
               {done
-                ? 'GIA found what’s actually driving your growth.'
+                ? "GIA found what's actually driving your growth."
                 : 'For creator tips, behind the scenes, & access to new features'}
             </p>
           </div>
 
           {done ? (
-            // items-stretch so both CTAs share the wider button's width.
             <div className="flex flex-col items-stretch gap-3">
               <Button
                 href={reportHref}

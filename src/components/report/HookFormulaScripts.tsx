@@ -1,74 +1,72 @@
 import { SectionLabel } from '@/components/report/Primitives';
+import type { ApiResult } from '@/types/api';
 
-const hookFormula =
-  "The highest-performing videos like the untitled one (16.67% ER) and '#levisjeans #bruh' (13.12% ER) consistently use a close-up, direct eye contact shot of the creator, often with a relatable text overlay.";
+export default function HookFormulaScripts({
+  result,
+}: {
+  result?: ApiResult | null;
+}): React.ReactElement | null {
+  const overall = result?.overall;
+  if (!overall) return null;
 
-const visualStyle =
-  'Prioritize intimate, direct-to-camera close-ups in the first few seconds, as seen in the 16.67% ER untitled video, to establish immediate personal connection, often combined with a clear text overlay that provides context or a relatable statement.';
+  const { ideal_hook_formula, visual_style_recommendation, script_hook_variations } = overall;
 
-const scripts = [
-  {
-    goal: 'Drive Comments',
-    say: "Uy, sino nakaka-relate? Feeling ko, 'di na 'to thesis, gera na 'to!",
-    show: 'Creator looking comically exasperated at a laptop screen filled with thesis work, then quickly cuts to a confident strut in an outfit.',
-  },
-  {
-    goal: 'Drive Shares',
-    say: "POV: Ginagawa mo ang lahat para matapos ang college, kahit 'di na kaya ng katawang lupa mo. Send this to your academic burnout buddy!",
-    show: 'Creator making a determined but tired face, then a quick cut to a celebratory, relieved expression, maybe throwing papers in the air (gently).',
-  },
-  {
-    goal: 'Drive Saves',
-    say: "Guys, found the perfect OOTD for 'sakit-ulo-sa-thesis' days. Pero, 'wag niyo pansinin 'yung tag! Ano sa tingin niyo?",
-    show: 'Creator doing a quick 360 spin to show off an outfit, then a close-up on the clothing tag peeking out, with a playful eye roll.',
-  },
-];
+  const scripts = [
+    { goal: 'Drive Comments', variation: script_hook_variations.for_comments },
+    { goal: 'Drive Shares', variation: script_hook_variations.for_shares },
+    { goal: 'Drive Saves', variation: script_hook_variations.for_saves },
+  ].filter((s) => s.variation?.spoken_hook || s.variation?.visual_hook);
 
-export default function HookFormulaScripts(): React.ReactElement {
   return (
     <section className="space-y-6">
       <SectionLabel>Hook Formula &amp; Scripts</SectionLabel>
 
-      <div className="space-y-2">
-        <h3 className="text-sm font-semibold text-gray-900">
-          Ideal Hook Formula
-        </h3>
-        <p className="text-sm leading-relaxed text-gray-600">{hookFormula}</p>
-      </div>
+      {ideal_hook_formula && (
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-gray-900">Ideal Hook Formula</h3>
+          <p className="text-sm leading-relaxed text-gray-600">{ideal_hook_formula}</p>
+        </div>
+      )}
 
-      <div className="space-y-2">
-        <h3 className="text-sm font-semibold text-gray-900">Visual Style</h3>
-        <p className="text-sm leading-relaxed text-gray-600">{visualStyle}</p>
-      </div>
+      {visual_style_recommendation && (
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-gray-900">Visual Style</h3>
+          <p className="text-sm leading-relaxed text-gray-600">{visual_style_recommendation}</p>
+        </div>
+      )}
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {scripts.map((script) => (
-          <div
-            key={script.goal}
-            className="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
-          >
-            <span className="bg-brand-primary/10 text-brand-primary self-start rounded-full px-2.5 py-0.5 text-xs font-semibold">
-              {script.goal}
-            </span>
-            <div className="mt-4 space-y-1">
-              <p className="text-xs font-semibold tracking-wide text-gray-500 uppercase">
-                Say this:
-              </p>
-              <p className="text-sm leading-relaxed text-gray-800 italic">
-                &quot;{script.say}&quot;
-              </p>
+      {scripts.length > 0 && (
+        <div className="grid gap-4 md:grid-cols-3">
+          {scripts.map(({ goal, variation }) => (
+            <div
+              key={goal}
+              className="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+            >
+              <span className="bg-brand-primary/10 text-brand-primary self-start rounded-full px-2.5 py-0.5 text-xs font-semibold">
+                {goal}
+              </span>
+              {variation.spoken_hook && (
+                <div className="mt-4 space-y-1">
+                  <p className="text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                    Say this:
+                  </p>
+                  <p className="text-sm leading-relaxed text-gray-800 italic">
+                    &quot;{variation.spoken_hook}&quot;
+                  </p>
+                </div>
+              )}
+              {variation.visual_hook && (
+                <div className="mt-4 space-y-1">
+                  <p className="text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                    Show this:
+                  </p>
+                  <p className="text-sm leading-relaxed text-gray-600">{variation.visual_hook}</p>
+                </div>
+              )}
             </div>
-            <div className="mt-4 space-y-1">
-              <p className="text-xs font-semibold tracking-wide text-gray-500 uppercase">
-                Show this:
-              </p>
-              <p className="text-sm leading-relaxed text-gray-600">
-                {script.show}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

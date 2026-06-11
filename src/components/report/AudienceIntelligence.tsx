@@ -7,46 +7,43 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { SectionLabel } from '@/components/report/Primitives';
+import type { ApiResult } from '@/types/api';
 
-const audienceCards: { icon: LucideIcon; label: string; text: string }[] = [
-  {
-    icon: Share2,
-    label: 'Share',
-    text: 'Viewers share content that feels personal and admired, with the top-performing untitled video (16.67% ER) having 72 shares, indicating a desire to spread positive admiration for the creator.',
-  },
-  {
-    icon: Bookmark,
-    label: 'Save',
-    text: "The audience saves content that provides fashion inspiration or aesthetic appeal, as indicated by the 'untitled' video (16.67% ER) with 1.73% saves-to-views and '#levisjeans #bruh' (13.12% ER) with 1.65% saves-to-views, signaling viewers want to revisit these looks.",
-  },
-  {
-    icon: MessageCircle,
-    label: 'Comment',
-    text: "Comments consistently revolve around personal admiration for the creator's appeal and direct, friendly interactions, exemplified by 'a baddie' and 'pauwi na po, anong gusto mong ulamin?' on the top untitled video.",
-  },
-  {
-    icon: Heart,
-    label: 'Like',
-    text: "Viewers respond most positively to the creator's personal presence and fashion choices, with comments like 'Wow your hot' on '#levisjeans #bruh' and 'back view pls😊' on 'update : YESSS' highlighting strong visual appeal.",
-  },
-  {
-    icon: ThumbsDown,
-    label: 'Dislike',
-    text: "Content lacking clear context or broader relatability, like 'ni goon …' (2.2% ER), results in no comments, shares, or bookmarks, showing disinterest when the hook is too niche or unclear.",
-  },
-];
+function intentBadgeStyle(level: string): string {
+  const l = level.toLowerCase();
+  if (l.includes('high')) return 'bg-emerald-100 text-emerald-700';
+  if (l.includes('medium') || l.includes('moderate')) return 'bg-amber-100 text-amber-700';
+  return 'bg-rose-100 text-rose-700';
+}
 
-export default function AudienceIntelligence(): React.ReactElement {
+export default function AudienceIntelligence({
+  result,
+}: {
+  result?: ApiResult | null;
+}): React.ReactElement | null {
+  const signals = result?.overall.audience_signals;
+  if (!signals) return null;
+
+  const intentLevel = signals.purchase_intent_level ?? 'low';
+
+  const cards: { icon: LucideIcon; label: string; text: string }[] = [
+    { icon: Share2, label: 'Share', text: signals.what_they_share },
+    { icon: Bookmark, label: 'Save', text: signals.what_they_save },
+    { icon: MessageCircle, label: 'Comment', text: signals.what_they_comment_about },
+    { icon: Heart, label: 'Like', text: signals.what_they_like },
+    { icon: ThumbsDown, label: 'Dislike', text: signals.what_they_dislike },
+  ].filter((c) => c.text);
+
   return (
     <section className="space-y-4">
       <div className="flex items-center gap-3">
         <SectionLabel>Audience Intelligence</SectionLabel>
-        <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-700">
-          low intent
+        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${intentBadgeStyle(intentLevel)}`}>
+          {intentLevel} intent
         </span>
       </div>
       <div className="space-y-3">
-        {audienceCards.map(({ icon: Icon, label, text }) => (
+        {cards.map(({ icon: Icon, label, text }) => (
           <div
             key={label}
             className="flex gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
@@ -56,9 +53,7 @@ export default function AudienceIntelligence(): React.ReactElement {
             </div>
             <div>
               <h3 className="font-semibold">{label}</h3>
-              <p className="mt-1 text-sm leading-relaxed text-gray-600">
-                {text}
-              </p>
+              <p className="mt-1 text-sm leading-relaxed text-gray-600">{text}</p>
             </div>
           </div>
         ))}
