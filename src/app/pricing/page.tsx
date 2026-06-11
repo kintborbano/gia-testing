@@ -5,12 +5,16 @@ import Pricing from '@/components/landing/Pricing';
 export const metadata: Metadata = {
   title: 'Pricing',
   description:
-    'GIA report plans — one-time hook breakdowns and monthly deep dives for TikTok creators.',
+    'GIA beta pricing — get the Deep Dive report: hook scoring, comment intelligence, and performance patterns across your 20 most recent TikToks.',
 };
 
 export default function PricingPage(): React.ReactElement {
   return (
-    <SubPageShell>
+    <SubPageShell
+      headerBackground="rgb(254, 247, 221)"
+      surfaceClassName="bg-brand-cream"
+      footerVariant="cream"
+    >
       <Pricing />
     </SubPageShell>
   );

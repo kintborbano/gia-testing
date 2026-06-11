@@ -43,6 +43,7 @@ html {
   --color-brand-gold: #c2992e;
   --color-brand-gold-shadow: #8a6a1c;
   --font-sans: var(--font-instrument-sans);
+  --font-averia-serif: var(--font-averia-serif);
   --font-young-serif: var(--font-young-serif);
   --font-itc-garamond: var(--font-itc-garamond);
   --font-itc-garamond-narrow-italic: var(--font-itc-garamond-narrow-italic);
