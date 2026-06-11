@@ -33,7 +33,7 @@ export default function PricingCard({
 
   return (
     <div
-      className={`relative flex w-[350px] max-w-full flex-col rounded-[30px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] ${
+      className={`border-brand-gold relative flex w-[350px] max-w-full flex-col rounded-[30px] border-[3px] shadow-[0_5px_0_var(--color-brand-gold-shadow)] ${
         CARD_PALETTE[variant]
       } ${
         featured

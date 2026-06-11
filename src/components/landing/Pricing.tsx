@@ -7,12 +7,13 @@ import PricingCard from '@/components/ui/PricingCard';
  * during beta; the flanking cards tease the full-price tier behind a frosted
  * lock.
  *
- * The locked cards are pre-blurred screenshots, not blurred DOM — the teaser
+ * The locked cards are pre-blurred renders, not blurred DOM — the teaser
  * copy and price must not exist in the HTML, where inspect-element /
- * Ctrl+F / crawlers would read straight through a CSS backdrop blur. To
- * change them, restore the card markup from git history (PricingCard's
- * `locked` overlay, removed in the same commit that added these images),
- * tweak it, and re-capture at 2x.
+ * Ctrl+F / crawlers would read straight through a CSS backdrop blur. The
+ * bakes come from an isolated Playwright page that blurs the content with
+ * filter:blur over a solid card background (NOT backdrop-blur, which samples
+ * the page behind the card and smears a pale rim into the edges). To change
+ * them, edit and re-run scripts/rebake-locked-cards.cjs.
  */
 
 const betaDeepDive = {
@@ -50,12 +51,12 @@ const betaDeepDive = {
 
 function LockedCard({ src }: { src: string }): React.ReactElement {
   return (
-    <div className="w-[350px] max-w-full overflow-hidden rounded-[30px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]">
+    <div className="border-brand-gold w-[350px] max-w-full overflow-hidden rounded-[30px] border-[3px] shadow-[0_5px_0_var(--color-brand-gold-shadow)]">
       <Image
         src={src}
         alt="Locked plan — coming soon"
         width={350}
-        height={401}
+        height={400}
         className="h-auto w-full"
       />
     </div>
