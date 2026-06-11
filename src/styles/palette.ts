@@ -18,3 +18,16 @@ export const BRAND = {
   goldShadow: '#8a6a1c',
   text: '#1a1208',
 } as const;
+
+/** Mirrors the `--color-verdict-*` tokens in globals.css — same sync rule. */
+export const VERDICT = {
+  strong: '#8c1f2e',
+  strongDeep: '#751a26',
+  strongSoft: '#f6dfe2',
+  mixed: '#c2992e',
+  mixedDeep: '#8a6a1c',
+  mixedSoft: '#f6edd0',
+  weak: '#c4a5a9',
+  weakDeep: '#82595f',
+  weakSoft: '#f1e9e7',
+} as const;

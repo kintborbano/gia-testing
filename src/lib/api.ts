@@ -1,4 +1,4 @@
-import { getToken } from './auth';
+import { getToken, clearToken } from './auth';
 import type { ApiResult, JobStatus } from '@/types/api';
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -6,7 +6,7 @@ const BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 export class ApiError extends Error {
   constructor(
     public status: number,
-    message: string,
+    message: string
   ) {
     super(message);
     this.name = 'ApiError';
@@ -25,6 +25,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
 
   if (!res.ok) {
+    if (res.status === 401) clearToken();
     let detail = res.statusText;
     try {
       const body = await res.json();
@@ -42,7 +43,7 @@ export const api = {
   redeemBeta(code: string) {
     return request<{ token: string; name: string; email: string }>(
       '/api/beta/redeem',
-      { method: 'POST', body: JSON.stringify({ code }) },
+      { method: 'POST', body: JSON.stringify({ code }) }
     );
   },
 
@@ -69,9 +70,13 @@ export const api = {
   },
 
   checkoutRedeem(nonce: string) {
-    return request<{ job_id: string; handle: string; already_redeemed: boolean }>(
-      '/api/checkout/redeem',
-      { method: 'POST', body: JSON.stringify({ nonce }) },
-    );
+    return request<{
+      job_id: string;
+      handle: string;
+      already_redeemed: boolean;
+    }>('/api/checkout/redeem', {
+      method: 'POST',
+      body: JSON.stringify({ nonce }),
+    });
   },
 };

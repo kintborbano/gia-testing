@@ -42,6 +42,17 @@ html {
   --color-brand-cream: #fef7dd;
   --color-brand-gold: #c2992e;
   --color-brand-gold-shadow: #8a6a1c;
+  /* Brand-only verdict scale: strong = full maroon, mixed = gold, weak = faded
+     dusty rose. Saturation carries the meaning so nothing leaves the palette. */
+  --color-verdict-strong: #8c1f2e;
+  --color-verdict-strong-deep: #751a26;
+  --color-verdict-strong-soft: #f6dfe2;
+  --color-verdict-mixed: #c2992e;
+  --color-verdict-mixed-deep: #8a6a1c;
+  --color-verdict-mixed-soft: #f6edd0;
+  --color-verdict-weak: #c4a5a9;
+  --color-verdict-weak-deep: #82595f;
+  --color-verdict-weak-soft: #f1e9e7;
   --font-sans: var(--font-instrument-sans);
   --font-averia-serif: var(--font-averia-serif);
   --font-young-serif: var(--font-young-serif);
@@ -405,4 +416,140 @@ body:has(.loading-viewport) {
 .consent-checkbox input:focus-visible ~ .checkmark {
   outline: 2px solid color-mix(in srgb, var(--color-white) 60%, transparent);
   outline-offset: 2px;
+}
+
+/* Report view — panel swap animation for the audience/hook-lab tab switches.
+   Keyed remounts replay it; the reveal-on-scroll motion lives in Reveal.tsx. */
+@keyframes report-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.report-panel-in {
+  animation: report-panel-in 0.35s ease both;
+}
+
+/* Report view — hover lift shared by every white card surface. */
+.report-card {
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease,
+    border-color 0.3s ease;
+}
+.report-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px
+    color-mix(in srgb, var(--color-brand-primary) 14%, transparent);
+}
+
+/* Report view — animated maroon→gold gradient sweep across the hero title. */
+@keyframes report-title-sheen {
+  0% {
+    background-position: 120% center;
+  }
+  100% {
+    background-position: -120% center;
+  }
+}
+.report-hero-title {
+  background-image: linear-gradient(
+    100deg,
+    var(--color-text) 38%,
+    var(--color-brand-primary) 48%,
+    var(--color-brand-gold) 52%,
+    var(--color-text) 62%
+  );
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: report-title-sheen 4.5s ease-in-out infinite;
+}
+
+/* Report view — glint that sweeps each pillar bar once its fill lands. */
+@keyframes report-bar-glint {
+  0%,
+  55% {
+    transform: translateX(-130%);
+  }
+  85%,
+  100% {
+    transform: translateX(230%);
+  }
+}
+.report-bar-glint::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.45),
+    transparent
+  );
+  animation: report-bar-glint 2.6s ease-in-out 0.4s infinite;
+}
+
+/* Report view — soft breathing glow behind the score ring once drawn. */
+@keyframes report-ring-glow {
+  0%,
+  100% {
+    filter: drop-shadow(
+      0 0 6px color-mix(in srgb, var(--color-brand-primary) 25%, transparent)
+    );
+  }
+  50% {
+    filter: drop-shadow(
+      0 0 16px color-mix(in srgb, var(--color-brand-gold) 45%, transparent)
+    );
+  }
+}
+.report-ring-glow {
+  animation: report-ring-glow 3.2s ease-in-out infinite;
+}
+
+/* Report view — selected scatter bubble pulses to anchor the eye. */
+@keyframes report-bubble-pulse {
+  0%,
+  100% {
+    stroke-width: 1.5;
+    stroke-opacity: 1;
+  }
+  50% {
+    stroke-width: 7;
+    stroke-opacity: 0.35;
+  }
+}
+.report-bubble-pulse {
+  animation: report-bubble-pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-panel-in,
+  .report-hero-title,
+  .report-ring-glow,
+  .report-bubble-pulse {
+    animation: none;
+  }
+  .report-hero-title {
+    background-image: none;
+    color: var(--color-text);
+  }
+  .report-bar-glint::after {
+    display: none;
+  }
+  .report-card,
+  .report-card:hover {
+    transform: none;
+    transition: none;
+  }
+  .report-slot-col {
+    transition: none !important;
+  }
 }

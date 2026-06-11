@@ -1,71 +1,187 @@
+'use client';
+
+import { useRef, useState } from 'react';
+import {
+  MessageCircle,
+  Share2,
+  Bookmark,
+  Mic,
+  Eye,
+  Copy,
+  Check,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { SectionLabel } from '@/components/report/Primitives';
-import type { ApiResult } from '@/types/api';
+import type { ApiResult, ScriptVariation } from '@/types/api';
+
+function CopyButton({ getText }: { getText: () => string }) {
+  const [copied, setCopied] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(getText());
+      setCopied(true);
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => setCopied(false), 1600);
+    } catch {
+      // Clipboard unavailable (permissions/insecure context) — leave the
+      // button in its idle state rather than showing a false "Copied".
+    }
+  };
+
+  const Icon = copied ? Check : Copy;
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors duration-200 ${
+        copied
+          ? 'border-verdict-strong-deep text-verdict-strong-deep'
+          : 'border-brand-primary text-brand-primary hover:bg-brand-cream'
+      }`}
+    >
+      <Icon className="h-4 w-4" />
+      {copied ? 'Copied' : 'Copy script'}
+    </button>
+  );
+}
 
 export default function HookFormulaScripts({
   result,
 }: {
   result?: ApiResult | null;
 }): React.ReactElement | null {
+  const [active, setActive] = useState(0);
   const overall = result?.overall;
   if (!overall) return null;
 
-  const { ideal_hook_formula, visual_style_recommendation, script_hook_variations } = overall;
+  const {
+    ideal_hook_formula,
+    visual_style_recommendation,
+    script_hook_variations,
+  } = overall;
 
-  const scripts = [
-    { goal: 'Drive Comments', variation: script_hook_variations.for_comments },
-    { goal: 'Drive Shares', variation: script_hook_variations.for_shares },
-    { goal: 'Drive Saves', variation: script_hook_variations.for_saves },
-  ].filter((s) => s.variation?.spoken_hook || s.variation?.visual_hook);
+  const goals: {
+    key: string;
+    label: string;
+    icon: LucideIcon;
+    variation: ScriptVariation;
+  }[] = [
+    {
+      key: 'comments',
+      label: 'Drive comments',
+      icon: MessageCircle,
+      variation: script_hook_variations.for_comments,
+    },
+    {
+      key: 'shares',
+      label: 'Drive shares',
+      icon: Share2,
+      variation: script_hook_variations.for_shares,
+    },
+    {
+      key: 'saves',
+      label: 'Drive saves',
+      icon: Bookmark,
+      variation: script_hook_variations.for_saves,
+    },
+  ].filter((g) => g.variation?.spoken_hook || g.variation?.visual_hook);
+
+  const current = goals.length
+    ? goals[Math.min(active, goals.length - 1)]
+    : null;
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-4">
       <SectionLabel>Hook Formula &amp; Scripts</SectionLabel>
 
       {ideal_hook_formula && (
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-gray-900">Ideal Hook Formula</h3>
-          <p className="text-sm leading-relaxed text-gray-600">{ideal_hook_formula}</p>
+        <div className="border-brand-primary border-l-4 py-1 pl-5">
+          <h3 className="text-sm font-semibold text-gray-900">
+            Your ideal hook formula
+          </h3>
+          <p className="font-averia-serif text-text mt-1.5 text-[16px] leading-relaxed font-bold italic">
+            {ideal_hook_formula}
+          </p>
         </div>
       )}
 
       {visual_style_recommendation && (
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-gray-900">Visual Style</h3>
-          <p className="text-sm leading-relaxed text-gray-600">{visual_style_recommendation}</p>
-        </div>
+        <p className="text-sm leading-relaxed text-gray-600">
+          <span className="font-semibold text-gray-900">Visual style: </span>
+          {visual_style_recommendation}
+        </p>
       )}
 
-      {scripts.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-3">
-          {scripts.map(({ goal, variation }) => (
-            <div
-              key={goal}
-              className="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
-            >
-              <span className="bg-brand-primary/10 text-brand-primary self-start rounded-full px-2.5 py-0.5 text-xs font-semibold">
-                {goal}
-              </span>
-              {variation.spoken_hook && (
-                <div className="mt-4 space-y-1">
-                  <p className="text-xs font-semibold tracking-wide text-gray-500 uppercase">
-                    Say this:
-                  </p>
-                  <p className="text-sm leading-relaxed text-gray-800 italic">
-                    &quot;{variation.spoken_hook}&quot;
-                  </p>
-                </div>
-              )}
-              {variation.visual_hook && (
-                <div className="mt-4 space-y-1">
-                  <p className="text-xs font-semibold tracking-wide text-gray-500 uppercase">
-                    Show this:
-                  </p>
-                  <p className="text-sm leading-relaxed text-gray-600">{variation.visual_hook}</p>
-                </div>
-              )}
+      {current && (
+        <>
+          <div
+            role="tablist"
+            aria-label="Script goal"
+            className="flex flex-wrap gap-2 pt-2"
+          >
+            {goals.map(({ key, label, icon: Icon }, i) => {
+              const selected = i === active;
+              return (
+                <button
+                  key={key}
+                  role="tab"
+                  aria-selected={selected}
+                  onClick={() => setActive(i)}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                    selected
+                      ? 'border-brand-primary bg-brand-primary text-white'
+                      : 'hover:border-brand-primary/40 hover:text-brand-primary border-gray-300 text-gray-600'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div
+            key={current.key}
+            role="tabpanel"
+            className="report-panel-in report-card border-t-brand-primary rounded-2xl border border-t-4 border-gray-200 bg-white p-6 shadow-sm"
+          >
+            {current.variation.spoken_hook && (
+              <div>
+                <p className="text-brand-primary flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+                  <Mic className="h-3.5 w-3.5" /> Say this
+                </p>
+                <p className="font-averia-serif text-text mt-2 text-[17px] leading-relaxed font-bold italic">
+                  &ldquo;{current.variation.spoken_hook}&rdquo;
+                </p>
+              </div>
+            )}
+            {current.variation.visual_hook && (
+              <div className="mt-5">
+                <p className="text-brand-primary flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+                  <Eye className="h-3.5 w-3.5" /> Show this
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                  {current.variation.visual_hook}
+                </p>
+              </div>
+            )}
+            <div className="mt-6">
+              <CopyButton
+                getText={() =>
+                  [
+                    current.variation.spoken_hook,
+                    current.variation.visual_hook &&
+                      `Visual: ${current.variation.visual_hook}`,
+                  ]
+                    .filter(Boolean)
+                    .join('\n\n')
+                }
+              />
             </div>
-          ))}
-        </div>
+          </div>
+        </>
       )}
     </section>
   );

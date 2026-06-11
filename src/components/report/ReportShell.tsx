@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Download } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { getToken } from '@/lib/auth';
+import { DEMO_RESULT } from '@/lib/dummy/apiResult';
 import type { ApiResult } from '@/types/api';
 import Main from '@/components/report/Main';
+import Reveal from '@/components/report/Reveal';
 import ContentPillars from '@/components/report/ContentPillars';
 import ContentStrategy from '@/components/report/ContentStrategy';
 import AudienceIntelligence from '@/components/report/AudienceIntelligence';
@@ -14,8 +17,12 @@ import VideoBreakdownSection from '@/components/report/VideoBreakdownSection';
 
 export default function ReportShell(): React.ReactElement {
   const searchParams = useSearchParams();
-  const handle = searchParams.get('handle') ?? '';
   const jobId = searchParams.get('job');
+  // Design-iteration mode: ?demo=1 renders a bundled fixture instead of
+  // fetching a job (the frontend twin of the backend's test_pdf_sample.py).
+  const demo = !jobId && searchParams.get('demo') === '1';
+  const handle =
+    searchParams.get('handle') ?? (demo ? DEMO_RESULT.profile_handle : '');
   const [result, setResult] = useState<ApiResult | null>(null);
   const [error, setError] = useState('');
 
@@ -26,6 +33,8 @@ export default function ReportShell(): React.ReactElement {
       .then(setResult)
       .catch((err: ApiError) => setError(err.message));
   }, [jobId]);
+
+  const shown = demo ? DEMO_RESULT : result;
 
   if (error) {
     return (
@@ -41,29 +50,42 @@ export default function ReportShell(): React.ReactElement {
 
   return (
     <main className="mx-auto max-w-3xl space-y-12 px-4 py-12 text-gray-900 sm:px-6">
-      <Main handle={handle} result={result} />
-      <ContentPillars result={result} />
-      <ContentStrategy result={result} />
-      <AudienceIntelligence result={result} />
-      <HookFormulaScripts result={result} />
-      <VideoBreakdownSection handle={handle} result={result} />
+      <Main handle={handle} result={shown} />
+      <Reveal>
+        <ContentPillars result={shown} />
+      </Reveal>
+      <Reveal>
+        <ContentStrategy result={shown} />
+      </Reveal>
+      <Reveal>
+        <AudienceIntelligence result={shown} />
+      </Reveal>
+      <Reveal>
+        <HookFormulaScripts result={shown} />
+      </Reveal>
+      <Reveal>
+        <VideoBreakdownSection handle={handle} result={shown} />
+      </Reveal>
 
-      <section className="flex flex-col justify-center gap-3 pt-4 sm:flex-row">
-        {downloadHref && (
+      <Reveal>
+        <section className="flex flex-col justify-center gap-3 pt-4 sm:flex-row">
+          {downloadHref && (
+            <a
+              href={downloadHref}
+              className="bg-brand-primary hover:bg-brand-primary-dark hover:shadow-brand-primary/30 inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-center text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
+            >
+              <Download className="h-4 w-4" />
+              Download PDF Report
+            </a>
+          )}
           <a
-            href={downloadHref}
-            className="bg-brand-primary hover:bg-brand-primary-dark rounded-full px-6 py-2.5 text-center text-sm font-semibold text-white"
+            href="/form"
+            className="hover:border-brand-primary hover:text-brand-primary rounded-full border border-gray-300 px-6 py-2.5 text-center text-sm font-semibold text-gray-700 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
           >
-            Download PDF Report
+            Start Over
           </a>
-        )}
-        <a
-          href="/form"
-          className="rounded-full border border-gray-300 px-6 py-2.5 text-center text-sm font-semibold text-gray-700 hover:bg-gray-100"
-        >
-          Start Over
-        </a>
-      </section>
+        </section>
+      </Reveal>
     </main>
   );
 }
