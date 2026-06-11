@@ -264,7 +264,7 @@ export default function AnalyzeForm(): ReactElement {
               alt="GIA studying a TikTok account at her laptop"
               className="h-auto w-[380px] max-w-full sm:w-[490px] md:w-[600px]"
             />
-            <h1 className="font-itc-garamond text-brand-primary text-[42px] leading-[1.1] tracking-[-1.12px] sm:text-[56px] md:text-[68px]">
+            <h1 className="font-young-serif text-brand-primary text-[32px] leading-[1.1] tracking-[-1.12px] sm:text-[44px] md:text-[56px]">
               before gia starts watching
               <span aria-hidden="true">
                 .<span className="ellipsis-dot-2">.</span>
