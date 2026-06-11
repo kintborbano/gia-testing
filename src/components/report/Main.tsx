@@ -53,10 +53,7 @@ export default function Main({
   const [metricsRef, metricsInView] = useInView<HTMLDivElement>();
 
   const niche = result?.creator_profile.niche ?? '—';
-  const followers =
-    result?.creator_profile.followers != null
-      ? result.creator_profile.followers.toLocaleString()
-      : '—';
+  const followers = result?.creator_profile.followers;
   const avgGia = result?.overall.avg_gia_score;
   const vibe = result?.overall.creator_hook_summary ?? '';
   const dataParagraph = result?.overall.creator_profile_summary ?? '';
@@ -97,9 +94,14 @@ export default function Main({
               <span className="bg-brand-cream text-brand-primary rounded-full px-3 py-1 font-medium capitalize">
                 {niche}
               </span>
-              <span>{followers} followers</span>
+              {followers != null && (
+                <span>{followers.toLocaleString()} followers</span>
+              )}
               {analyses.length > 0 && (
-                <span>· {analyses.length} videos analyzed</span>
+                <span>
+                  {followers != null && '· '}
+                  {analyses.length} videos analyzed
+                </span>
               )}
             </div>
             {vibe && (

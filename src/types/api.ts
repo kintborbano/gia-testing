@@ -83,7 +83,8 @@ export interface CreatorProfile {
   primary_language: string;
   content_format: string;
   hook_vocabulary: string[];
-  followers: number;
+  // Not sent by the backend today (reverted in c9b2f99) — render conditionally.
+  followers?: number;
 }
 
 export interface ApiResult {
