@@ -64,8 +64,8 @@ export default function Main({
     ? analyses.reduce((s, a) => s + a.hook_strength, 0) / analyses.length
     : undefined;
   const avgEr = analyses.length
-    ? (analyses.reduce((s, a) => s + a.engagement_rate, 0) / analyses.length) *
-      100
+    ? analyses.reduce((s, a) => s + (Number(a.engagement_rate) || 0), 0) /
+      analyses.length
     : undefined;
   const totalViews = analyses.length
     ? analyses.reduce((s, a) => {

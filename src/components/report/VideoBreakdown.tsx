@@ -78,49 +78,57 @@ function ExpandedDetails({
         ))}
       </div>
 
-      <div className="space-y-1">
-        <DetailLabel>Hook Trigger (0-3s)</DetailLabel>
-        <p className="text-sm leading-relaxed text-gray-800">
-          {details.hookTrigger}
-        </p>
-      </div>
+      {details.hookTrigger && (
+        <div className="space-y-1">
+          <DetailLabel>Hook Trigger (0-3s)</DetailLabel>
+          <p className="text-sm leading-relaxed text-gray-800">
+            {details.hookTrigger}
+          </p>
+        </div>
+      )}
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-2">
-          <DetailLabel>Why It Works</DetailLabel>
-          <ul className="space-y-2">
-            {details.whyItWorks.map((item) => (
-              <li
-                key={item}
-                className="flex gap-2 text-sm leading-relaxed text-gray-700"
-              >
-                <span
-                  aria-hidden
-                  className="bg-verdict-strong mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
-                />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+      {(details.whyItWorks.length > 0 || details.improvements.length > 0) && (
+        <div className="grid gap-6 md:grid-cols-2">
+          {details.whyItWorks.length > 0 && (
+            <div className="space-y-2">
+              <DetailLabel>Why It Works</DetailLabel>
+              <ul className="space-y-2">
+                {details.whyItWorks.map((item) => (
+                  <li
+                    key={item}
+                    className="flex gap-2 text-sm leading-relaxed text-gray-700"
+                  >
+                    <span
+                      aria-hidden
+                      className="bg-verdict-strong mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
+                    />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {details.improvements.length > 0 && (
+            <div className="space-y-2">
+              <DetailLabel>Improvements</DetailLabel>
+              <ul className="space-y-2">
+                {details.improvements.map((item) => (
+                  <li
+                    key={item}
+                    className="flex gap-2 text-sm leading-relaxed text-gray-700"
+                  >
+                    <span
+                      aria-hidden
+                      className="bg-brand-gold mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
+                    />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-        <div className="space-y-2">
-          <DetailLabel>Improvements</DetailLabel>
-          <ul className="space-y-2">
-            {details.improvements.map((item) => (
-              <li
-                key={item}
-                className="flex gap-2 text-sm leading-relaxed text-gray-700"
-              >
-                <span
-                  aria-hidden
-                  className="bg-brand-gold mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
-                />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      )}
 
       <div className="space-y-2">
         <DetailLabel>Comment Insights</DetailLabel>

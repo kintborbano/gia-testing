@@ -20,7 +20,7 @@ export interface VideoDetails {
     saves: string;
     comments: string;
   };
-  hookTrigger: string;
+  hookTrigger: string | null;
   whyItWorks: string[];
   improvements: string[];
   commentInsights: string;

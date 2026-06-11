@@ -14,11 +14,12 @@ export interface VideoAnalysis {
   shares: number | string;
   bookmarks: number | string;
   comment_count: number | string;
+  // Already a percentage (5.2 means 5.2%) — backend pre-multiplies.
   engagement_rate: number;
   saves_to_views: number;
   hook_strength: number;
   hook_type: string;
-  hook_trigger_3s: string;
+  hook_trigger_3s: string | null;
   text_overlay: string | null;
   spoken_hook_transcript: string | null;
   emotional_trigger: string;
@@ -30,17 +31,21 @@ export interface VideoAnalysis {
   comment_insights: string;
   gia_score: number;
   gia_raw: number;
+  // Per-metric rates as percentages; empty object when the scraper couldn't
+  // resolve a follower count (compute_gia_score bails to {}).
   gia_breakdown: {
-    shares: number;
-    reactions: number;
-    comments: number;
-    saves: number;
+    view_rate?: number;
+    share_rate?: number;
+    reaction_rate?: number;
+    comment_rate?: number;
+    save_rate?: number;
   };
 }
 
 export interface ContentPillar {
   pillar: string;
   video_count: number;
+  // Already a percentage, same convention as VideoAnalysis.engagement_rate.
   avg_engagement_rate: number;
   verdict: string;
 }
@@ -83,7 +88,7 @@ export interface CreatorProfile {
   primary_language: string;
   content_format: string;
   hook_vocabulary: string[];
-  // Not sent by the backend today (reverted in c9b2f99) — render conditionally.
+  // Merged from scraped creator_meta; may be 0/absent if scraping misses it.
   followers?: number;
 }
 

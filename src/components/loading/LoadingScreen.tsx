@@ -23,7 +23,6 @@ export default function LoadingScreen(): ReactElement {
   const reportHref = handle
     ? `/report?handle=${encodeURIComponent(handle)}&job=${jobId ?? ''}`
     : '/form';
-  const wrappedHref = handle ? `/wrapped?handle=${handle}` : '/form';
 
   return (
     <main className="loading-viewport bg-brand-primary flex w-full flex-col">
@@ -85,16 +84,6 @@ export default function LoadingScreen(): ReactElement {
                 className="px-12!"
               >
                 DOWNLOAD YOUR GIA REPORT
-              </Button>
-              <Button
-                href={wrappedHref}
-                variant="glass"
-                size="default"
-                withArrow
-                transition
-                className="px-12!"
-              >
-                SEE YOUR GIA WRAPPED
               </Button>
             </div>
           ) : (

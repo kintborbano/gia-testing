@@ -96,7 +96,7 @@ export default function ContentPillars({
                 />
               </div>
               <p className="mt-1.5 text-xs text-gray-500">
-                {(pillar.avg_engagement_rate * 100).toFixed(1)}% ER ·{' '}
+                {Number(pillar.avg_engagement_rate).toFixed(1)}% ER ·{' '}
                 {pillar.video_count} video{pillar.video_count !== 1 ? 's' : ''}
               </p>
             </div>
