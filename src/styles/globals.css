@@ -83,6 +83,18 @@ canvas {
   min-height: calc(100svh - var(--header-h, 112px));
 }
 
+/* Portrait tablets (the 768–1024 band the Features scene also treats as
+   "tablet") are tall enough that a full-viewport hero strands a large void
+   between the CTA and the GIA scene below. The hero text is a fixed size across
+   this whole band, so a fixed height (rather than one that grows with the
+   viewport) keeps the CTA-to-scene gap constant on every portrait tablet —
+   taller devices simply reveal a little more of the GIA scene beneath it. */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .hero-viewport {
+    min-height: 820px;
+  }
+}
+
 /*
  * Floating-features layout. The same six cells are placed three ways, one per
  * Figma frame — FeatureScene picks the mode by breakpoint (its `layout` prop):
