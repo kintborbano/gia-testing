@@ -37,15 +37,18 @@ export default function LoadingScreen({ handle }: Props): ReactElement {
             state is just copy + CTAs. (The bar's animation-end flips `done`, so
             it has to render during loading to drive that transition.) */}
         {!done && (
-          <>
-            {/* GIA, mid-analysis — sits above the progress bar while loading. */}
+          // Image + progress bar as one tight unit (gap-2), so the larger
+          // illustration sits close to the bar; the section's gap-12 still sets
+          // the pair apart from the copy below.
+          <div className="flex flex-col items-center gap-2">
+            {/* GIA, mid-analysis — sits just above the progress bar. */}
             <Image
-              src="/images/gia-thinking-sitting.png"
+              src="/images/gia-thought-thinking.png"
               alt="GIA, the SOFI AI analyst, thinking as she works"
               width={1254}
               height={1254}
               priority
-              className="h-auto w-[240px] max-w-full sm:w-[280px] md:w-[320px]"
+              className="h-auto w-[320px] max-w-full sm:w-[360px] md:w-[400px]"
             />
 
             {/* Progress bar — gold→yellow fill that runs once, then locks full. */}
@@ -59,7 +62,7 @@ export default function LoadingScreen({ handle }: Props): ReactElement {
                 onAnimationEnd={() => setDone(true)}
               />
             </div>
-          </>
+          </div>
         )}
 
         {/* 3. Copy + CTA — broadcast invite while loading, report handoff once done. */}
