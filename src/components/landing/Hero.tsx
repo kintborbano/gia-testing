@@ -3,7 +3,6 @@
 import AnalyzeTiktokButton from '@/components/ui/AnalyzeTiktokButton';
 import SeeHowItWorksButton from '@/components/ui/SeeHowItWorksButton';
 import { getLenisSnapshot } from '@/stores/lenisStore';
-import { HEADER_HEIGHT_LARGE } from '@/animations/headerAnimations';
 
 export default function Hero(): React.ReactElement {
   const scrollToHow = (): void => {
@@ -24,14 +23,14 @@ export default function Hero(): React.ReactElement {
   return (
     <section
       id="bg-stop-hero"
-      className="relative flex items-center justify-center overflow-hidden px-5 sm:px-8 md:px-16"
-      style={{ minHeight: `calc(100vh - ${HEADER_HEIGHT_LARGE}px)` }}
+      className="hero-viewport relative flex items-center justify-center overflow-hidden px-5 sm:px-8 md:px-16"
     >
-      <div
-        className="relative z-10 flex w-[1152px] max-w-full flex-col items-center justify-center py-10"
-        style={{ marginBottom: HEADER_HEIGHT_LARGE }}
-      >
-        <div className="text-brand-primary flex w-full flex-col items-center justify-center gap-8 text-center sm:gap-11 md:gap-14">
+      {/* md+ only: a bottom margin equal to the header offsets the main's
+          padding-top so the content centres in the FULL viewport. On phones the
+          header band is mostly empty and the margin only opens dead space
+          between the buttons and the next section, so it's dropped there. */}
+      <div className="relative z-10 flex w-[1152px] max-w-full flex-col items-center justify-center py-10 md:mb-[var(--header-h,112px)]">
+        <div className="text-brand-primary flex w-full flex-col items-center justify-center gap-10 text-center sm:gap-11 md:gap-14">
           <h1 className="font-itc-garamond text-[clamp(38px,11vw,50px)] leading-[1.1] tracking-[-1.12px] text-[#151515] sm:text-[68px] md:text-[86px]">
             Finally understand
             <br />

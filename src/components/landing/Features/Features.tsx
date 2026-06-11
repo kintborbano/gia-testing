@@ -80,7 +80,7 @@ export default function Features(): React.ReactElement {
       <>
         <section
           id="features-section"
-          className="flex w-full flex-col items-center gap-12 px-5 py-12 sm:px-8"
+          className="flex w-full flex-col items-center gap-12 px-5 pt-4 pb-12 sm:px-8"
         >
           <FeatureScene layout="mobile" />
           <Headline />

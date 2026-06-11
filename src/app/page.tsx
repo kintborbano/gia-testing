@@ -16,7 +16,12 @@ export default function Home(): React.ReactElement {
         <ScrollBackground />
         <main
           className="w-full"
-          style={{ paddingTop: `${HEADER_HEIGHT_LARGE}px` }}
+          style={
+            {
+              paddingTop: `${HEADER_HEIGHT_LARGE}px`,
+              '--header-h': `${HEADER_HEIGHT_LARGE}px`,
+            } as React.CSSProperties
+          }
         >
           <StickyHeader />
           <Hero />
