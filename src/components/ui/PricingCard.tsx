@@ -37,7 +37,7 @@ export default function PricingCard({
         CARD_PALETTE[variant]
       } ${
         featured
-          ? 'min-h-[508px] px-[27px] pt-[33px] pb-[47px]'
+          ? 'px-[27px] pt-[33px] pb-[47px]'
           : 'min-h-[400px] px-[27px] pt-[24px] pb-[23px]'
       }`}
     >
