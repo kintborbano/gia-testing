@@ -13,6 +13,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { SectionLabel } from '@/components/report/Primitives';
 import Emphasis from '@/components/report/Emphasis';
+import { toText } from '@/lib/text';
 import type { ApiResult, ScriptVariation } from '@/types/api';
 
 function CopyButton({ getText }: { getText: () => string }) {
@@ -57,11 +58,11 @@ export default function HookFormulaScripts({
   const overall = result?.overall;
   if (!overall) return null;
 
-  const {
-    ideal_hook_formula,
-    visual_style_recommendation,
-    script_hook_variations,
-  } = overall;
+  const ideal_hook_formula = toText(overall.ideal_hook_formula);
+  const visual_style_recommendation = toText(
+    overall.visual_style_recommendation
+  );
+  const script_hook_variations = overall.script_hook_variations ?? {};
 
   const goals: {
     key: string;
@@ -87,11 +88,15 @@ export default function HookFormulaScripts({
       icon: Bookmark,
       variation: script_hook_variations.for_saves,
     },
-  ].filter((g) => g.variation?.spoken_hook || g.variation?.visual_hook);
+  ].filter(
+    (g) => toText(g.variation?.spoken_hook) || toText(g.variation?.visual_hook)
+  );
 
   const current = goals.length
     ? goals[Math.min(active, goals.length - 1)]
     : null;
+  const spokenHook = toText(current?.variation.spoken_hook);
+  const visualHook = toText(current?.variation.visual_hook);
 
   return (
     <section className="space-y-4">
@@ -148,36 +153,32 @@ export default function HookFormulaScripts({
             role="tabpanel"
             className="report-panel-in report-card border-t-brand-primary rounded-2xl border border-t-4 border-gray-200 bg-white p-6 shadow-sm"
           >
-            {current.variation.spoken_hook && (
+            {spokenHook && (
               <div>
                 <p className="text-brand-primary flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
                   <Mic className="h-3.5 w-3.5" /> Say this
                 </p>
                 <p className="font-averia-serif text-text mt-2 text-[17px] leading-relaxed font-bold italic">
                   &ldquo;
-                  <Emphasis text={current.variation.spoken_hook} />
+                  <Emphasis text={spokenHook} />
                   &rdquo;
                 </p>
               </div>
             )}
-            {current.variation.visual_hook && (
+            {visualHook && (
               <div className="mt-5">
                 <p className="text-brand-primary flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
                   <Eye className="h-3.5 w-3.5" /> Show this
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                  <Emphasis text={current.variation.visual_hook} />
+                  <Emphasis text={visualHook} />
                 </p>
               </div>
             )}
             <div className="mt-6">
               <CopyButton
                 getText={() =>
-                  [
-                    current.variation.spoken_hook,
-                    current.variation.visual_hook &&
-                      `Visual: ${current.variation.visual_hook}`,
-                  ]
+                  [spokenHook, visualHook && `Visual: ${visualHook}`]
                     .filter(Boolean)
                     .join('\n\n')
                     .replace(/\*\*/g, '')

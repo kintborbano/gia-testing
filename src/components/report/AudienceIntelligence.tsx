@@ -11,6 +11,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { SectionLabel } from '@/components/report/Primitives';
 import Emphasis from '@/components/report/Emphasis';
+import { toText } from '@/lib/text';
 import type { ApiResult } from '@/types/api';
 
 function intentBadgeStyle(level: string): string {
@@ -45,35 +46,35 @@ export default function AudienceIntelligence({
       icon: Share2,
       label: 'Share',
       question: 'What makes them hit share',
-      text: signals.what_they_share,
+      text: toText(signals.what_they_share),
     },
     {
       key: 'save',
       icon: Bookmark,
       label: 'Save',
       question: 'What they save for later',
-      text: signals.what_they_save,
+      text: toText(signals.what_they_save),
     },
     {
       key: 'comment',
       icon: MessageCircle,
       label: 'Comment',
       question: 'What pulls them into the comments',
-      text: signals.what_they_comment_about,
+      text: toText(signals.what_they_comment_about),
     },
     {
       key: 'like',
       icon: Heart,
       label: 'Love',
       question: 'What they love about you',
-      text: signals.what_they_like,
+      text: toText(signals.what_they_like),
     },
     {
       key: 'dislike',
       icon: ThumbsDown,
       label: 'Dislike',
       question: 'What turns them away',
-      text: signals.what_they_dislike,
+      text: toText(signals.what_they_dislike),
     },
   ].filter((t) => t.text);
 

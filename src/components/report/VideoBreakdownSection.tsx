@@ -6,14 +6,15 @@ import VideoBreakdown from '@/components/report/VideoBreakdown';
 import VideoExplorer from '@/components/report/VideoExplorer';
 import type { ExplorerPoint } from '@/components/report/VideoExplorer';
 import { formatCount } from '@/lib/format';
+import { toText } from '@/lib/text';
 import type { ApiResult, VideoAnalysis } from '@/types/api';
 import type { Video } from '@/types/report';
 
 // Gemini bullet strings arrive as '• point one\n• point two' — split into
 // list items. **emphasis** markers stay in; <Emphasis> renders them bold.
-function bullets(s: string | null | undefined): string[] {
-  if (!s) return [];
-  return s
+function bullets(s: unknown): string[] {
+  if (Array.isArray(s)) return s.flatMap(bullets);
+  return toText(s)
     .split('•')
     .map((b) => b.trim())
     .filter(Boolean);
@@ -53,10 +54,10 @@ function toVideo(a: VideoAnalysis): Video {
         saves: formatCount(a.bookmarks),
         comments: formatCount(a.comment_count),
       },
-      hookTrigger: a.hook_trigger_3s || null,
+      hookTrigger: toText(a.hook_trigger_3s) || null,
       whyItWorks: bullets(a.why_it_works),
       improvements: bullets(a.improvement),
-      commentInsights: a.comment_insights ?? '',
+      commentInsights: toText(a.comment_insights),
       positive: a.comment_sentiment?.positive ?? [],
     },
   };

@@ -1,6 +1,7 @@
 import { CalendarClock, Check, X } from 'lucide-react';
 import { SectionLabel } from '@/components/report/Primitives';
 import Emphasis from '@/components/report/Emphasis';
+import { toText } from '@/lib/text';
 import type { ApiResult } from '@/types/api';
 
 function ThemeList({
@@ -50,11 +51,13 @@ export default function ContentStrategy({
   const overall = result?.overall;
   if (!overall) return null;
 
-  const {
-    posting_strategy,
-    content_themes_that_work,
-    content_themes_to_avoid,
-  } = overall;
+  const posting_strategy = toText(overall.posting_strategy);
+  const content_themes_that_work = (overall.content_themes_that_work ?? []).map(
+    toText
+  );
+  const content_themes_to_avoid = (overall.content_themes_to_avoid ?? []).map(
+    toText
+  );
 
   return (
     <section className="space-y-4">
