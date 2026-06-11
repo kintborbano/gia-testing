@@ -21,8 +21,6 @@ const betaDeepDive = {
   originalPrice: '₱799.00',
   price: '₱299.00',
   badge: 'BETA PRICING',
-  description:
-    "Get the full report and be one of the first creators to know exactly what's driving your growth.",
   features: [
     <Fragment key="videos">
       Analysis across your <b>20 most recent videos</b>

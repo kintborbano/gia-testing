@@ -8,7 +8,7 @@ interface PricingCardProps {
   originalPrice?: string;
   /** Small cream pill under the tier name, e.g. "BETA PRICING". */
   badge?: string;
-  description: string;
+  description?: string;
   /** Bullet list under "Includes:" — entries may carry bold spans. */
   features: React.ReactNode[];
   variant?: PricingCardVariant;
@@ -78,13 +78,15 @@ export default function PricingCard({
         </div>
       </div>
 
-      <p
-        className={`w-[290px] max-w-full font-sans text-[13px] leading-[1.45] tracking-[-0.065px] ${
-          featured ? 'mt-[15px]' : 'mt-[19px]'
-        }`}
-      >
-        {description}
-      </p>
+      {description && (
+        <p
+          className={`w-[290px] max-w-full font-sans text-[13px] leading-[1.45] tracking-[-0.065px] ${
+            featured ? 'mt-[15px]' : 'mt-[19px]'
+          }`}
+        >
+          {description}
+        </p>
+      )}
 
       <div className="mt-auto pt-5">
         <div className="h-px w-full bg-current" />
