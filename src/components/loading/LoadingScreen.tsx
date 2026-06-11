@@ -76,7 +76,8 @@ export default function LoadingScreen({ handle }: Props): ReactElement {
           </div>
 
           {done ? (
-            <div className="flex flex-col items-center gap-3">
+            // items-stretch so both CTAs share the wider button's width.
+            <div className="flex flex-col items-stretch gap-3">
               <Button
                 href={reportHref}
                 variant="onBrand"
