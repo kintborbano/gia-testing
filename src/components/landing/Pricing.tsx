@@ -77,7 +77,11 @@ export default function Pricing(): React.ReactElement {
         </p>
       </div>
 
-      <div className="flex w-full flex-wrap items-start justify-center gap-[39px]">
+      {/* Three fixed 350px cards. They only fit side-by-side once the row has
+          ~1128px of content (desktop, `xl`). Below that we stack a single
+          centered column rather than letting flex-wrap strand the third card on
+          a second row — the staggered 2-up state that looked broken on iPad. */}
+      <div className="flex w-full flex-col items-center justify-center gap-[39px] xl:flex-row xl:items-start">
         <LockedCard src="/images/pricing-locked-light.webp" />
         <PricingCard variant="featured" {...betaDeepDive} />
         <LockedCard src="/images/pricing-locked-gold.webp" />
