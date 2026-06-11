@@ -73,6 +73,16 @@ canvas {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
+/* Hero fills the viewport the user actually sees at load: svh (small viewport,
+   URL bar shown) with a vh fallback for browsers without small-viewport units.
+   On desktop svh == vh, so one class serves all breakpoints. dvh is avoided on
+   purpose — it resizes mid-scroll as the URL bar collapses, shifting layout
+   under Lenis. --header-h is published by the landing page's <main>. */
+.hero-viewport {
+  min-height: calc(100vh - var(--header-h, 112px));
+  min-height: calc(100svh - var(--header-h, 112px));
+}
+
 /*
  * Floating-features layout. The same six cells are placed three ways, one per
  * Figma frame — FeatureScene picks the mode by breakpoint (its `layout` prop):
