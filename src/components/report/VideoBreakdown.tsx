@@ -204,7 +204,9 @@ function VideoCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate font-semibold">{video.title}</h3>
+            <h3 className="line-clamp-2 min-w-0 font-semibold">
+              {video.title}
+            </h3>
             <span
               className={`rounded-full px-2 py-0.5 text-xs font-medium ${scoreBadgeStyle(video.score)}`}
             >
