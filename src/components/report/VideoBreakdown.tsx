@@ -89,15 +89,17 @@ function ExpandedDetails({
       )}
 
       {(details.whyItWorks.length > 0 || details.improvements.length > 0) && (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {details.whyItWorks.length > 0 && (
-            <div className="space-y-2">
-              <DetailLabel>Why It Works</DetailLabel>
+            <div className="border-verdict-strong bg-verdict-strong-soft space-y-2 rounded-xl border p-4">
+              <p className="text-verdict-strong-deep text-xs font-semibold tracking-wide uppercase">
+                Why It Works
+              </p>
               <ul className="space-y-2">
                 {details.whyItWorks.map((item) => (
                   <li
                     key={item}
-                    className="flex gap-2 text-sm leading-relaxed text-gray-700"
+                    className="flex gap-2 text-sm leading-relaxed text-gray-800"
                   >
                     <span
                       aria-hidden
@@ -112,17 +114,19 @@ function ExpandedDetails({
             </div>
           )}
           {details.improvements.length > 0 && (
-            <div className="space-y-2">
-              <DetailLabel>Improvements</DetailLabel>
+            <div className="border-verdict-weak bg-verdict-weak-soft space-y-2 rounded-xl border p-4">
+              <p className="text-verdict-weak text-xs font-semibold tracking-wide uppercase">
+                Improvements
+              </p>
               <ul className="space-y-2">
                 {details.improvements.map((item) => (
                   <li
                     key={item}
-                    className="flex gap-2 text-sm leading-relaxed text-gray-700"
+                    className="flex gap-2 text-sm leading-relaxed text-gray-800"
                   >
                     <span
                       aria-hidden
-                      className="bg-brand-gold mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
+                      className="bg-verdict-weak mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
                     />
                     <span>
                       <Emphasis text={item} />

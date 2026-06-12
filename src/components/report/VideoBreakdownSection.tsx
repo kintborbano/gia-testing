@@ -6,19 +6,9 @@ import VideoBreakdown from '@/components/report/VideoBreakdown';
 import VideoExplorer from '@/components/report/VideoExplorer';
 import type { ExplorerPoint } from '@/components/report/VideoExplorer';
 import { formatCount } from '@/lib/format';
-import { toText } from '@/lib/text';
+import { splitBullets, toText } from '@/lib/text';
 import type { ApiResult, VideoAnalysis } from '@/types/api';
 import type { Video } from '@/types/report';
-
-// Gemini bullet strings arrive as '• point one\n• point two' — split into
-// list items. **emphasis** markers stay in; <Emphasis> renders them bold.
-function bullets(s: unknown): string[] {
-  if (Array.isArray(s)) return s.flatMap(bullets);
-  return toText(s)
-    .split('•')
-    .map((b) => b.trim())
-    .filter(Boolean);
-}
 
 // Display order + weights mirror compute_gia_score in the backend.
 const GAUGE_METRICS = [
@@ -55,8 +45,8 @@ function toVideo(a: VideoAnalysis): Video {
         comments: formatCount(a.comment_count),
       },
       hookTrigger: toText(a.hook_trigger_3s) || null,
-      whyItWorks: bullets(a.why_it_works),
-      improvements: bullets(a.improvement),
+      whyItWorks: splitBullets(a.why_it_works),
+      improvements: splitBullets(a.improvement),
       commentInsights: toText(a.comment_insights),
       positive: a.comment_sentiment?.positive ?? [],
     },

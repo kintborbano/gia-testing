@@ -12,3 +12,14 @@ export function toText(v: unknown): string {
       .join(' — ');
   return String(v);
 }
+
+// Gemini bullet copy arrives as '• point one\n• point two' (or as an array of
+// such strings) — split into list items. **emphasis** markers stay in for
+// <Emphasis> to render.
+export function splitBullets(s: unknown): string[] {
+  if (Array.isArray(s)) return s.flatMap(splitBullets);
+  return toText(s)
+    .split('•')
+    .map((b) => b.trim())
+    .filter(Boolean);
+}

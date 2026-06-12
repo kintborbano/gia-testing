@@ -42,17 +42,17 @@ html {
   --color-brand-cream: #fef7dd;
   --color-brand-gold: #c2992e;
   --color-brand-gold-shadow: #8a6a1c;
-  /* Brand-only verdict scale: strong = full maroon, mixed = gold, weak = faded
-     dusty rose. Saturation carries the meaning so nothing leaves the palette. */
-  --color-verdict-strong: #8c1f2e;
-  --color-verdict-strong-deep: #751a26;
-  --color-verdict-strong-soft: #f6dfe2;
-  --color-verdict-mixed: #c2992e;
-  --color-verdict-mixed-deep: #8a6a1c;
+  /* Verdict scale mirrors the PDF (pdf_gen.py .p3-row/.p6-panel colors) so the
+     web report and the downloaded PDF speak the same green/yellow/red language. */
+  --color-verdict-strong: #5baa39;
+  --color-verdict-strong-deep: #2c8a1f;
+  --color-verdict-strong-soft: #def0cc;
+  --color-verdict-mixed: #c9a227;
+  --color-verdict-mixed-deep: #a07f18;
   --color-verdict-mixed-soft: #f6edd0;
-  --color-verdict-weak: #c4a5a9;
-  --color-verdict-weak-deep: #82595f;
-  --color-verdict-weak-soft: #f1e9e7;
+  --color-verdict-weak: #b83847;
+  --color-verdict-weak-deep: #8c1f2e;
+  --color-verdict-weak-soft: #f6d9dc;
   --font-sans: var(--font-instrument-sans);
   --font-averia-serif: var(--font-averia-serif);
   --font-young-serif: var(--font-young-serif);

@@ -1,7 +1,7 @@
 import { CalendarClock, Check, X } from 'lucide-react';
 import { SectionLabel } from '@/components/report/Primitives';
 import Emphasis from '@/components/report/Emphasis';
-import { toText } from '@/lib/text';
+import { splitBullets, toText } from '@/lib/text';
 import type { ApiResult } from '@/types/api';
 
 function ThemeList({
@@ -51,7 +51,7 @@ export default function ContentStrategy({
   const overall = result?.overall;
   if (!overall) return null;
 
-  const posting_strategy = toText(overall.posting_strategy);
+  const postingBullets = splitBullets(overall.posting_strategy);
   const content_themes_that_work = (overall.content_themes_that_work ?? []).map(
     toText
   );
@@ -63,18 +63,31 @@ export default function ContentStrategy({
     <section className="space-y-4">
       <SectionLabel>Content Strategy</SectionLabel>
 
-      {posting_strategy && (
+      {postingBullets.length > 0 && (
         <div className="bg-brand-cream report-card flex gap-4 rounded-2xl p-6">
           <div className="bg-brand-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white">
             <CalendarClock className="h-5 w-5" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h3 className="text-brand-primary text-sm font-semibold">
               Posting strategy
             </h3>
-            <p className="text-brand-primary-dark mt-1.5 text-sm leading-relaxed">
-              <Emphasis text={posting_strategy} />
-            </p>
+            <ul className="mt-1.5 space-y-1.5">
+              {postingBullets.map((item) => (
+                <li
+                  key={item}
+                  className="text-brand-primary-dark flex gap-2 text-sm leading-relaxed"
+                >
+                  <span
+                    aria-hidden
+                    className="bg-brand-primary mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
+                  />
+                  <span>
+                    <Emphasis text={item} />
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       )}
