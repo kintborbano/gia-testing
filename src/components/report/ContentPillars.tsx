@@ -2,6 +2,7 @@
 
 import { SectionLabel } from '@/components/report/Primitives';
 import { useInView } from '@/hooks/useInView';
+import { toText } from '@/lib/text';
 import type { ApiResult } from '@/types/api';
 
 type VerdictKey = 'strong' | 'mixed' | 'weak';
@@ -34,19 +35,45 @@ const LEGEND: { key: VerdictKey; label: string }[] = [
   { key: 'weak', label: 'Weak' },
 ];
 
+interface NormalizedPillar {
+  pillar: string;
+  er: number;
+  videoCount: number;
+  verdict: string;
+}
+
+// Gemini's pillars drift: avg_engagement_rate arrives as "9.8%" strings,
+// verdict goes missing, keys vary. Normalize like the backend PDF does
+// instead of trusting the typed shape.
+function normalizePillars(raw: unknown): NormalizedPillar[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((p): NormalizedPillar => {
+      const r = (p ?? {}) as Record<string, unknown>;
+      return {
+        pillar: toText(r.pillar ?? r.name),
+        er:
+          parseFloat(
+            String(r.avg_engagement_rate ?? r.er ?? '').replace('%', '')
+          ) || 0,
+        videoCount: Number(r.video_count) || 0,
+        verdict: toText(r.verdict) || 'mixed',
+      };
+    })
+    .filter((p) => p.pillar);
+}
+
 export default function ContentPillars({
   result,
 }: {
   result?: ApiResult | null;
 }): React.ReactElement | null {
   const [ref, inView] = useInView<HTMLDivElement>();
-  const pillars = result?.overall.content_pillars;
-  if (!pillars?.length) return null;
+  const pillars = normalizePillars(result?.overall.content_pillars);
+  if (!pillars.length) return null;
 
-  const sorted = [...pillars].sort(
-    (a, b) => b.avg_engagement_rate - a.avg_engagement_rate
-  );
-  const maxEr = Math.max(...sorted.map((p) => p.avg_engagement_rate), 0.0001);
+  const sorted = [...pillars].sort((a, b) => b.er - a.er);
+  const maxEr = Math.max(...sorted.map((p) => p.er), 0.0001);
 
   return (
     <section className="space-y-4">
@@ -89,15 +116,15 @@ export default function ContentPillars({
                   className={`report-bar-glint relative h-full overflow-hidden rounded-md ${styles.bar}`}
                   style={{
                     width: inView
-                      ? `${Math.max((pillar.avg_engagement_rate / maxEr) * 100, 4)}%`
+                      ? `${Math.max((pillar.er / maxEr) * 100, 4)}%`
                       : '0%',
                     transition: `width 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${i * 110}ms`,
                   }}
                 />
               </div>
               <p className="mt-1.5 text-xs text-gray-500">
-                {Number(pillar.avg_engagement_rate).toFixed(1)}% ER ·{' '}
-                {pillar.video_count} video{pillar.video_count !== 1 ? 's' : ''}
+                {pillar.er.toFixed(1)}% ER · {pillar.videoCount} video
+                {pillar.videoCount !== 1 ? 's' : ''}
               </p>
             </div>
           );
