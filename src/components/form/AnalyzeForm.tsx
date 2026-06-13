@@ -205,7 +205,11 @@ export default function AnalyzeForm(): ReactElement {
     setSubmitError('');
     try {
       const profileUrl = `https://www.tiktok.com/@${handle}`;
-      const { job_id } = await api.startAnalysis(profileUrl);
+      const { job_id } = await api.startAnalysis(profileUrl, {
+        email: email.trim(),
+        goal,
+        accountType,
+      });
       const rect = ctaRef.current?.getBoundingClientRect();
       const flood = rect
         ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }

@@ -47,10 +47,24 @@ export const api = {
     );
   },
 
-  startAnalysis(profileUrl: string, mode: 'quick' | 'deep' = 'deep') {
+  startAnalysis(
+    profileUrl: string,
+    opts: {
+      mode?: 'quick' | 'deep';
+      email?: string;
+      goal?: string;
+      accountType?: string;
+    } = {}
+  ) {
     return request<{ job_id: string }>('/api/analyze', {
       method: 'POST',
-      body: JSON.stringify({ profile_url: profileUrl, mode }),
+      body: JSON.stringify({
+        profile_url: profileUrl,
+        mode: opts.mode ?? 'deep',
+        email: opts.email,
+        goal: opts.goal,
+        account_type: opts.accountType,
+      }),
     });
   },
 
