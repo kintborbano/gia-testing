@@ -212,11 +212,22 @@ export default function AnalyzeForm(): ReactElement {
         : undefined;
       navigate(
         `/loading?job_id=${job_id}&handle=${encodeURIComponent(handle)}`,
-        flood ? { flood } : undefined,
+        flood ? { flood } : undefined
       );
     } catch (err) {
+      // 401 = expired/invalid token. The API client already cleared it; pop
+      // the BetaGate so the user can re-enter their code and resume the flow
+      // (BetaGate.onSuccess re-calls doAnalyze) instead of seeing a raw
+      // "token expired" message.
+      if (err instanceof ApiError && err.status === 401) {
+        setShowGate(true);
+        setSubmitting(false);
+        return;
+      }
       setSubmitError(
-        err instanceof ApiError ? err.message : 'Something went wrong. Please try again.',
+        err instanceof ApiError
+          ? err.message
+          : 'Something went wrong. Please try again.'
       );
       setSubmitting(false);
     }
@@ -452,7 +463,10 @@ export default function AnalyzeForm(): ReactElement {
               <FieldError message={errors.consent} />
             </div>
             {submitError && (
-              <p role="alert" className="font-pixelify text-[14px] text-red-300">
+              <p
+                role="alert"
+                className="font-pixelify text-[14px] text-red-300"
+              >
                 {submitError}
               </p>
             )}
