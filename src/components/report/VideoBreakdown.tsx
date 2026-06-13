@@ -205,7 +205,9 @@ function VideoCard({
           <p className="mt-1 text-xs text-gray-500">{video.hook}</p>
           <div className="mt-2 flex gap-4 text-sm text-gray-600">
             <span>{video.er}</span>
-            <span>{video.views}</span>
+            {/* Hide views in the header when expanded — the counts row below
+                already shows "X Views", keeping it here is redundant. */}
+            {!open && <span>{video.views}</span>}
           </div>
         </div>
         <ChevronDown
