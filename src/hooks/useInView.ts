@@ -30,7 +30,13 @@ export function useInView<T extends HTMLElement>(
       { rootMargin, threshold: 0.15 }
     );
     io.observe(el);
-    return () => io.disconnect();
+    // Fallback: never let a missed observer (background tab, odd scroll
+    // container, static export) leave gated content stuck invisible.
+    const fallback = window.setTimeout(() => setInView(true), 1500);
+    return () => {
+      io.disconnect();
+      window.clearTimeout(fallback);
+    };
   }, [rootMargin]);
 
   return [ref, inView];

@@ -1,7 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { SectionLabel } from '@/components/report/Primitives';
-import { useInView } from '@/hooks/useInView';
 import { toText } from '@/lib/text';
 import type { ApiResult } from '@/types/api';
 
@@ -68,7 +68,14 @@ export default function ContentPillars({
 }: {
   result?: ApiResult | null;
 }): React.ReactElement | null {
-  const [ref, inView] = useInView<HTMLDivElement>();
+  // Fill on mount rather than a scroll observer: the one-shot useInView was
+  // unreliable inside the Reveal wrapper and left the bars stuck at 0%.
+  const [filled, setFilled] = useState(false);
+  useEffect(() => {
+    const r = requestAnimationFrame(() => setFilled(true));
+    return () => cancelAnimationFrame(r);
+  }, []);
+
   const pillars = normalizePillars(result?.overall.content_pillars);
   if (!pillars.length) return null;
 
@@ -92,10 +99,7 @@ export default function ContentPillars({
         </div>
       </div>
 
-      <div
-        ref={ref}
-        className="report-card space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
-      >
+      <div className="report-card space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         {sorted.map((pillar, i) => {
           const key = verdictKey(pillar.verdict);
           const styles = VERDICT_STYLES[key];
@@ -115,7 +119,7 @@ export default function ContentPillars({
                 <div
                   className={`report-bar-glint relative h-full overflow-hidden rounded-md ${styles.bar}`}
                   style={{
-                    width: inView
+                    width: filled
                       ? `${Math.max((pillar.er / maxEr) * 100, 4)}%`
                       : '0%',
                     transition: `width 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${i * 110}ms`,

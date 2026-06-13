@@ -49,26 +49,6 @@ function ExpandedDetails({
 }) {
   return (
     <div className="space-y-6 border-t border-gray-200 px-5 py-5">
-      <div className="bg-brand-cream rounded-xl p-4">
-        <div className="flex items-baseline justify-between">
-          <DetailLabel>GIA Score</DetailLabel>
-          <span className="text-brand-primary-dark text-xs opacity-70">
-            raw: {details.rawScore}
-          </span>
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-y-3 sm:grid-cols-5">
-          {details.gauge.map((metric) => (
-            <div key={metric.label} className="text-center">
-              <div className="text-brand-primary text-base font-bold">
-                {metric.value}
-              </div>
-              <div className="text-xs text-gray-600">{metric.label}</div>
-              <div className="text-[11px] text-gray-400">{metric.weight}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-700">
         {countIcons.map(({ key, label, icon: Icon }) => (
           <span key={key} className="inline-flex items-center gap-1.5">
