@@ -11,7 +11,7 @@ import ScrollBackground from '@/components/landing/ScrollBackground';
 import type { ScrollStop } from '@/components/landing/scrollBackground.config';
 import { HEADER_HEIGHT_LARGE } from '@/animations/headerAnimations';
 import BetaGate from '@/components/auth/BetaGate';
-import { isAuthenticated } from '@/lib/auth';
+import { isAuthenticated, clearToken } from '@/lib/auth';
 import { api, ApiError } from '@/lib/api';
 
 // White → cream as you scroll past the first screen — the exact transition the
@@ -219,11 +219,14 @@ export default function AnalyzeForm(): ReactElement {
         flood ? { flood } : undefined
       );
     } catch (err) {
-      // 401 = expired/invalid token. The API client already cleared it; pop
-      // the BetaGate so the user can re-enter their code and resume the flow
-      // (BetaGate.onSuccess re-calls doAnalyze) instead of seeing a raw
-      // "token expired" message.
-      if (err instanceof ApiError && err.status === 401) {
+      // 401 = expired/invalid token (API client already cleared it).
+      // 403 = the code's one analysis is spent. Either way, pop the BetaGate so
+      // the user can enter a new code or buy access instead of hitting a wall.
+      if (
+        err instanceof ApiError &&
+        (err.status === 401 || err.status === 403)
+      ) {
+        clearToken();
         setShowGate(true);
         setSubmitting(false);
         return;
