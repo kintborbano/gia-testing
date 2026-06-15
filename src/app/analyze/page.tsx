@@ -3,6 +3,7 @@
 import { useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { setToken } from '@/lib/auth';
 
 function AnalyzeContent(): React.ReactElement {
   const searchParams = useSearchParams();
@@ -17,9 +18,14 @@ function AnalyzeContent(): React.ReactElement {
 
     api
       .checkoutRedeem(cs)
-      .then(({ job_id, handle }) => {
+      .then(({ job_id, handle, token }) => {
+        // Guest checkout: store the token PayRex redeem hands back so polling,
+        // results, and download authenticate as the job's owner.
+        if (token) setToken(token);
         const h = handle.replace(/^@/, '');
-        router.replace(`/loading?job_id=${job_id}&handle=${encodeURIComponent(h)}`);
+        router.replace(
+          `/loading?job_id=${job_id}&handle=${encodeURIComponent(h)}`
+        );
       })
       .catch((err: ApiError) => {
         router.replace(`/form?error=${encodeURIComponent(err.message)}`);
@@ -37,11 +43,7 @@ function AnalyzeContent(): React.ReactElement {
 
 export default function AnalyzePage(): React.ReactElement {
   return (
-    <Suspense
-      fallback={
-        <main className="bg-brand-primary min-h-screen" />
-      }
-    >
+    <Suspense fallback={<main className="bg-brand-primary min-h-screen" />}>
       <AnalyzeContent />
     </Suspense>
   );

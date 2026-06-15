@@ -88,6 +88,7 @@ export const api = {
       job_id: string;
       handle: string;
       already_redeemed: boolean;
+      token: string;
     }>('/api/checkout/redeem', {
       method: 'POST',
       body: JSON.stringify({ nonce }),

@@ -490,6 +490,7 @@ export default function AnalyzeForm(): ReactElement {
 
       {showGate && (
         <BetaGate
+          profileUrl={`https://www.tiktok.com/@${extractHandle(tiktok) ?? ''}`}
           onSuccess={() => {
             setShowGate(false);
             doAnalyze();
