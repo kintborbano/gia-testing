@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { ReactElement } from 'react';
-import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import Button from '@/components/ui/Button';
+import ThinkingLoader from '@/components/loading/ThinkingLoader';
 import { useJobPolling } from '@/hooks/useJobPolling';
 
 const BROADCAST_CHANNEL_URL =
@@ -96,15 +96,8 @@ export default function LoadingScreen(): ReactElement {
     <main className="loading-viewport bg-brand-primary flex w-full flex-col">
       <section className="flex flex-1 flex-col items-center justify-center gap-12 px-6 py-16 text-center">
         {!done && (
-          <div className="flex flex-col items-center gap-2">
-            <Image
-              src="/images/gia-thought-thinking.png"
-              alt="GIA, the SOFI AI analyst, thinking as she works"
-              width={1254}
-              height={1254}
-              priority
-              className="h-auto w-[320px] max-w-full sm:w-[360px] md:w-[400px]"
-            />
+          <div className="flex flex-col items-center gap-7">
+            <ThinkingLoader />
 
             <div
               role="progressbar"
