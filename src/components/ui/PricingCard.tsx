@@ -11,6 +11,8 @@ interface PricingCardProps {
   description?: string;
   /** Bullet list under "Includes:" — entries may carry bold spans. */
   features: React.ReactNode[];
+  /** Optional CTA rendered full-width at the bottom of the card. */
+  cta?: React.ReactNode;
   variant?: PricingCardVariant;
 }
 
@@ -27,6 +29,7 @@ export default function PricingCard({
   badge,
   description,
   features,
+  cta,
   variant = 'light',
 }: PricingCardProps): React.ReactElement {
   const featured = variant === 'featured';
@@ -107,6 +110,8 @@ export default function PricingCard({
           ))}
         </ul>
       </div>
+
+      {cta && <div className="mt-[28px] flex flex-col">{cta}</div>}
     </div>
   );
 }

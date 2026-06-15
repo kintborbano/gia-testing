@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
 import Image from 'next/image';
+import Button from '@/components/ui/Button';
 import PricingCard from '@/components/ui/PricingCard';
 
 /*
@@ -83,7 +84,21 @@ export default function Pricing(): React.ReactElement {
           a second row — the staggered 2-up state that looked broken on iPad. */}
       <div className="flex w-full flex-col items-center justify-center gap-[39px] xl:flex-row xl:items-start">
         <LockedCard src="/images/pricing-locked-light.webp" />
-        <PricingCard variant="featured" {...betaDeepDive} />
+        <PricingCard
+          variant="featured"
+          {...betaDeepDive}
+          cta={
+            <Button
+              href="/form"
+              variant="onBrand"
+              withArrow
+              transition
+              className="w-full"
+            >
+              Get your Report
+            </Button>
+          }
+        />
         <LockedCard src="/images/pricing-locked-gold.webp" />
       </div>
     </section>
