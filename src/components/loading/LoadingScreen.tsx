@@ -82,7 +82,11 @@ export default function LoadingScreen(): ReactElement {
     return () => clearInterval(id);
   }, [jobId]);
 
+  // `done` means the job has finished — successfully or not. `failed` splits
+  // that into the error case so the heading, description and CTA can all speak
+  // to the failure instead of falsely celebrating a result that never arrived.
   const done = jobId ? pollDone && reachedFull : reachedFull;
+  const failed = done && error !== null;
 
   const reportHref = handle
     ? `/report?handle=${encodeURIComponent(handle)}&job=${jobId ?? ''}`
@@ -126,19 +130,21 @@ export default function LoadingScreen(): ReactElement {
           </div>
         )}
 
-        {error && (
-          <p className="font-pixelify text-[14px] text-red-300">{error}</p>
-        )}
-
         <div className="flex flex-col items-center gap-8">
           <div className="flex flex-col items-center gap-4 text-white">
             <h1 className="font-young-serif text-[28px] leading-[1.1] tracking-[-1.12px] sm:text-[36px]">
-              {done ? 'gia is done analyzing!' : 'gia is working on it!'}
+              {failed
+                ? "gia couldn't finish this one"
+                : done
+                  ? 'gia is done analyzing!'
+                  : 'gia is working on it!'}
             </h1>
             <p className="max-w-[580px] font-sans text-[14px] leading-[1.3] font-normal tracking-[-0.12px] sm:text-[15px] md:text-[16px] md:leading-[1.25]">
-              {done
-                ? "GIA found what's actually driving your growth."
-                : 'For creator tips, behind the scenes, & access to new features'}
+              {failed
+                ? (error ?? 'Something went wrong — please try again.')
+                : done
+                  ? "GIA found what's actually driving your growth."
+                  : 'For creator tips, behind the scenes, & access to new features'}
             </p>
           </div>
 
@@ -148,8 +154,9 @@ export default function LoadingScreen(): ReactElement {
                 href={reportHref}
                 variant="onBrand"
                 size="default"
-                withArrow
+                withArrow={!failed}
                 transition
+                disabled={failed}
                 className="px-12!"
               >
                 DOWNLOAD YOUR GIA REPORT
