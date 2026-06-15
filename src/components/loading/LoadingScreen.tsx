@@ -126,12 +126,6 @@ export default function LoadingScreen(): ReactElement {
           </div>
         )}
 
-        {messages.length > 0 && (
-          <p className="max-w-[480px] font-sans text-[13px] leading-[1.4] text-white/70">
-            {messages[messages.length - 1]}
-          </p>
-        )}
-
         {error && (
           <p className="font-pixelify text-[14px] text-red-300">{error}</p>
         )}
