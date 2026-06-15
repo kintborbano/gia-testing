@@ -56,7 +56,7 @@ const lockedQuickScan = {
   tier: 'QUICK\nSCAN',
   price: '₱499.00',
   description:
-    'A fast pulse-check on your latest posts — the quickest way to see what is landing and what is not.',
+    'A fast pulse-check on your posts — the quickest way to see what is landing and what is not.',
   features: [
     <Fragment key="hooks">
       <b>Top 3 hooks</b> from your recent posts, ranked by what stopped the
@@ -81,7 +81,7 @@ const lockedProStudio = {
   tier: 'PRO\nSTUDIO',
   price: '₱999.00',
   description:
-    'The full creative system — deeper analysis, more videos, and hands-on guidance to scale what works.',
+    'The full creative system — deeper analysis, more videos, and guidance to scale what works.',
   features: [
     <Fragment key="everything">
       <b>Everything in Deep Dive</b>, plus a deeper layer of strategy and review
@@ -103,8 +103,16 @@ const lockedProStudio = {
 };
 
 export default function Pricing(): React.ReactElement {
+  // The divider on the cards sits a fixed distance K below the top of the page
+  // (static layout): K ~= 600px stacked (mobile), ~= 572px once the cards sit
+  // in a row (md+). To land that divider on the fold on ANY screen height, the
+  // gap above the cards tracks the viewport: gap = 100svh - K. clamp() keeps
+  // the prices on-screen on short viewports (min) and caps the whitespace on
+  // very tall ones (max). The space below the cards (cards -> footer) is kept
+  // equal to the gap by offsetting pb by the shell's py-10 (40px), so both the
+  // clamp bounds and the calc stay in lockstep.
   return (
-    <section className="flex w-full flex-col items-center gap-[65px] px-5 pt-8 pb-24 sm:px-8 md:px-16 md:pb-[165px]">
+    <section className="flex w-full flex-col items-center gap-[clamp(48px,calc(100svh_-_600px),400px)] px-5 pt-8 pb-[clamp(8px,calc(100svh_-_640px),360px)] sm:px-8 md:gap-[clamp(48px,calc(100svh_-_572px),400px)] md:px-16 md:pb-[clamp(8px,calc(100svh_-_612px),360px)]">
       <div className="text-brand-primary flex w-full flex-col items-center gap-6 text-center">
         <p className="bg-brand-primary flex h-[34px] w-[350px] max-w-full items-center justify-center rounded-full font-sans text-[15px] leading-[1.45] font-bold tracking-[-0.075px] text-white">
           BETA IS OPEN, FOR NOW.

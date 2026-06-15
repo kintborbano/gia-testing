@@ -101,9 +101,12 @@ export default function PricingCard({
           </p>
         )}
 
-        {/* Spacer grows to fill the fixed region; items-center keeps the
-            divider midway between the header copy above and "Includes:" below. */}
-        <div className="flex flex-1 items-center py-[12px]">
+        {/* mt-auto drops the divider to the bottom of the fixed-height region
+            and mb lifts it a fixed amount off that (shared) bottom edge — so
+            the divider lands on the same y across all three cards regardless of
+            how tall each header is, while still sitting in the gap between the
+            header copy and "Includes:". */}
+        <div className="mt-auto mb-[26px]">
           <div
             className={`h-[2px] w-full rounded-full ${DIVIDER_COLOR[variant]}`}
           />
