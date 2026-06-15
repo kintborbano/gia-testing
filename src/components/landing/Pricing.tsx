@@ -1,20 +1,18 @@
 import { Fragment } from 'react';
-import Image from 'next/image';
 import Button from '@/components/ui/Button';
 import PricingCard from '@/components/ui/PricingCard';
 
 /*
  * Beta pricing (Figma node 122:226). Only the middle Deep Dive card is open
- * during beta; the flanking cards tease the full-price tier behind a frosted
- * lock.
+ * during beta; the flanking cards tease the full-price tier.
  *
- * The locked cards are pre-blurred renders, not blurred DOM — the teaser
- * copy and price must not exist in the HTML, where inspect-element /
- * Ctrl+F / crawlers would read straight through a CSS backdrop blur. The
- * bakes come from an isolated Playwright page that blurs the content with
- * filter:blur over a solid card background (NOT backdrop-blur, which samples
- * the page behind the card and smears a pale rim into the edges). To change
- * them, edit and re-run scripts/rebake-locked-cards.cjs.
+ * TEMPORARY — the flanking cards are rendered as real PricingCard DOM (not the
+ * blurred image bakes) so we can finalize the UI: match all three cards in
+ * width, height, and content before re-baking. Once the design is signed off,
+ * swap the two locked cards back to <LockedCard> image bakes (see git history +
+ * scripts/rebake-locked-cards.cjs) so the teaser copy and price stay out of the
+ * served HTML, where inspect-element / Ctrl+F / crawlers could read straight
+ * through a CSS blur.
  */
 
 const betaDeepDive = {
@@ -48,19 +46,61 @@ const betaDeepDive = {
   ],
 };
 
-function LockedCard({ src }: { src: string }): React.ReactElement {
-  return (
-    <div className="border-brand-gold w-[350px] max-w-full overflow-hidden rounded-[30px] border-[3px] shadow-[0_5px_0_var(--color-brand-gold-shadow)]">
-      <Image
-        src={src}
-        alt="Locked plan — coming soon"
-        width={350}
-        height={400}
-        className="h-auto w-full"
-      />
-    </div>
-  );
-}
+// The two locked tiers teased on either side of the open beta card. The copy
+// is placeholder — these cards ship blurred, so exact wording doesn't matter,
+// only that each card reads as a distinct tier (different name, price, and
+// bullet shapes) even through the blur. Keep five bullets and short lines so
+// the three cards stay the same height. Mirrored into the image bakes via
+// scripts/rebake-locked-cards.cjs once finalized.
+const lockedQuickScan = {
+  tier: 'QUICK\nSCAN',
+  price: '₱499.00',
+  description:
+    'A fast pulse-check on your latest posts — the quickest way to see what is landing and what is not.',
+  features: [
+    <Fragment key="hooks">
+      <b>Top 3 hooks</b> from your recent posts, ranked by what stopped the
+      scroll
+    </Fragment>,
+    <Fragment key="engagement">
+      A quick <b>engagement read</b> on every video so you know what to repeat
+    </Fragment>,
+    <Fragment key="pattern">
+      <b>One standout pattern</b> we noticed across your last few weeks
+    </Fragment>,
+    <Fragment key="captions">
+      <b>Caption tips</b> shaped around the style of your next upload
+    </Fragment>,
+    <Fragment key="timing">
+      <b>Best time to post</b> for your audience, based on your own data
+    </Fragment>,
+  ],
+};
+
+const lockedProStudio = {
+  tier: 'PRO\nSTUDIO',
+  price: '₱999.00',
+  description:
+    'The full creative system — deeper analysis, more videos, and hands-on guidance to scale what works.',
+  features: [
+    <Fragment key="everything">
+      <b>Everything in Deep Dive</b>, plus a deeper layer of strategy and review
+    </Fragment>,
+    <Fragment key="videos">
+      Analysis across your <b>50 most recent videos</b>, not just the top
+      performers
+    </Fragment>,
+    <Fragment key="calls">
+      <b>Monthly strategy calls</b> to map out your next content moves
+    </Fragment>,
+    <Fragment key="scripts">
+      <b>Custom hook scripts</b> written for you and ready to film this week
+    </Fragment>,
+    <Fragment key="support">
+      <b>Priority support</b> and early access to every new GIA feature
+    </Fragment>,
+  ],
+};
 
 export default function Pricing(): React.ReactElement {
   return (
@@ -82,8 +122,16 @@ export default function Pricing(): React.ReactElement {
           ~1128px of content (desktop, `xl`). Below that we stack a single
           centered column rather than letting flex-wrap strand the third card on
           a second row — the staggered 2-up state that looked broken on iPad. */}
-      <div className="flex w-full flex-col items-center justify-center gap-[39px] xl:flex-row xl:items-start">
-        <LockedCard src="/images/pricing-locked-light.webp" />
+      <div className="flex w-full flex-col items-center justify-center gap-[39px] xl:flex-row xl:items-stretch">
+        <PricingCard
+          variant="light"
+          {...lockedQuickScan}
+          cta={
+            <Button variant="filled" disabled className="w-full">
+              Coming Soon
+            </Button>
+          }
+        />
         <PricingCard
           variant="featured"
           {...betaDeepDive}
@@ -99,7 +147,15 @@ export default function Pricing(): React.ReactElement {
             </Button>
           }
         />
-        <LockedCard src="/images/pricing-locked-gold.webp" />
+        <PricingCard
+          variant="gold"
+          {...lockedProStudio}
+          cta={
+            <Button variant="onGold" disabled className="w-full">
+              Coming Soon
+            </Button>
+          }
+        />
       </div>
     </section>
   );

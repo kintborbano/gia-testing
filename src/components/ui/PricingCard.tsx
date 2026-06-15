@@ -22,6 +22,15 @@ const CARD_PALETTE: Record<PricingCardVariant, string> = {
   gold: 'bg-[#c9920a] text-white',
 };
 
+// Divider hairline: a lightened tint of each card's surface (~30% toward
+// white). The white `light` card can't be lightened, so its rule borrows the
+// card's maroon text instead, as a pale dusty rose.
+const DIVIDER_COLOR: Record<PricingCardVariant, string> = {
+  light: 'bg-[#d7b1b6]',
+  featured: 'bg-[#af626d]',
+  gold: 'bg-[#d9b354]',
+};
+
 export default function PricingCard({
   tier,
   price,
@@ -41,67 +50,75 @@ export default function PricingCard({
       } ${
         featured
           ? 'px-[27px] pt-[33px] pb-[47px]'
-          : 'min-h-[400px] px-[27px] pt-[24px] pb-[23px]'
+          : 'min-h-[400px] px-[27px] pt-[33px] pb-[47px]'
       }`}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex flex-col items-start gap-[14px]">
-          <p
-            className={`font-sans font-bold whitespace-pre-line ${
-              featured
-                ? 'text-[25px] leading-[1.14] tracking-[-0.125px]'
-                : 'text-[20px] leading-[1.45] tracking-[-0.1px]'
-            }`}
-          >
-            {tier}
-          </p>
-          {badge && (
-            <span className="bg-brand-cream text-brand-primary flex h-[21px] items-center rounded-full px-[8px] font-sans text-[10px] font-bold tracking-[-0.05px]">
-              {badge}
-            </span>
-          )}
+      {/* Header + teaser copy + a flexible spacer share a fixed-height region
+          so the "Includes:" heading below it lands on the same y across all
+          three cards, even though each header carries a different amount of
+          copy (badge, scribbled price, description). The divider lives in the
+          spacer and is vertically centered there, so it always falls midway
+          between the header copy and "Includes:" no matter how tall the
+          header is. */}
+      <div className="flex min-h-[170px] flex-col">
+        <div className="flex items-start justify-between">
+          <div className="flex flex-col items-start gap-[14px]">
+            <p
+              className={`font-sans font-bold whitespace-pre-line ${
+                featured
+                  ? 'text-[25px] leading-[1.14] tracking-[-0.125px]'
+                  : 'text-[20px] leading-[1.45] tracking-[-0.1px]'
+              }`}
+            >
+              {tier}
+            </p>
+            {badge && (
+              <span className="bg-brand-cream text-brand-primary flex h-[24px] items-center rounded-full px-[12px] font-sans text-[10px] font-bold tracking-[-0.05px]">
+                {badge}
+              </span>
+            )}
+          </div>
+          <div className="font-averia-serif flex flex-col items-start gap-[12px] text-[40px] leading-[1.1] font-bold tracking-[-0.8px]">
+            {originalPrice && (
+              <span className="relative text-white/30">
+                {originalPrice}
+                {/* Scribble-out: a bright maroon-red stroke through the faded
+                    old price, so it reads against the maroon surface; rounded
+                    ends so it looks like a drawn slash. */}
+                <span
+                  aria-hidden="true"
+                  className="absolute top-1/2 left-[-9px] h-[5px] w-[155px] -translate-y-1/2 rotate-[5.72deg] rounded-full bg-[#e34b5e]"
+                />
+              </span>
+            )}
+            <span>{price}</span>
+          </div>
         </div>
-        <div
-          className={`font-averia-serif flex flex-col items-start text-[40px] leading-[1.1] font-bold tracking-[-0.8px] ${
-            featured ? 'mt-[13px]' : ''
-          }`}
-        >
-          {originalPrice && (
-            <span className="relative text-white/30">
-              {originalPrice}
-              {/* Scribble-out: a card-colored stroke, visible only where it
-                  crosses the faded glyphs. */}
-              <span
-                aria-hidden="true"
-                className="bg-brand-primary absolute top-1/2 left-[-9px] h-[5px] w-[155px] -translate-y-1/2 rotate-[5.72deg]"
-              />
-            </span>
-          )}
-          <span>{price}</span>
+
+        {description && (
+          <p className="mt-[15px] w-[290px] max-w-full font-sans text-[13px] leading-[1.45] tracking-[-0.065px]">
+            {description}
+          </p>
+        )}
+
+        {/* Spacer grows to fill the fixed region; items-center keeps the
+            divider midway between the header copy above and "Includes:" below. */}
+        <div className="flex flex-1 items-center py-[12px]">
+          <div
+            className={`h-[2px] w-full rounded-full ${DIVIDER_COLOR[variant]}`}
+          />
         </div>
       </div>
 
-      {description && (
-        <p
-          className={`w-[290px] max-w-full font-sans text-[13px] leading-[1.45] tracking-[-0.065px] ${
-            featured ? 'mt-[15px]' : 'mt-[19px]'
-          }`}
-        >
-          {description}
-        </p>
-      )}
-
-      <div className="mt-auto pt-5">
-        <div className="h-px w-full bg-current" />
-        <p
-          className={`font-sans text-[13px] leading-[1.45] tracking-[-0.065px] ${
-            featured ? 'mt-[24px]' : 'mt-[8px]'
-          }`}
-        >
+      {/* "Includes:" flows directly under the fixed-height header region (no
+          mt-auto), so it stays aligned regardless of how many feature bullets
+          follow. */}
+      <div>
+        <p className="font-sans text-[13px] leading-[1.45] tracking-[-0.065px]">
           Includes:
         </p>
         <ul
-          className={`list-disc ps-[20px] font-sans text-[13px] leading-[1.45] tracking-[-0.065px] ${
+          className={`list-disc space-y-[10px] ps-[20px] font-sans text-[13px] leading-[1.45] tracking-[-0.065px] ${
             featured ? 'mt-[11px] max-w-[280px]' : 'mt-[16px]'
           }`}
         >
@@ -111,7 +128,9 @@ export default function PricingCard({
         </ul>
       </div>
 
-      {cta && <div className="mt-[28px] flex flex-col">{cta}</div>}
+      {/* mt-auto drops the CTA to the bottom of the (equal-height) card; the
+          pt keeps a minimum gap from the last bullet on the tallest card. */}
+      {cta && <div className="mt-auto flex flex-col pt-[40px]">{cta}</div>}
     </div>
   );
 }
