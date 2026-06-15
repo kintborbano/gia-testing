@@ -1,3 +1,5 @@
+import { DEV_BYPASS } from './devBypass';
+
 const TOKEN_KEY = 'gia_token';
 
 export function getToken(): string | null {
@@ -14,5 +16,6 @@ export function clearToken(): void {
 }
 
 export function isAuthenticated(): boolean {
-  return !!getToken();
+  // Dev bypass skips the BetaGate so the form proceeds straight to analysis.
+  return DEV_BYPASS || !!getToken();
 }
