@@ -100,7 +100,14 @@ export default function Features(): React.ReactElement {
         className="relative flex min-h-[260vh] w-full flex-col items-center"
       >
         <div style={containerStyle}>
-          <div className="flex h-full w-full items-start justify-center px-8 pt-[6vh]">
+          {/* Center the scene vertically in the 100vh pinned container. The
+              scene's height is driven by width/max-width (not the viewport), so
+              on taller/wider screens the leftover space would otherwise all pool
+              below Gia (up to ~35% of the viewport on 1920×1080). Centring
+              splits it evenly so Gia + the description card stay centred at every
+              size. The sceneStyle vertical budget keeps total content ≤ ~94vh,
+              so there's always room to centre without clipping. */}
+          <div className="flex h-full w-full items-center justify-center px-8 py-[3vh]">
             <FeatureScene
               layout={isWide ? 'desktop' : 'tablet'}
               onFrame={onFrame}
