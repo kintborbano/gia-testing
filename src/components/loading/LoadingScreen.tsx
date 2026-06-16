@@ -1,105 +1,158 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactElement } from 'react';
-import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import Button from '@/components/ui/Button';
+import ThinkingLoader from '@/components/loading/ThinkingLoader';
+import { useJobPolling } from '@/hooks/useJobPolling';
 
-// GIA's Instagram Broadcast Channel.
 const BROADCAST_CHANNEL_URL =
   'https://www.instagram.com/channel/AbaXwsrEEM1hoSpY/';
 
-interface Props {
-  /** The analyzed TikTok handle, carried from the form via ?handle=…. */
-  handle?: string;
+// The fill tracks real job progress rather than a fixed clock: each status
+// message from the backend nudges it forward, and a slow idle creep keeps it
+// alive between messages. It eases toward a ceiling well short of full and only
+// reaches 100% once polling reports the job is done — so it never sits frozen
+// at 100% while GIA is still working.
+const START_PCT = 8;
+const CEILING_PCT = 90;
+// Fraction of the remaining gap to the ceiling closed per event.
+const MESSAGE_STEP = 0.4;
+const IDLE_STEP = 0.01;
+const TICK_MS = 600;
+
+// Warm the fill from gold to yellow as it grows (full yellow by ~83%, matching
+// the original bar's palette).
+const GOLD = [0xc9, 0x92, 0x0a];
+const YELLOW = [0xee, 0xd0, 0x3a];
+function fillColor(pct: number): string {
+  const t = Math.min(1, pct / 83);
+  const [r, g, b] = GOLD.map((from, i) =>
+    Math.round(from + (YELLOW[i] - from) * t)
+  );
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
-/**
- * Full-screen maroon loading screen shown after the analyze form (Figma 90:138).
- * The page-transition flood fades into it, so the maroon background reads as one
- * continuous surface. While loading, a placeholder illustration sits above a
- * gold progress bar that fills once; when it completes the screen flips to its
- * "done" state — the illustration and bar are removed, leaving the updated copy
- * and two CTAs (see your GIA Wrapped, proceed to dashboard).
- */
-export default function LoadingScreen({ handle }: Props): ReactElement {
-  const [done, setDone] = useState(false);
-  const reportHref = handle ? `/report/${handle}` : '/form';
-  // GIA Wrapped — carries the handle on the same way the loading route received
-  // it. The /wrapped page itself is a separate build.
-  const wrappedHref = handle ? `/wrapped?handle=${handle}` : '/form';
+export default function LoadingScreen(): ReactElement {
+  const searchParams = useSearchParams();
+  const handle = searchParams.get('handle') ?? '';
+  const jobId = searchParams.get('job_id');
+
+  const { messages, done: pollDone, error } = useJobPolling(jobId);
+
+  const [pct, setPct] = useState(START_PCT);
+  const [reachedFull, setReachedFull] = useState(false);
+
+  // Mirror the latest polling state into refs so the ticker below can read it
+  // without re-subscribing on every message.
+  const messagesLenRef = useRef(0);
+  const pollDoneRef = useRef(false);
+  const seenRef = useRef(0);
+  useEffect(() => {
+    messagesLenRef.current = messages.length;
+  }, [messages.length]);
+  useEffect(() => {
+    pollDoneRef.current = pollDone;
+  }, [pollDone]);
+
+  // A single ticker advances the bar. Each new status message closes a big
+  // chunk of the gap to the ceiling; between messages a small idle creep keeps
+  // it moving. Once polling is done (or there's no job to wait for) it fills to
+  // 100% — the width transition's end then flips the screen to its done state.
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (pollDoneRef.current || !jobId) {
+        setPct(100);
+        return;
+      }
+      // Consume any new messages out here so the updater stays pure (React may
+      // double-invoke it in dev, which would otherwise drop the jump).
+      const gained = messagesLenRef.current - seenRef.current;
+      seenRef.current = messagesLenRef.current;
+      setPct((prev) => {
+        let next = prev;
+        for (let i = 0; i < gained; i++) {
+          next += (CEILING_PCT - next) * MESSAGE_STEP;
+        }
+        next += (CEILING_PCT - next) * IDLE_STEP;
+        return Math.min(CEILING_PCT, next);
+      });
+    }, TICK_MS);
+    return () => clearInterval(id);
+  }, [jobId]);
+
+  // `done` means the job has finished — successfully or not. `failed` splits
+  // that into the error case so the heading, description and CTA can all speak
+  // to the failure instead of falsely celebrating a result that never arrived.
+  const done = jobId ? pollDone && reachedFull : reachedFull;
+  const failed = done && error !== null;
+
+  const reportHref = handle
+    ? `/report?handle=${encodeURIComponent(handle)}&job=${jobId ?? ''}`
+    : '/form';
 
   return (
     <main className="loading-viewport bg-brand-primary flex w-full flex-col">
       <section className="flex flex-1 flex-col items-center justify-center gap-12 px-6 py-16 text-center">
-        {/* While loading: a placeholder illustration above a progress bar that
-            fills once. Both are removed the instant loading completes — the done
-            state is just copy + CTAs. (The bar's animation-end flips `done`, so
-            it has to render during loading to drive that transition.) */}
         {!done && (
-          // Image + progress bar as one tight unit (gap-2), so the larger
-          // illustration sits close to the bar; the section's gap-12 still sets
-          // the pair apart from the copy below.
-          <div className="flex flex-col items-center gap-2">
-            {/* GIA, mid-analysis — sits just above the progress bar. */}
-            <Image
-              src="/images/gia-thought-thinking.png"
-              alt="GIA, the SOFI AI analyst, thinking as she works"
-              width={1254}
-              height={1254}
-              priority
-              className="h-auto w-[320px] max-w-full sm:w-[360px] md:w-[400px]"
-            />
+          <div className="flex flex-col items-center gap-7">
+            <ThinkingLoader />
 
-            {/* Progress bar — gold→yellow fill that runs once, then locks full. */}
             <div
-              role="status"
+              role="progressbar"
               aria-label="Generating your report"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(pct)}
               className="bg-brand-cream flex h-[16px] w-[553px] max-w-full rounded-full border border-black p-[2px]"
             >
               <div
-                className="loading-progress rounded-full border border-black bg-[#c9920a]"
-                onAnimationEnd={() => setDone(true)}
+                className="rounded-full border border-black"
+                style={{
+                  width: `${pct}%`,
+                  backgroundColor: fillColor(pct),
+                  transition: 'width 600ms ease, background-color 600ms ease',
+                }}
+                onTransitionEnd={(e) => {
+                  if (e.propertyName === 'width' && pct >= 100)
+                    setReachedFull(true);
+                }}
               />
             </div>
           </div>
         )}
 
-        {/* 3. Copy + CTA — broadcast invite while loading, report handoff once done. */}
         <div className="flex flex-col items-center gap-8">
           <div className="flex flex-col items-center gap-4 text-white">
             <h1 className="font-young-serif text-[28px] leading-[1.1] tracking-[-1.12px] sm:text-[36px]">
-              {done ? 'gia is done analyzing!' : 'gia is working on it!'}
+              {failed
+                ? "gia couldn't finish this one"
+                : done
+                  ? 'gia is done analyzing!'
+                  : 'gia is working on it!'}
             </h1>
             <p className="max-w-[580px] font-sans text-[14px] leading-[1.3] font-normal tracking-[-0.12px] sm:text-[15px] md:text-[16px] md:leading-[1.25]">
-              {done
-                ? 'GIA found what’s actually driving your growth.'
-                : 'For creator tips, behind the scenes, & access to new features'}
+              {failed
+                ? (error ?? 'Something went wrong — please try again.')
+                : done
+                  ? "GIA found what's actually driving your growth."
+                  : 'For creator tips, behind the scenes, & access to new features'}
             </p>
           </div>
 
           {done ? (
-            // items-stretch so both CTAs share the wider button's width.
             <div className="flex flex-col items-stretch gap-3">
               <Button
                 href={reportHref}
                 variant="onBrand"
                 size="default"
-                withArrow
+                withArrow={!failed}
                 transition
+                disabled={failed}
                 className="px-12!"
               >
                 DOWNLOAD YOUR GIA REPORT
-              </Button>
-              <Button
-                href={wrappedHref}
-                variant="glass"
-                size="default"
-                withArrow
-                transition
-                className="px-12!"
-              >
-                SEE YOUR GIA WRAPPED
               </Button>
             </div>
           ) : (

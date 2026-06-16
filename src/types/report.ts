@@ -20,7 +20,7 @@ export interface VideoDetails {
     saves: string;
     comments: string;
   };
-  hookTrigger: string;
+  hookTrigger: string | null;
   whyItWorks: string[];
   improvements: string[];
   commentInsights: string;
@@ -28,6 +28,7 @@ export interface VideoDetails {
 }
 
 export interface Video {
+  id?: string;
   gia: string;
   score: number;
   title: string;

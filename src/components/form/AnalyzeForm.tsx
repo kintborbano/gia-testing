@@ -10,6 +10,9 @@ import NotebookOption from '@/components/form/NotebookOption';
 import ScrollBackground from '@/components/landing/ScrollBackground';
 import type { ScrollStop } from '@/components/landing/scrollBackground.config';
 import { HEADER_HEIGHT_LARGE } from '@/animations/headerAnimations';
+import BetaGate from '@/components/auth/BetaGate';
+import { isAuthenticated, clearToken } from '@/lib/auth';
+import { api, ApiError } from '@/lib/api';
 
 // White → cream as you scroll past the first screen — the exact transition the
 // landing uses from the hero into features: the cream stop is anchored to its
@@ -138,7 +141,6 @@ function FieldLabel({
  */
 export default function AnalyzeForm(): ReactElement {
   const { navigate } = usePageTransition();
-  // The maroon CTA section — the paint-bucket flood spreads out from its centre.
   const ctaRef = useRef<HTMLElement>(null);
   const [email, setEmail] = useState('');
   const [tiktok, setTiktok] = useState('');
@@ -148,6 +150,9 @@ export default function AnalyzeForm(): ReactElement {
   const [instagram, setInstagram] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [showGate, setShowGate] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   /** Drop a single field's error once the user starts correcting it. */
   const clearError = (field: keyof FormErrors): void => {
@@ -193,6 +198,48 @@ export default function AnalyzeForm(): ReactElement {
     setErrors((prev) => ({ ...prev, [field]: validate()[field] }));
   };
 
+  const doAnalyze = async (): Promise<void> => {
+    const handle = extractHandle(tiktok);
+    if (!handle) return;
+    setSubmitting(true);
+    setSubmitError('');
+    try {
+      const profileUrl = `https://www.tiktok.com/@${handle}`;
+      const { job_id } = await api.startAnalysis(profileUrl, {
+        email: email.trim(),
+        goal,
+        accountType,
+      });
+      const rect = ctaRef.current?.getBoundingClientRect();
+      const flood = rect
+        ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+        : undefined;
+      navigate(
+        `/loading?job_id=${job_id}&handle=${encodeURIComponent(handle)}`,
+        flood ? { flood } : undefined
+      );
+    } catch (err) {
+      // 401 = expired/invalid token (API client already cleared it).
+      // 403 = the code's one analysis is spent. Either way, pop the BetaGate so
+      // the user can enter a new code or buy access instead of hitting a wall.
+      if (
+        err instanceof ApiError &&
+        (err.status === 401 || err.status === 403)
+      ) {
+        clearToken();
+        setShowGate(true);
+        setSubmitting(false);
+        return;
+      }
+      setSubmitError(
+        err instanceof ApiError
+          ? err.message
+          : 'Something went wrong. Please try again.'
+      );
+      setSubmitting(false);
+    }
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     const nextErrors = validate();
@@ -201,19 +248,14 @@ export default function AnalyzeForm(): ReactElement {
       return;
     }
     setErrors({});
-
-    // Flood the screen with maroon out of the CTA section, then fade into the
-    // maroon loading screen (which carries the handle on to the report).
-    const handle = extractHandle(tiktok);
-    const rect = ctaRef.current?.getBoundingClientRect();
-    const flood = rect
-      ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
-      : undefined;
-    navigate(`/loading?handle=${handle}`, flood ? { flood } : undefined);
+    if (!isAuthenticated()) {
+      setShowGate(true);
+      return;
+    }
+    doAnalyze();
   };
 
-  // No outstanding errors — gates the submit button's disabled state.
-  const canSubmit = Object.keys(validate()).length === 0;
+  const canSubmit = Object.keys(validate()).length === 0 && !submitting;
 
   return (
     <main
@@ -427,6 +469,14 @@ export default function AnalyzeForm(): ReactElement {
               </label>
               <FieldError message={errors.consent} />
             </div>
+            {submitError && (
+              <p
+                role="alert"
+                className="font-pixelify text-[14px] text-red-300"
+              >
+                {submitError}
+              </p>
+            )}
             <Button
               type="submit"
               variant="onBrand"
@@ -435,11 +485,22 @@ export default function AnalyzeForm(): ReactElement {
               disabled={!canSubmit}
               className="-mt-4 px-14"
             >
-              CONTINUE
+              {submitting ? 'ANALYZING…' : 'CONTINUE'}
             </Button>
           </section>
         </div>
       </form>
+
+      {showGate && (
+        <BetaGate
+          profileUrl={`https://www.tiktok.com/@${extractHandle(tiktok) ?? ''}`}
+          onSuccess={() => {
+            setShowGate(false);
+            doAnalyze();
+          }}
+          onClose={() => setShowGate(false)}
+        />
+      )}
     </main>
   );
 }

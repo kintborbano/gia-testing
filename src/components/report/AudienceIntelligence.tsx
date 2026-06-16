@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import {
   Share2,
   Bookmark,
@@ -7,61 +10,129 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { SectionLabel } from '@/components/report/Primitives';
+import Emphasis from '@/components/report/Emphasis';
+import { toText } from '@/lib/text';
+import type { ApiResult } from '@/types/api';
 
-const audienceCards: { icon: LucideIcon; label: string; text: string }[] = [
-  {
-    icon: Share2,
-    label: 'Share',
-    text: 'Viewers share content that feels personal and admired, with the top-performing untitled video (16.67% ER) having 72 shares, indicating a desire to spread positive admiration for the creator.',
-  },
-  {
-    icon: Bookmark,
-    label: 'Save',
-    text: "The audience saves content that provides fashion inspiration or aesthetic appeal, as indicated by the 'untitled' video (16.67% ER) with 1.73% saves-to-views and '#levisjeans #bruh' (13.12% ER) with 1.65% saves-to-views, signaling viewers want to revisit these looks.",
-  },
-  {
-    icon: MessageCircle,
-    label: 'Comment',
-    text: "Comments consistently revolve around personal admiration for the creator's appeal and direct, friendly interactions, exemplified by 'a baddie' and 'pauwi na po, anong gusto mong ulamin?' on the top untitled video.",
-  },
-  {
-    icon: Heart,
-    label: 'Like',
-    text: "Viewers respond most positively to the creator's personal presence and fashion choices, with comments like 'Wow your hot' on '#levisjeans #bruh' and 'back view pls😊' on 'update : YESSS' highlighting strong visual appeal.",
-  },
-  {
-    icon: ThumbsDown,
-    label: 'Dislike',
-    text: "Content lacking clear context or broader relatability, like 'ni goon …' (2.2% ER), results in no comments, shares, or bookmarks, showing disinterest when the hook is too niche or unclear.",
-  },
-];
+function intentBadgeStyle(level: string): string {
+  const l = level.toLowerCase();
+  if (l.includes('high'))
+    return 'bg-verdict-strong-soft text-verdict-strong-deep';
+  if (l.includes('medium') || l.includes('moderate'))
+    return 'bg-verdict-mixed-soft text-verdict-mixed-deep';
+  return 'bg-verdict-weak-soft text-verdict-weak-deep';
+}
 
-export default function AudienceIntelligence(): React.ReactElement {
+interface Signal {
+  key: string;
+  icon: LucideIcon;
+  label: string;
+  question: string;
+  text: string;
+}
+
+export default function AudienceIntelligence({
+  result,
+}: {
+  result?: ApiResult | null;
+}): React.ReactElement | null {
+  const [active, setActive] = useState(0);
+  const signals = result?.overall.audience_signals;
+  if (!signals) return null;
+
+  const tabs: Signal[] = [
+    {
+      key: 'share',
+      icon: Share2,
+      label: 'Share',
+      question: 'What makes them hit share',
+      text: toText(signals.what_they_share),
+    },
+    {
+      key: 'save',
+      icon: Bookmark,
+      label: 'Save',
+      question: 'What they save for later',
+      text: toText(signals.what_they_save),
+    },
+    {
+      key: 'comment',
+      icon: MessageCircle,
+      label: 'Comment',
+      question: 'What pulls them into the comments',
+      text: toText(signals.what_they_comment_about),
+    },
+    {
+      key: 'like',
+      icon: Heart,
+      label: 'Love',
+      question: 'What they love about you',
+      text: toText(signals.what_they_like),
+    },
+    {
+      key: 'dislike',
+      icon: ThumbsDown,
+      label: 'Dislike',
+      question: 'What turns them away',
+      text: toText(signals.what_they_dislike),
+    },
+  ].filter((t) => t.text);
+
+  if (!tabs.length) return null;
+  const current = tabs[Math.min(active, tabs.length - 1)];
+  const intentLevel = signals.purchase_intent_level ?? 'low';
+
   return (
     <section className="space-y-4">
       <div className="flex items-center gap-3">
         <SectionLabel>Audience Intelligence</SectionLabel>
-        <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-700">
-          low intent
+        <span
+          className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${intentBadgeStyle(intentLevel)}`}
+        >
+          {intentLevel} intent
         </span>
       </div>
-      <div className="space-y-3">
-        {audienceCards.map(({ icon: Icon, label, text }) => (
-          <div
-            key={label}
-            className="flex gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
-          >
-            <div className="bg-brand-primary/10 text-brand-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
-              <Icon className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="font-semibold">{label}</h3>
-              <p className="mt-1 text-sm leading-relaxed text-gray-600">
-                {text}
-              </p>
-            </div>
-          </div>
-        ))}
+
+      <div
+        role="tablist"
+        aria-label="Audience signals"
+        className="flex flex-wrap gap-2"
+      >
+        {tabs.map(({ key, icon: Icon, label }, i) => {
+          const selected = i === active;
+          return (
+            <button
+              key={key}
+              role="tab"
+              aria-selected={selected}
+              onClick={() => setActive(i)}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                selected
+                  ? 'border-brand-primary bg-brand-primary text-white'
+                  : 'hover:border-brand-primary/40 hover:text-brand-primary border-gray-300 text-gray-600'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        key={current.key}
+        role="tabpanel"
+        className="report-panel-in report-card flex gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+      >
+        <div className="bg-brand-cream text-brand-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-full">
+          <current.icon className="h-5 w-5" />
+        </div>
+        <div>
+          <h3 className="font-semibold">{current.question}</h3>
+          <p className="mt-1.5 text-sm leading-relaxed text-gray-600">
+            <Emphasis text={current.text} />
+          </p>
+        </div>
       </div>
     </section>
   );

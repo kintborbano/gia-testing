@@ -1,69 +1,50 @@
-import { Fragment } from 'react';
 import Image from 'next/image';
+import Button from '@/components/ui/Button';
 import PricingCard from '@/components/ui/PricingCard';
+import { betaDeepDive } from './pricingTiers';
 
 /*
  * Beta pricing (Figma node 122:226). Only the middle Deep Dive card is open
- * during beta; the flanking cards tease the full-price tier behind a frosted
- * lock.
+ * during beta; the flanking cards tease the locked QUICK SCAN / PRO STUDIO
+ * tiers.
  *
- * The locked cards are pre-blurred renders, not blurred DOM — the teaser
- * copy and price must not exist in the HTML, where inspect-element /
- * Ctrl+F / crawlers would read straight through a CSS backdrop blur. The
- * bakes come from an isolated Playwright page that blurs the content with
- * filter:blur over a solid card background (NOT backdrop-blur, which samples
- * the page behind the card and smears a pale rim into the edges). To change
- * them, edit and re-run scripts/rebake-locked-cards.cjs.
+ * The locked cards are pre-blurred image bakes, NOT blurred DOM — the teaser
+ * copy and price must not exist in the served HTML, where inspect-element /
+ * Ctrl+F / crawlers would read straight through a CSS blur. The bakes are
+ * screenshots of the real cards (rendered on the dev-only /pricing/bake route)
+ * with the content blurred over the card's solid background and a frost + lock
+ * laid on top. To regenerate them after a copy/price/design change, edit
+ * pricingTiers.tsx and run scripts/rebake-locked-cards.cjs.
+ *
+ * The bakes are 350x612 — the card width and its (stretched) height. Keep this
+ * in sync with the rebake script's logged dimensions if the design height
+ * changes.
  */
-
-const betaDeepDive = {
-  tier: 'DEEP\nDIVE',
-  originalPrice: '₱799.00',
-  price: '₱299.00',
-  badge: 'BETA PRICING',
-  features: [
-    <Fragment key="videos">
-      Analysis across your <b>20 most recent videos</b>
-    </Fragment>,
-    <Fragment key="scoring">
-      <b>Hook scoring:</b> see what made people stop, skip, or stay
-    </Fragment>,
-    <Fragment key="comments">
-      <b>Comment intelligence:</b> what your audience keeps asking for, turned
-      into ideas
-    </Fragment>,
-    // Plain-string tails: this Next's JSX transform drops the space between
-    // an element and a following text node that contains an entity.
-    <Fragment key="patterns">
-      <b>Performance patterns:</b>
-      {" what's actually driving your saves, shares, and views"}
-    </Fragment>,
-    <Fragment key="pdf">
-      A <b>downloadable PDF</b> of your GIA report.
-    </Fragment>,
-    <Fragment key="wrapped">
-      <b>GIA Wrapped:</b> a shareable recap on your wins.
-    </Fragment>,
-  ],
-};
-
 function LockedCard({ src }: { src: string }): React.ReactElement {
   return (
-    <div className="border-brand-gold w-[350px] max-w-full overflow-hidden rounded-[30px] border-[3px] shadow-[0_5px_0_var(--color-brand-gold-shadow)]">
+    <div className="w-[350px] max-w-full rounded-[30px] shadow-[0_5px_0_var(--color-brand-gold-shadow)]">
       <Image
         src={src}
         alt="Locked plan — coming soon"
         width={350}
-        height={400}
-        className="h-auto w-full"
+        height={612}
+        className="h-auto w-full rounded-[30px]"
       />
     </div>
   );
 }
 
 export default function Pricing(): React.ReactElement {
+  // The divider on the cards sits a fixed distance K below the top of the page
+  // (static layout): K ~= 600px stacked (mobile), ~= 572px once the cards sit
+  // in a row (md+). To land that divider on the fold on ANY screen height, the
+  // gap above the cards tracks the viewport: gap = 100svh - K. clamp() keeps
+  // the prices on-screen on short viewports (min) and caps the whitespace on
+  // very tall ones (max). The space below the cards (cards -> footer) is kept
+  // equal to the gap by offsetting pb by the shell's py-10 (40px), so both the
+  // clamp bounds and the calc stay in lockstep.
   return (
-    <section className="flex w-full flex-col items-center gap-[65px] px-5 pt-8 pb-24 sm:px-8 md:px-16 md:pb-[165px]">
+    <section className="flex w-full flex-col items-center gap-[clamp(48px,calc(100svh_-_600px),400px)] px-5 pt-8 pb-[clamp(8px,calc(100svh_-_640px),360px)] sm:px-8 md:gap-[clamp(48px,calc(100svh_-_572px),400px)] md:px-16 md:pb-[clamp(8px,calc(100svh_-_612px),360px)]">
       <div className="text-brand-primary flex w-full flex-col items-center gap-6 text-center">
         <p className="bg-brand-primary flex h-[34px] w-[350px] max-w-full items-center justify-center rounded-full font-sans text-[15px] leading-[1.45] font-bold tracking-[-0.075px] text-white">
           BETA IS OPEN, FOR NOW.
@@ -81,9 +62,23 @@ export default function Pricing(): React.ReactElement {
           ~1128px of content (desktop, `xl`). Below that we stack a single
           centered column rather than letting flex-wrap strand the third card on
           a second row — the staggered 2-up state that looked broken on iPad. */}
-      <div className="flex w-full flex-col items-center justify-center gap-[39px] xl:flex-row xl:items-start">
+      <div className="flex w-full flex-col items-center justify-center gap-[39px] xl:flex-row xl:items-stretch">
         <LockedCard src="/images/pricing-locked-light.webp" />
-        <PricingCard variant="featured" {...betaDeepDive} />
+        <PricingCard
+          variant="featured"
+          {...betaDeepDive}
+          cta={
+            <Button
+              href="/form"
+              variant="onBrand"
+              withArrow
+              transition
+              className="w-full"
+            >
+              Get your Report
+            </Button>
+          }
+        />
         <LockedCard src="/images/pricing-locked-gold.webp" />
       </div>
     </section>

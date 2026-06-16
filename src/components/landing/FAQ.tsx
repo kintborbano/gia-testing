@@ -39,6 +39,16 @@ const FAQS: FaqItem[] = [
     answer:
       'GIA analyzes your actual TikTok content and audience behavior before making recommendations. ChatGPT and other AI tools only give advice based on prompts.',
   },
+  {
+    question: 'What is ER?',
+    answer:
+      'Engagement Rate (ER) measures the percentage of your audience that interacts with your content through likes, comments, shares, or saves.',
+  },
+  {
+    question: 'Why is ER important?',
+    answer:
+      'It is a vital health check for your account because it signals to algorithms that your content is valuable enough to be pushed to a wider audience.',
+  },
 ];
 
 const EXPANDED_FAQS: FaqItem[] = [
