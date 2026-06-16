@@ -7,14 +7,21 @@ import {
   useRef,
   useState,
 } from 'react';
-import { getFrameImage, LAPTOP_FRAMES } from '@/lib/preloadAssets';
+import {
+  getFrameImage,
+  pickFrames,
+  LAPTOP_FRAMES_FULL,
+  LAPTOP_FRAMES_SM,
+} from '@/lib/preloadAssets';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
 
 // Laptop animation frames (Kling export, background removed to transparent so
 // the feature icons can peek out around the laptop as they explode outward).
 // Files: public/images/laptop-frames/final2_prob3000.webp ... 3119, sampled
-// down by LAPTOP_FRAMES in preloadAssets.
-const FRAME_COUNT = LAPTOP_FRAMES.length;
+// down by LAPTOP_FRAMES_* in preloadAssets (phones get the lighter `-sm` set).
+// The canvas backing store stays at the full-res dimensions on every device — a
+// single ~3.8 MB buffer, negligible — and drawImage scales the (smaller on
+// phones) source frame into it, so there's no hydration-sensitive size swap.
 const FRAME_W = 1200;
 const FRAME_H = 800;
 
@@ -68,6 +75,13 @@ const AnimatedLaptop = forwardRef<
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef<number>(-1);
   const [posterReady, setPosterReady] = useState(false);
+  // Device-appropriate frame list, resolved once (full on desktop/tablet, the
+  // lighter `-sm` set on phones). Only drives the URL list + count, never markup,
+  // so picking the phone set on the client's first render is hydration-safe.
+  const [frames] = useState(() =>
+    pickFrames(LAPTOP_FRAMES_FULL, LAPTOP_FRAMES_SM)
+  );
+  const frameCount = frames.length;
   // Hold the scrub on frame 0 until the frames have decoded, then replay the
   // last progress seen so the laptop snaps to the right frame instead of parking.
   const framesReadyRef = useRef(false);
@@ -100,7 +114,7 @@ const AnimatedLaptop = forwardRef<
       1,
       Math.max(0, (p - LAPTOP_DELAY) / (1 - LAPTOP_DELAY))
     );
-    const index = Math.round(scrubbed * (FRAME_COUNT - 1));
+    const index = Math.round(scrubbed * (frameCount - 1));
     if (index === currentFrameRef.current) return;
     currentFrameRef.current = index;
     drawFrame(index);
@@ -149,13 +163,13 @@ const AnimatedLaptop = forwardRef<
             drawFrame(0);
           }
           if (ok && i === currentFrameRef.current) drawFrame(i);
-          if (settled === FRAME_COUNT) fireReady();
+          if (settled === frameCount) fireReady();
         };
 
-        for (let i = 0; i < FRAME_COUNT; i++) {
+        for (let i = 0; i < frameCount; i++) {
           // Shared with the loader's preload — same Image instance, decoded
           // and held once (not a second per-scrubber copy).
-          const img = getFrameImage(LAPTOP_FRAMES[i]);
+          const img = getFrameImage(frames[i]);
           images.push(img);
           // decode() resolves once the bitmap is ready off the main thread. If
           // it rejects, settle from the load state / events instead of hanging.
