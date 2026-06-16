@@ -2,14 +2,20 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
-import { getFrameImage, ACTION_FRAMES } from '@/lib/preloadAssets';
+import {
+  getFrameImage,
+  pickFrames,
+  ACTION_FRAMES_FULL,
+  ACTION_FRAMES_SM,
+} from '@/lib/preloadAssets';
 
 // Laptop-opening frames for the "GIA in action" section, scrubbed by scroll.
 // Files: public/images/action-frames/laptop00.webp ... laptop38.webp (frame
-// list owned by ACTION_FRAMES in preloadAssets).
+// list owned by ACTION_FRAMES_* in preloadAssets; phones get the lighter `-sm`
+// set). The canvas backing store keeps the full-res dimensions on every device
+// and drawImage scales the source into it — no hydration-sensitive size swap.
 // Downscaled from 4K to display resolution; the red background is baked in and
 // matches the section, so no transparency/cut-out is needed here.
-const FRAME_COUNT = ACTION_FRAMES.length;
 const FRAME_W = 1280;
 const FRAME_H = 720;
 
@@ -24,6 +30,12 @@ export default function ActionLaptop(): React.ReactElement {
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef<number>(-1);
   const [posterReady, setPosterReady] = useState(false);
+  // Device-appropriate frame list, resolved once (full on desktop/tablet, the
+  // lighter `-sm` set on phones). Drives the URL list + count only, never markup.
+  const [frames] = useState(() =>
+    pickFrames(ACTION_FRAMES_FULL, ACTION_FRAMES_SM)
+  );
+  const frameCount = frames.length;
 
   const drawFrame = (index: number) => {
     const canvas = canvasRef.current;
@@ -67,9 +79,9 @@ export default function ActionLaptop(): React.ReactElement {
         };
 
         const images: HTMLImageElement[] = [];
-        for (let i = 0; i < FRAME_COUNT; i++) {
+        for (let i = 0; i < frameCount; i++) {
           // Shared with the loader's preload — decoded and held once.
-          const img = getFrameImage(ACTION_FRAMES[i]);
+          const img = getFrameImage(frames[i]);
           images.push(img);
           img.decode().then(
             () => onSettled(i, true),
@@ -94,7 +106,8 @@ export default function ActionLaptop(): React.ReactElement {
       io.disconnect();
       if (timeoutId !== undefined) clearTimeout(timeoutId);
     };
-  }, []);
+    // `frames`/`frameCount` come from useState — stable, so this still runs once.
+  }, [frames, frameCount]);
 
   // Scrub by the canvas's travel through the viewport (no pinning, so the page
   // keeps scrolling): 0 = top at viewport bottom, 1 = bottom at viewport top,
@@ -115,12 +128,12 @@ export default function ActionLaptop(): React.ReactElement {
         1,
         Math.max(0, (progress - OPEN_START) / OPEN_DURATION)
       );
-      const index = Math.round(scrub * (FRAME_COUNT - 1));
+      const index = Math.round(scrub * (frameCount - 1));
       if (index === currentFrameRef.current) return;
       currentFrameRef.current = index;
       drawFrame(index);
     });
-  }, []);
+  }, [frameCount]);
 
   return (
     <canvas

@@ -2,14 +2,19 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
-import { getFrameImage, PEACE_FRAMES } from '@/lib/preloadAssets';
+import {
+  getFrameImage,
+  pickFrames,
+  PEACE_FRAMES_FULL,
+  PEACE_FRAMES_SM,
+} from '@/lib/preloadAssets';
 
 // Peace-sign / wink animation for the CTA, scrubbed by scroll.
 // Files: public/images/peace/gia-peace00.webp ... gia-peace69.webp (frame list
-// owned by PEACE_FRAMES in preloadAssets).
+// owned by PEACE_FRAMES_* in preloadAssets; phones get the lighter `-sm` set,
+// which keeps the same 1000px resolution and only cuts the frame count).
 // Downscaled from 1764px; the white background matches the white CTA section,
 // so no cut-out is needed.
-const FRAME_COUNT = PEACE_FRAMES.length;
 const FRAME_W = 1000;
 const FRAME_H = 667;
 
@@ -19,6 +24,12 @@ export default function PeaceScrubber(): React.ReactElement {
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef<number>(-1);
   const [posterReady, setPosterReady] = useState(false);
+  // Device-appropriate frame list, resolved once (full on desktop/tablet, the
+  // lighter `-sm` set on phones). Drives the URL list + count only, never markup.
+  const [frames] = useState(() =>
+    pickFrames(PEACE_FRAMES_FULL, PEACE_FRAMES_SM)
+  );
+  const frameCount = frames.length;
 
   const drawFrame = (index: number) => {
     const canvas = canvasRef.current;
@@ -62,9 +73,9 @@ export default function PeaceScrubber(): React.ReactElement {
         };
 
         const images: HTMLImageElement[] = [];
-        for (let i = 0; i < FRAME_COUNT; i++) {
+        for (let i = 0; i < frameCount; i++) {
           // Shared with the loader's preload — decoded and held once.
-          const img = getFrameImage(PEACE_FRAMES[i]);
+          const img = getFrameImage(frames[i]);
           images.push(img);
           img.decode().then(
             () => onSettled(i, true),
@@ -89,7 +100,8 @@ export default function PeaceScrubber(): React.ReactElement {
       io.disconnect();
       if (timeoutId !== undefined) clearTimeout(timeoutId);
     };
-  }, []);
+    // `frames`/`frameCount` come from useState — stable, so this still runs once.
+  }, [frames, frameCount]);
 
   // Scrub by the wrapper's travel through the viewport (no pinning, so the page
   // keeps scrolling): 0 = top at viewport bottom, 1 = bottom at viewport top.
@@ -101,12 +113,12 @@ export default function PeaceScrubber(): React.ReactElement {
       const rect = el.getBoundingClientRect();
       const vh = window.innerHeight;
       const p = Math.max(0, Math.min(1, (vh - rect.top) / (vh + rect.height)));
-      const index = Math.round(p * (FRAME_COUNT - 1));
+      const index = Math.round(p * (frameCount - 1));
       if (index === currentFrameRef.current) return;
       currentFrameRef.current = index;
       drawFrame(index);
     });
-  }, []);
+  }, [frameCount]);
 
   return (
     <div ref={wrapRef} className="w-full">
