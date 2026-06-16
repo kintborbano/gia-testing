@@ -2,9 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
+import { observeFrameLifecycle } from '@/lib/scroll/frameLifecycle';
 import {
   getFrameImage,
+  releaseFrames,
   pickFrames,
+  prefersFrameEviction,
   ACTION_FRAMES_FULL,
   ACTION_FRAMES_SM,
 } from '@/lib/preloadAssets';
@@ -47,66 +50,72 @@ export default function ActionLaptop(): React.ReactElement {
     ctx.drawImage(img, 0, 0, FRAME_W, FRAME_H);
   };
 
-  // Lazily preload + decode the frames once the section nears the viewport.
-  // Decoding up front keeps drawImage instant during the scroll scrub.
+  // Lazily decode the frames when the section nears the viewport (so drawImage is
+  // instant during the scrub), and on touch devices RELEASE them once it scrolls
+  // far away — re-acquiring on approach — so the landing's scrubbers don't all
+  // pin their decoded bitmaps at once. Desktop loads once and keeps them warm.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    let loaded = false;
+    let revealed = false;
     let timeoutId: number | undefined;
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
-        io.disconnect();
-
-        let revealed = false;
-        const reveal = () => {
-          if (revealed) return;
-          revealed = true;
-          if (timeoutId !== undefined) clearTimeout(timeoutId);
-          setPosterReady(true);
-        };
-
-        // Settle each frame on success OR failure (decode reject + onerror +
-        // already-complete) so a rejected decode never leaves the canvas hidden.
-        const onSettled = (i: number, ok: boolean) => {
-          if (i === 0) {
-            reveal();
-            if (ok) drawFrame(0);
-          }
-          if (ok && i === currentFrameRef.current) drawFrame(i);
-        };
-
-        const images: HTMLImageElement[] = [];
-        for (let i = 0; i < frameCount; i++) {
-          // Shared with the loader's preload — decoded and held once.
-          const img = getFrameImage(frames[i]);
-          images.push(img);
-          img.decode().then(
-            () => onSettled(i, true),
-            () => {
-              if (img.complete) onSettled(i, img.naturalWidth > 0);
-              else {
-                img.onload = () => onSettled(i, true);
-                img.onerror = () => onSettled(i, false);
-              }
-            }
-          );
-        }
-        imagesRef.current = images;
-
-        // Safety net: reveal the canvas even if the first frame stalls.
-        timeoutId = window.setTimeout(reveal, 8000);
-      },
-      { rootMargin: '100% 0px' } // begin ~1 viewport early
-    );
-    io.observe(canvas);
-    return () => {
-      io.disconnect();
+    const reveal = () => {
+      if (revealed) return;
+      revealed = true;
       if (timeoutId !== undefined) clearTimeout(timeoutId);
+      setPosterReady(true);
     };
-    // `frames`/`frameCount` come from useState — stable, so this still runs once.
+
+    // Settle each frame on success OR failure (decode reject + onerror +
+    // already-complete) so a rejected decode never leaves the canvas hidden.
+    const onSettled = (i: number, ok: boolean) => {
+      if (i === 0) {
+        reveal();
+        if (ok) drawFrame(0);
+      }
+      if (ok && i === currentFrameRef.current) drawFrame(i);
+    };
+
+    const acquire = () => {
+      if (loaded) return;
+      loaded = true;
+      const images: HTMLImageElement[] = [];
+      for (let i = 0; i < frameCount; i++) {
+        const img = getFrameImage(frames[i]);
+        images.push(img);
+        img.decode().then(
+          () => onSettled(i, true),
+          () => {
+            if (img.complete) onSettled(i, img.naturalWidth > 0);
+            else {
+              img.onload = () => onSettled(i, true);
+              img.onerror = () => onSettled(i, false);
+            }
+          }
+        );
+      }
+      imagesRef.current = images;
+      // Safety net: reveal the canvas even if the first frame stalls.
+      timeoutId = window.setTimeout(reveal, 8000);
+    };
+
+    const release = () => {
+      if (!loaded) return;
+      loaded = false;
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+      imagesRef.current = [];
+      currentFrameRef.current = -1; // force a redraw when re-acquired
+      releaseFrames(frames);
+    };
+
+    return observeFrameLifecycle(canvas, {
+      onApproach: acquire,
+      onRecede: release,
+      evict: prefersFrameEviction(),
+    });
   }, [frames, frameCount]);
 
   // Scrub by the canvas's travel through the viewport (no pinning, so the page

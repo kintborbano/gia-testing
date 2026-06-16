@@ -9,11 +9,14 @@ import {
 } from 'react';
 import {
   getFrameImage,
+  releaseFrames,
   pickFrames,
+  prefersFrameEviction,
   LAPTOP_FRAMES_FULL,
   LAPTOP_FRAMES_SM,
 } from '@/lib/preloadAssets';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
+import { observeFrameLifecycle } from '@/lib/scroll/frameLifecycle';
 
 // Laptop animation frames (Kling export, background removed to transparent so
 // the feature icons can peek out around the laptop as they explode outward).
@@ -123,82 +126,95 @@ const AnimatedLaptop = forwardRef<
   // Desktop/tablet: the parent drives the scrub from the sticky-section progress.
   useImperativeHandle(ref, () => ({ draw: scrub }));
 
-  // Lazily preload + decode the frame sequence once the laptop nears the
-  // viewport. Decoding up front means drawImage during scroll never blocks.
+  // Lazily decode the frame sequence when the laptop nears the viewport (so
+  // drawImage during scroll never blocks), and on touch devices RELEASE it once
+  // the laptop scrolls far away — re-acquiring on approach — so the landing's
+  // scrubbers don't all pin their decoded bitmaps at once. Desktop loads once and
+  // keeps the frames warm. `onReady`/`framesReady` fire only on the first load.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    let loaded = false;
+    let readyFired = false;
     let timeoutId: number | undefined;
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
-        io.disconnect();
-
-        const images: HTMLImageElement[] = [];
-        let settled = 0;
-        let readyFired = false;
-
-        const fireReady = () => {
-          if (readyFired) return;
-          readyFired = true;
-          if (timeoutId !== undefined) clearTimeout(timeoutId);
-          // Reveal + unlock the scrub even if a frame failed, so the section is
-          // never left stuck on frame 0.
-          setPosterReady(true);
-          framesReadyRef.current = true;
-          onReadyRef.current?.();
-          // Snap to the frame for the progress seen while frames were decoding.
-          scrub(lastProgressRef.current);
-        };
-
-        // Count every frame that settles — success OR failure — so a single
-        // decode rejection can't leave `decoded` short of FRAME_COUNT and pin
-        // the laptop on frame 0 forever.
-        const onSettled = (i: number, ok: boolean) => {
-          settled += 1;
-          if (ok && i === 0) {
-            setPosterReady(true);
-            drawFrame(0);
-          }
-          if (ok && i === currentFrameRef.current) drawFrame(i);
-          if (settled === frameCount) fireReady();
-        };
-
-        for (let i = 0; i < frameCount; i++) {
-          // Shared with the loader's preload — same Image instance, decoded
-          // and held once (not a second per-scrubber copy).
-          const img = getFrameImage(frames[i]);
-          images.push(img);
-          // decode() resolves once the bitmap is ready off the main thread. If
-          // it rejects, settle from the load state / events instead of hanging.
-          img.decode().then(
-            () => onSettled(i, true),
-            () => {
-              if (img.complete) onSettled(i, img.naturalWidth > 0);
-              else {
-                img.onload = () => onSettled(i, true);
-                img.onerror = () => onSettled(i, false);
-              }
-            }
-          );
-        }
-        imagesRef.current = images;
-
-        // Safety net: never leave the scrub locked if some frame hangs.
-        timeoutId = window.setTimeout(fireReady, 8000);
-      },
-      { rootMargin: '100% 0px' } // begin ~1 viewport early
-    );
-    io.observe(canvas);
-    return () => {
-      io.disconnect();
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    const fireReady = () => {
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+        timeoutId = undefined;
+      }
+      // Reveal + unlock the scrub even if a frame failed, so the section is
+      // never left stuck on frame 0. onReady is a one-time hand-off to the
+      // parent; later re-acquires only need to redraw the current frame.
+      setPosterReady(true);
+      if (!readyFired) {
+        readyFired = true;
+        framesReadyRef.current = true;
+        onReadyRef.current?.();
+      }
+      // Snap to the frame for the progress seen while frames were (re)decoding.
+      scrub(lastProgressRef.current);
     };
-    // Run-once loader; maybeStartAutoplay closes over stable refs + props.
+
+    const acquire = () => {
+      if (loaded) return;
+      loaded = true;
+      const images: HTMLImageElement[] = [];
+      let settled = 0;
+
+      // Count every frame that settles — success OR failure — so a single
+      // decode rejection can't leave `settled` short of frameCount and pin
+      // the laptop on frame 0 forever.
+      const onSettled = (i: number, ok: boolean) => {
+        settled += 1;
+        if (ok && i === 0) {
+          setPosterReady(true);
+          drawFrame(0);
+        }
+        if (ok && i === currentFrameRef.current) drawFrame(i);
+        if (settled === frameCount) fireReady();
+      };
+
+      for (let i = 0; i < frameCount; i++) {
+        const img = getFrameImage(frames[i]);
+        images.push(img);
+        // decode() resolves once the bitmap is ready off the main thread. If
+        // it rejects, settle from the load state / events instead of hanging.
+        img.decode().then(
+          () => onSettled(i, true),
+          () => {
+            if (img.complete) onSettled(i, img.naturalWidth > 0);
+            else {
+              img.onload = () => onSettled(i, true);
+              img.onerror = () => onSettled(i, false);
+            }
+          }
+        );
+      }
+      imagesRef.current = images;
+
+      // Safety net: never leave the scrub locked if some frame hangs.
+      timeoutId = window.setTimeout(fireReady, 8000);
+    };
+
+    const release = () => {
+      if (!loaded) return;
+      loaded = false;
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+      imagesRef.current = [];
+      currentFrameRef.current = -1; // force a redraw when re-acquired
+      releaseFrames(frames);
+    };
+
+    return observeFrameLifecycle(canvas, {
+      onApproach: acquire,
+      onRecede: release,
+      evict: prefersFrameEviction(),
+    });
+    // `scrub` closes over stable refs; `frames`/`frameCount` come from useState.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [frames, frameCount]);
 
   // Mobile self-scrub: with no sticky section to drive `draw`, map the laptop's
   // own viewport position to progress on every scroll frame (shared ticker, so
