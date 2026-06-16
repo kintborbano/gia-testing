@@ -10,24 +10,34 @@ export default function SmoothScroll({
   children: React.ReactNode;
 }) {
   useEffect(() => {
-    // On touch devices, DON'T hijack native scrolling. `syncTouch` re-drives the
-    // page from JS (window.scrollTo) every frame, which fights iOS's native
-    // momentum/rubber-band engine — the cause of the "scrolling itself feels
-    // laggy" jank on iPhone. With it off, touch scrolling is fully native (GPU,
-    // buttery) and Lenis only smooths the wheel (desktop). The scroll ticker
-    // still gets Lenis's 'scroll' events, so the scrubbers/background keep
-    // updating; Lenis.scrollTo still eases nav jumps. Lenis docs flag syncTouch
-    // as experimental and frequently worse on touch.
+    // DON'T hijack scrolling on inputs that are already smooth — JS re-driving an
+    // already-smooth input is what made scrolling feel laggy on WebKit. Two cases:
+    //   - Touch (pointer: coarse — iPhone, iPad, Android): `syncTouch` fought the
+    //     native momentum/rubber-band engine. Off → fully native, GPU-smooth.
+    //   - Apple desktop (Mac trackpad / Magic Mouse): these emit fine-grained
+    //     momentum wheel events that macOS already animates; Lenis `smoothWheel`
+    //     only adds a competing JS-driven layer (the same double-drive, the cause
+    //     of the MacBook lag). Off → native trackpad scrolling.
+    // Windows/Linux mouse wheels are coarse/stepped and genuinely benefit from
+    // easing, so smoothWheel stays ON there (those devices already feel fine).
+    // Lenis.scrollTo still eases nav jumps everywhere; the scroll ticker polls
+    // window.scrollY per frame, so the scrubbers/background stay smooth natively.
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const platform =
+      typeof navigator !== 'undefined' ? (navigator.platform ?? '') : '';
     const isTouch =
       typeof window !== 'undefined' &&
       window.matchMedia?.('(pointer: coarse)').matches;
+    const isApple =
+      /Mac|iPhone|iPad|iPod/.test(platform) || /Macintosh/.test(ua);
+    const smoothWheel = !isTouch && !isApple;
 
     const lenis = new Lenis({
       autoRaf: true,
-      smoothWheel: true,
+      smoothWheel,
       lerp: 0.06,
       wheelMultiplier: 1,
-      syncTouch: !isTouch,
+      syncTouch: false,
       syncTouchLerp: 0.08,
       touchMultiplier: 1,
     });

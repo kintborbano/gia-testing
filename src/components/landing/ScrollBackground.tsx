@@ -84,15 +84,20 @@ export default function ScrollBackground({
   }, [stops, realBgStopCount]);
 
   useEffect(() => {
-    // Compute every stop's trigger scroll position fresh on each frame. Doing
-    // this per-frame (rather than caching on mount) keeps the seams accurate
-    // even after late layout shifts — custom font swaps and image loads push
-    // sections downward, and a cached position would fire the color snap at the
-    // wrong scroll depth. Six getBoundingClientRect reads per frame is cheap.
-    const measure = (): number[] => {
+    // Each stop's trigger scroll position is an ABSOLUTE document offset
+    // (rect.top + scrollY), so it doesn't change as you scroll — only when layout
+    // changes (viewport resize, font swap, late image load, the intro overlay
+    // unmounting). So measure once and cache, then recompute only on those events
+    // via a ResizeObserver — NOT on every scroll frame. This removes six
+    // getBoundingClientRect reads (forced layouts) per frame, the dominant
+    // per-frame cost here, which is what lets slower engines (WebKit/Safari) keep
+    // up; Chromium had the headroom either way, so it's unaffected.
+    let positions: number[] = [];
+
+    const remeasure = (): void => {
       const vh = window.innerHeight;
       const y = window.scrollY;
-      return stops.map((stop) => {
+      positions = stops.map((stop) => {
         const el = document.getElementById(stop.anchorId);
         if (!el) return Number.NaN;
         const rect = el.getBoundingClientRect();
@@ -104,11 +109,9 @@ export default function ScrollBackground({
       });
     };
 
-    const update = () => {
-      const positions = measure();
+    const update = (y: number) => {
       if (positions.length === 0) return;
 
-      const y = window.scrollY;
       let segIndex = -1;
       for (let i = 0; i < positions.length - 1; i++) {
         const a = positions[i];
@@ -176,9 +179,24 @@ export default function ScrollBackground({
       publish(headerBg, headerFg, realBg);
     };
 
-    // The shared ticker fires once immediately and then on every scroll/resize
-    // frame, in sync with Lenis (or native scroll where Lenis isn't mounted).
-    return subscribeScroll(update);
+    // Measure now, then recompute only when layout can have shifted: a viewport
+    // resize, or any change to the document's size (font swaps, late image loads,
+    // the intro overlay unmounting) caught by a ResizeObserver on <body>. The
+    // cached positions stay valid for every scroll frame in between.
+    remeasure();
+    const ro = new ResizeObserver(() => remeasure());
+    ro.observe(document.body);
+    window.addEventListener('resize', remeasure);
+
+    // The shared ticker fires once immediately and then on every animation frame
+    // while scrolling (it polls window.scrollY per frame — see scrollTicker).
+    const unsubscribe = subscribeScroll(update);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', remeasure);
+      unsubscribe();
+    };
   }, [stops, rgbStops, rgbFgStops, lastRealBgSeg, realBgHold]);
 
   return (
