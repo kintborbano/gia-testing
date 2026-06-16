@@ -71,12 +71,34 @@ export const PEACE_FRAMES_SM = seq('peace-sm', 18);
 
 /**
  * True on phones (the band that renders the mobile Features layout). Drives the
- * lighter frame variant + skips the desktop preload. SSR-safe (returns false on
- * the server, so the server/desktop path is the full set).
+ * lighter frame VARIANT. SSR-safe (returns false on the server, so the
+ * server/desktop path is the full set).
  */
 export function prefersSmallFrames(): boolean {
   if (typeof window === 'undefined' || !window.matchMedia) return false;
   return window.matchMedia('(max-width: 767px)').matches;
+}
+
+/**
+ * True on touch devices (phones AND tablets). Drives the memory LIFECYCLE: these
+ * devices lazy-load their scrub frames and release them when the section scrolls
+ * far away (so the three sequences are never all decoded at once), instead of
+ * eagerly preloading + holding everything. Desktop (fine pointer) keeps frames
+ * warm — it has the RAM and we'd rather avoid any first-scroll pop-in.
+ * Independent of `prefersSmallFrames`: a tablet evicts but still uses full-res.
+ */
+export function prefersFrameEviction(): boolean {
+  if (typeof window === 'undefined' || !window.matchMedia) return false;
+  return window.matchMedia('(pointer: coarse)').matches;
+}
+
+/**
+ * Drop a sequence's frames from the shared cache so their decoded bitmaps can be
+ * garbage-collected. The caller must also clear its own references (imagesRef);
+ * re-acquiring later just calls getFrameImage again, which re-fetches + decodes.
+ */
+export function releaseFrames(urls: string[]): void {
+  for (const url of urls) frameImages.delete(url);
 }
 
 /** Pick the device-appropriate frame list for a sequence. */
@@ -107,19 +129,19 @@ let promise: Promise<void> | null = null;
 /**
  * Preload (download) the critical frames so nothing pops in after reveal.
  *
- * Phones SKIP the scrub sequences: eagerly decoding all three at load creates a
- * memory + decode spike (on top of the loader frames) right when the device is
- * busiest — the worst moment for the iOS memory ceiling. Their scrubbers
- * lazy-load the lighter `-sm` frames via IntersectionObserver instead. Desktop
- * has the headroom, so it still warms the full sequences to avoid first-scroll
- * pop-in.
+ * Touch devices (phones + tablets) SKIP the scrub sequences: eagerly decoding
+ * all three at load creates a memory + decode spike (on top of the loader
+ * frames) right when the device is busiest — the worst moment for the iOS memory
+ * ceiling. Their scrubbers lazy-load + release frames via the lifecycle observer
+ * instead. Desktop has the headroom, so it still warms the full sequences to
+ * avoid first-scroll pop-in.
  */
 export function preloadCriticalAssets(): Promise<void> {
   if (typeof window === 'undefined') return Promise.resolve();
   if (promise) return promise;
 
   const urls = ['/images/gia-on-laptop.png'];
-  if (!prefersSmallFrames()) {
+  if (!prefersFrameEviction()) {
     urls.push(
       ...LAPTOP_FRAMES_FULL,
       ...ACTION_FRAMES_FULL,
