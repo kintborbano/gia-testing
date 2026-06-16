@@ -3,10 +3,10 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from 'react';
 import type { CSSProperties } from 'react';
 import { Menu, X } from 'lucide-react';
@@ -29,7 +29,6 @@ import {
   SCROLL_RANGE,
 } from '@/animations/headerAnimations';
 import {
-  getPageColorsServerSnapshot,
   getPageColorsSnapshot,
   subscribeToPageColors,
 } from '@/stores/pageBackgroundStore';
@@ -187,6 +186,7 @@ export default function StickyHeader(): React.ReactElement {
   const [headerEntry, setHeaderEntry] = useState<HeaderEntry>(() =>
     peekHeaderEntry() ? 'hidden' : 'idle'
   );
+  const headerRef = useRef<HTMLElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   // A nav target captured from an overlay link, fired once the maroon flood has
@@ -423,19 +423,50 @@ export default function StickyHeader(): React.ReactElement {
   // Keep the header visible while the mobile overlay is on screen.
   const hidden =
     ((useScrollDirection() || inFeatures) && !overlayActive) || transitioning;
-  const { background: pageBg, foreground: pageFg } = useSyncExternalStore(
-    subscribeToPageColors,
-    getPageColorsSnapshot,
-    getPageColorsServerSnapshot
-  );
+
+  // Paint the header's scroll-driven palette IMPERATIVELY rather than through
+  // React state. The page-color store updates on most scroll frames (the
+  // white→cream hero fade especially), and routing that through a render would
+  // re-render this whole header subtree ~60×/sec — a real scroll cost on phones.
+  // Writing background/foreground/CSS-vars straight to the element keeps those
+  // updates off the React path entirely. The `--page-*` vars cascade to the
+  // header's adaptive CTA button (the only consumer). overlayActive forces the
+  // transparent/white treatment while the menu flood is on screen.
+  const paintHeaderColors = useCallback((): void => {
+    const el = headerRef.current;
+    if (!el) return;
+    const { background, foreground } = getPageColorsSnapshot();
+    el.style.background = overlayActive ? 'transparent' : background;
+    el.style.color = overlayActive ? '#ffffff' : foreground;
+    el.style.setProperty('--page-bg', background);
+    el.style.setProperty('--page-fg', foreground);
+  }, [overlayActive]);
+
+  // useLayoutEffect so the first paint lands before the browser paints (no
+  // transparent-header flash), and re-subscribe whenever overlayActive changes.
+  useLayoutEffect(() => {
+    paintHeaderColors();
+    return subscribeToPageColors(paintHeaderColors);
+  }, [paintHeaderColors]);
 
   // The "powered by SOFI" pill switches to its gold/on-dark tone over a black
   // header background — the How section AND a fully dark page like About, which
-  // sets the header background black for its whole length. Deriving this from
-  // the background (rather than a section IntersectionObserver) means it holds
-  // for the entire About page, not just while a section crosses the top edge.
+  // sets the header background black for its whole length. Tracked as a boolean
+  // that flips only when the background crosses the near-black threshold (at
+  // section seams), so it re-renders rarely instead of on every color frame.
   // Maroon (the Action section) is NOT near-black, so it keeps the white pill.
-  const onDarkPill = inHow || isNearBlack(pageBg);
+  const [onDarkBg, setOnDarkBg] = useState(() =>
+    isNearBlack(getPageColorsSnapshot().background)
+  );
+  useEffect(() => {
+    const update = (): void => {
+      const dark = isNearBlack(getPageColorsSnapshot().background);
+      setOnDarkBg((prev) => (prev === dark ? prev : dark));
+    };
+    update();
+    return subscribeToPageColors(update);
+  }, []);
+  const onDarkPill = inHow || onDarkBg;
 
   // The post-close re-entrance overrides the normal hidden/visible transform:
   // `hidden` parks it up with no transform transition (so it snaps off-screen),
@@ -449,29 +480,24 @@ export default function StickyHeader(): React.ReactElement {
         ? `transform ${HEADER_REENTRY_MS}ms ${EXIT_EASING}`
         : 'transform 350ms ease';
 
+  // Background / foreground / --page-* are painted imperatively (see
+  // paintHeaderColors) so scroll-frame color updates never re-render the header.
+  // This memo only carries the props that change on discrete state flips.
   const headerStyle = useMemo<CSSProperties>(
-    () =>
-      ({
-        height: `${scrolled ? HEIGHT_SMALL : HEADER_HEIGHT_LARGE}px`,
-        // While the overlay is on screen the brand flood sits behind the header,
-        // so go transparent and force a white icon for the close button.
-        background: overlayActive ? 'transparent' : pageBg,
-        // Drives `currentColor` for the nav text, menu icon, and GIA logo.
-        color: overlayActive ? '#ffffff' : pageFg,
-        // Exposed to the adaptive CTA button so it tracks the section palette.
-        '--page-bg': pageBg,
-        '--page-fg': pageFg,
-        transform: offscreen ? 'translateY(-100%)' : 'translateY(0)',
-        // Background is intentionally not transitioned — it snaps at the dark
-        // section seams (fade: 0) and is already eased per-frame for white→cream.
-        transition: `height 250ms ease, ${transformTransition}`,
-      }) as CSSProperties,
-    [scrolled, pageBg, pageFg, offscreen, overlayActive, transformTransition]
+    () => ({
+      height: `${scrolled ? HEIGHT_SMALL : HEADER_HEIGHT_LARGE}px`,
+      transform: offscreen ? 'translateY(-100%)' : 'translateY(0)',
+      // Background is intentionally not transitioned — it snaps at the dark
+      // section seams (fade: 0) and is already eased per-frame for white→cream.
+      transition: `height 250ms ease, ${transformTransition}`,
+    }),
+    [scrolled, offscreen, transformTransition]
   );
 
   return (
     <>
       <header
+        ref={headerRef}
         className="fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-5 sm:px-6 md:px-10"
         style={headerStyle}
       >

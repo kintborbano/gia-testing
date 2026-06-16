@@ -10,12 +10,24 @@ export default function SmoothScroll({
   children: React.ReactNode;
 }) {
   useEffect(() => {
+    // On touch devices, DON'T hijack native scrolling. `syncTouch` re-drives the
+    // page from JS (window.scrollTo) every frame, which fights iOS's native
+    // momentum/rubber-band engine — the cause of the "scrolling itself feels
+    // laggy" jank on iPhone. With it off, touch scrolling is fully native (GPU,
+    // buttery) and Lenis only smooths the wheel (desktop). The scroll ticker
+    // still gets Lenis's 'scroll' events, so the scrubbers/background keep
+    // updating; Lenis.scrollTo still eases nav jumps. Lenis docs flag syncTouch
+    // as experimental and frequently worse on touch.
+    const isTouch =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(pointer: coarse)').matches;
+
     const lenis = new Lenis({
       autoRaf: true,
       smoothWheel: true,
       lerp: 0.06,
       wheelMultiplier: 1,
-      syncTouch: true,
+      syncTouch: !isTouch,
       syncTouchLerp: 0.08,
       touchMultiplier: 1,
     });
