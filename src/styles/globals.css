@@ -202,6 +202,17 @@ body:has(.loading-viewport) {
   place-items: center;
 }
 
+/*
+ * Tablet/desktop scene box. Icons are positioned as a % of this box's width but
+ * must stay in proportion to those gaps, so they're sized in `cqw` (a % of this
+ * container's width) rather than viewport breakpoints. Establishing a query
+ * container here is what makes that `cqw` resolve to the box — keeping the
+ * size-to-spacing ratio constant at every box width (short viewports, zoom).
+ */
+.feature-scene-box {
+  container-type: inline-size;
+}
+
 .features-grid--stack {
   column-gap: 1rem;
   row-gap: 2rem;
