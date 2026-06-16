@@ -1,4 +1,10 @@
 import { getToken, clearToken } from './auth';
+import {
+  DEV_BYPASS,
+  devResults,
+  devStartAnalysis,
+  devStatus,
+} from './devBypass';
 import type { ApiResult, JobStatus } from '@/types/api';
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -56,6 +62,7 @@ export const api = {
       accountType?: string;
     } = {}
   ) {
+    if (DEV_BYPASS) return devStartAnalysis();
     return request<{ job_id: string }>('/api/analyze', {
       method: 'POST',
       body: JSON.stringify({
@@ -69,10 +76,12 @@ export const api = {
   },
 
   getStatus(jobId: string, from: number = 0) {
+    if (DEV_BYPASS) return Promise.resolve(devStatus(jobId, from));
     return request<JobStatus>(`/api/status/${jobId}?from=${from}`);
   },
 
   getResults(jobId: string) {
+    if (DEV_BYPASS) return devResults();
     return request<ApiResult>(`/api/results/${jobId}`);
   },
 
