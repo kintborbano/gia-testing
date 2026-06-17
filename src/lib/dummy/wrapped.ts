@@ -18,7 +18,7 @@ export const DEMO_WRAPPED: Wrapped = {
   commentQuote: 'ang flirty talaga ni mikha, kuhang kuha',
   fanTerm: 'Blooms',
   copy: {
-    cover: { tagline: 'your year on the FYP' },
+    cover: { tagline: 'your hooks, decoded' },
     energy: {
       eyebrow: 'your energy',
       headline: 'the surprise-drop superstars',
@@ -36,7 +36,7 @@ export const DEMO_WRAPPED: Wrapped = {
     breakout: {
       eyebrow: 'the breakout',
       headline: 'the post that broke through',
-      body: 'one perfectly-timed moment and the whole timeline took notice. this is the one they’ll still be quoting next year.',
+      body: 'one perfectly-timed moment and the whole timeline took notice. this is the one they’ll be quoting for a long time.',
     },
     audience: {
       eyebrow: 'what your people did',
@@ -55,7 +55,7 @@ export const DEMO_WRAPPED: Wrapped = {
     },
     finale: {
       identity_tag: 'the surprise-drop superstars',
-      signoff: 'that’s a year worth screenshotting. now go make the next one.',
+      signoff: 'that’s a feed worth screenshotting. now go make the next one.',
     },
   },
 };

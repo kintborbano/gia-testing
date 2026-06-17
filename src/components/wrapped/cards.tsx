@@ -331,7 +331,7 @@ function FinaleCard({ w }: { w: Wrapped }) {
         textAlign: 'center',
       }}
     >
-      <Eyebrow>your year, wrapped</Eyebrow>
+      <Eyebrow>your hooks, wrapped</Eyebrow>
       <div className="grow" />
       <h1
         className="serif anim"

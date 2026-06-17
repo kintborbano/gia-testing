@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { toPng } from 'html-to-image';
+import { toBlob } from 'html-to-image';
 import { BEATS } from '@/components/wrapped/cards';
+import ShareCard from '@/components/wrapped/ShareCard';
 import type { Wrapped } from '@/types/wrapped';
 
 const CANVAS_W = 400;
@@ -24,6 +25,7 @@ export default function WrappedDeck({
   const [settled, setSettled] = useState(false);
   const [scale, setScale] = useState(1);
   const frameRef = useRef<HTMLDivElement>(null);
+  const shareRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
   const last = BEATS.length - 1;
 
@@ -127,36 +129,48 @@ export default function WrappedDeck({
   }, [idx, go, onClose]);
 
   const [exporting, setExporting] = useState(false);
-  const download = async () => {
-    if (!frameRef.current) return;
+  // Always exports the dedicated 9:16 share card (1080×1920) — the recruiting
+  // poster — not the current beat. Tries the native share sheet first (→ IG
+  // Stories on mobile), falls back to a PNG download.
+  const share = async () => {
+    if (!shareRef.current) return;
     setPause(true);
-    setSettled(true);
     setExporting(true);
     try {
-      const url = await toPng(frameRef.current, {
-        pixelRatio: 2,
+      const blob = await toBlob(shareRef.current, {
+        pixelRatio: 3,
         cacheBust: true,
-        width: CANVAS_W,
-        height: CANVAS_H,
-        // Capture at native 400×820 — strip the fit-to-viewport scale.
-        style: { transform: 'none' },
-        // Exclude UI chrome so the saved image is the card, not a screenshot:
-        // progress bar, action pills, and the invisible tap layer.
-        filter: (node) => {
-          const el = node as HTMLElement;
-          return !(
-            el.classList?.contains('gw-progress') ||
-            el.classList?.contains('gw-action') ||
-            el.classList?.contains('gw-tap')
-          );
-        },
+        width: 360,
+        height: 640,
       });
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `gia-wrapped-${data.handle.replace('@', '')}.png`;
-      a.click();
+      if (!blob) return;
+      const file = new File(
+        [blob],
+        `gia-wrapped-${data.handle.replace('@', '')}.png`,
+        {
+          type: 'image/png',
+        }
+      );
+      const canShareFiles =
+        typeof navigator !== 'undefined' &&
+        !!navigator.canShare &&
+        navigator.canShare({ files: [file] });
+      if (canShareFiles) {
+        await navigator.share({
+          files: [file],
+          title: 'My GIA Wrapped',
+          text: 'GIA read my hooks. what’s your creator type? gia.sofi.ai',
+        });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
     } catch {
-      // export is best-effort; manual screen capture remains available
+      // best-effort; user can still screen-capture
     } finally {
       setExporting(false);
       setPause(false);
@@ -256,12 +270,25 @@ export default function WrappedDeck({
             className="gw-pill"
             onClick={(e) => {
               e.stopPropagation();
-              download();
+              share();
             }}
           >
-            {exporting ? 'Saving…' : '↓ Save card'}
+            {exporting ? 'Preparing…' : '↗ Share my card'}
           </button>
         </div>
+      </div>
+
+      {/* Off-screen 9:16 share card — the image Save/Share actually exports. */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          left: -9999,
+          top: 0,
+          pointerEvents: 'none',
+        }}
+      >
+        <ShareCard ref={shareRef} data={data} />
       </div>
 
       <button
