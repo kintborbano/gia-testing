@@ -48,6 +48,7 @@ const sharp = require(
 
 const IMAGES = path.join(__dirname, '..', 'public', 'images');
 const pad2 = (i) => String(i).padStart(2, '0');
+const pad3 = (i) => String(i).padStart(3, '0');
 
 // Evenly spaced indices across [0, total-1], inclusive of both ends.
 function pickIndices(total, count) {
@@ -73,12 +74,13 @@ const JOBS = [
   },
   {
     name: 'action',
+    // Transparent full-res frames written by process-action-frames.cjs.
     srcDir: 'action-frames',
-    srcName: (i) => `laptop${pad2(i)}.webp`,
-    total: 39,
+    srcName: (i) => `laptop-screen${pad3(i)}.webp`,
+    total: 137,
     outDir: 'action-frames-sm',
-    outCount: 18,
-    width: 1100, // full is 1280x720 (16:9)
+    outCount: 24,
+    width: 880, // full is 1100x619 (16:9); phone shows it ~360css x DPR ~= 900px
   },
   {
     name: 'peace',

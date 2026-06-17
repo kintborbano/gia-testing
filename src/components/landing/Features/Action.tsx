@@ -6,7 +6,7 @@ export default function Action(): React.ReactElement {
     // as it passes through the viewport.
     <section
       id="bg-stop-action"
-      className="bg-brand-primary flex w-full flex-col items-center px-5 py-24 text-center text-white sm:px-8 md:px-16 md:py-32"
+      className="bg-brand-primary flex w-full flex-col items-center px-5 pt-24 pb-24 text-center text-white sm:px-8 md:px-16 md:pt-32 md:pb-32"
     >
       <div className="flex w-full flex-col items-center gap-8 sm:gap-11 md:gap-14">
         <p className="font-sans text-[15px] font-bold tracking-[-0.075px]">
@@ -26,10 +26,11 @@ export default function Action(): React.ReactElement {
           <br />
           GIA tells you why it happened.
         </p>
-        <div className="mt-4 flex w-full items-center justify-center">
-          <ActionLaptop />
-        </div>
       </div>
+
+      {/* Sticky scroll-scrub: the laptop pins centred while its tall track
+          scrolls past, the scroll position driving the open→closed frames. */}
+      <ActionLaptop />
     </section>
   );
 }
