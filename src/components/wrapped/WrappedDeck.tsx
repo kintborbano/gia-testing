@@ -38,15 +38,18 @@ export default function WrappedDeck({
     [last]
   );
 
-  // Fit-to-viewport uniform scale (never upscales past 1).
+  // Phones: scale to COVER so the story fills the screen edge-to-edge (no dark
+  // letterbox). Desktop/tablet: contain inside a centered phone frame, capped at 1.
   useEffect(() => {
     const fit = () => {
-      const s = Math.min(
-        1,
-        (window.innerHeight - 40) / CANVAS_H,
-        (window.innerWidth - 40) / CANVAS_W
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const isMobile = vw < 600;
+      setScale(
+        isMobile
+          ? Math.max(vh / CANVAS_H, vw / CANVAS_W)
+          : Math.min(1, (vh - 40) / CANVAS_H, (vw - 40) / CANVAS_W)
       );
-      setScale(s);
     };
     fit();
     window.addEventListener('resize', fit);
@@ -137,6 +140,16 @@ export default function WrappedDeck({
         height: CANVAS_H,
         // Capture at native 400×820 — strip the fit-to-viewport scale.
         style: { transform: 'none' },
+        // Exclude UI chrome so the saved image is the card, not a screenshot:
+        // progress bar, action pills, and the invisible tap layer.
+        filter: (node) => {
+          const el = node as HTMLElement;
+          return !(
+            el.classList?.contains('gw-progress') ||
+            el.classList?.contains('gw-action') ||
+            el.classList?.contains('gw-tap')
+          );
+        },
       });
       const a = document.createElement('a');
       a.href = url;

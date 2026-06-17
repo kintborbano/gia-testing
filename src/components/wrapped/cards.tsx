@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import type { Wrapped } from '@/types/wrapped';
 
 function prefersReduced(): boolean {
@@ -121,18 +122,30 @@ function CoverCard({ w }: { w: Wrapped }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Corners />
-      <Eyebrow>gia wrapped</Eyebrow>
+      <div className="anim" style={d(0)}>
+        <Image
+          src="/logos/gia-logo.svg"
+          alt="GIA"
+          width={750}
+          height={397}
+          priority
+          style={{ height: 38, width: 'auto' }}
+        />
+      </div>
+      <span className="eyebrow anim" style={{ ...d(0.1), marginTop: 18 }}>
+        wrapped
+      </span>
       <div className="spacer" />
-      <h1 className="serif anim" style={{ ...d(0.12), fontSize: 64 }}>
+      <h1 className="serif anim" style={{ ...d(0.22), fontSize: 64 }}>
         {w.copy.cover.tagline}
       </h1>
       <div className="spacer" />
-      <div className="anim" style={d(0.4)}>
+      <div className="anim" style={d(0.46)}>
         <span className="serif" style={{ fontSize: 34 }}>
           {w.handle}
         </span>
       </div>
-      <div className="anim fade" style={{ ...d(0.7), marginTop: 18 }}>
+      <div className="anim fade" style={{ ...d(0.72), marginTop: 18 }}>
         <span className="kicker">Tap to begin</span>
       </div>
     </div>
@@ -410,7 +423,7 @@ export interface Beat {
 }
 
 export const BEATS: Beat[] = [
-  { key: 'cover', theme: 'ink', render: CoverCard },
+  { key: 'cover', theme: 'cream', render: CoverCard },
   { key: 'energy', theme: 'wine', render: EnergyCard },
   { key: 'number', theme: 'cream', render: NumberCard },
   { key: 'signature', theme: 'gold', render: SignatureCard },

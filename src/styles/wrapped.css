@@ -36,6 +36,17 @@
     0 0 70px -10px rgba(0, 0, 0, 0.55);
 }
 
+/* Phones: the story fills the screen — drop the device-frame chrome. */
+@media (max-width: 599px) {
+  .gw-frame {
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .gw-nav {
+    display: none;
+  }
+}
+
 /* progress bar */
 .gw-progress {
   position: absolute;

@@ -18,44 +18,44 @@ export const DEMO_WRAPPED: Wrapped = {
   commentQuote: 'ang flirty talaga ni mikha, kuhang kuha',
   fanTerm: 'Blooms',
   copy: {
-    cover: { tagline: 'your year on the fyp' },
+    cover: { tagline: 'your year on the FYP' },
     energy: {
       eyebrow: 'your energy',
       headline: 'the surprise-drop superstars',
-      body: 'you don’t announce — you ambush. every post feels like breaking news Blooms have to witness live.',
+      body: 'you don’t announce — you arrive. every post lands like news your audience has to witness in real time.',
     },
     number: {
       eyebrow: 'the headline',
-      caption: 'views. and Blooms watched every second.',
+      caption: 'views — and your audience stayed for all of them.',
     },
     signature: {
       eyebrow: 'your signature move',
       headline: 'you’re a moment-maker',
-      body: 'unexpected role-plays and out-of-nowhere reveals — you turn a normal tuesday into an event.',
+      body: 'unexpected reveals and playful role-plays — you turn an ordinary day into something worth watching.',
     },
     breakout: {
       eyebrow: 'the breakout',
-      headline: 'the rollerblade heard round the fyp',
-      body: 'one synchronized stunt and the whole timeline lost it. this is the one they’ll still be quoting next year.',
+      headline: 'the post that broke through',
+      body: 'one perfectly-timed moment and the whole timeline took notice. this is the one they’ll still be quoting next year.',
     },
     audience: {
       eyebrow: 'what your people did',
       headline: 'they couldn’t keep you to themselves',
-      body: 'Blooms hit “send” faster than the algorithm could blink — every drop became a group-chat invasion.',
+      body: 'Blooms shared every drop the second it landed — each post turned into a group-chat event.',
     },
     comment: {
       eyebrow: 'what they said',
       reaction:
-        'the bias is giving parasocial and i am LIVING. Blooms don’t do casual — only unhinged devotion.',
+        'this is devotion, not casual viewing. your audience shows up for the people, not just the posts.',
     },
     superpower: {
       eyebrow: 'your superpower',
-      headline: 'turning surprise into obsession',
-      body: 'casual beats polished every time for you. keep dropping the unscripted, unhinged, no-warning moments.',
+      headline: 'turning surprise into devotion',
+      body: 'the real, unscripted moments win every time for you. keep leaning into the unplanned ones.',
     },
     finale: {
       identity_tag: 'the surprise-drop superstars',
-      signoff: 'ate that. left no crumbs. now do it again.',
+      signoff: 'that’s a year worth screenshotting. now go make the next one.',
     },
   },
 };
