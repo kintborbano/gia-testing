@@ -216,6 +216,8 @@ export default function WrappedDeck({
           {...(settled ? { 'data-settled': '' } : {})}
         >
           <beat.render w={data} />
+          {/* Per-page watermark so any single screenshot stays branded. */}
+          <span className="gw-watermark">{data.handle} · gia wrapped</span>
         </div>
 
         <div
