@@ -59,3 +59,7 @@ CLAUDE.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# raw frame export — processed into public/images/action-frames by
+# scripts/process-action-frames.cjs; only the transparent webp output is committed
+/public/images/laptop-screen-frames/

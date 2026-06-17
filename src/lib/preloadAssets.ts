@@ -19,6 +19,7 @@
 //   - peace(-sm)          -> PeaceScrubber.tsx
 
 const pad2 = (i: number) => String(i).padStart(2, '0');
+const pad3 = (i: number) => String(i).padStart(3, '0');
 
 // Build a frame-URL list that loads every `step`-th source frame (always
 // including the last, so the animation reaches its final state). Dropping the
@@ -45,18 +46,54 @@ function seq(dir: string, count: number): string[] {
   );
 }
 
+// Repeat one entry of a frame list in place to create a deliberate scroll
+// "hold" — the scrub dwells on that frame instead of passing straight through.
+// Repeated URLs share a single decoded bitmap (getFrameImage dedupes by URL),
+// so even a long hold costs no extra memory. `copies` is how many EXTRA times
+// the frame shows (it appears copies + 1 times total). Done at the list level —
+// not by copying source PNGs — because the sequences are sampled down, which
+// would thin duplicated source files out unpredictably.
+function repeatAt(frames: string[], at: number, copies: number): string[] {
+  if (at < 0 || at >= frames.length || copies <= 0) return frames;
+  const dup = Array.from({ length: copies }, () => frames[at]);
+  return [...frames.slice(0, at + 1), ...dup, ...frames.slice(at + 1)];
+}
+
+// Hold the "GIA in action" laptop on the HOOK-FOR-SAVES screen (source frame 95)
+// so it's readable before the lid closes. Phones get fewer copies — their `-sm`
+// set has ~half the frames, so the same dwell would feel disproportionately long.
+const ACTION_HOLD_FRAME = 95;
+const ACTION_HOLD_COPIES = 5;
+const ACTION_HOLD_COPIES_SM = 3;
+
 // ── Full-res sequences (desktop + tablet) ──────────────────────────────────
-// Source folders hold the full sequences (120 / 39 / 70); we sample them down.
+// Source folders hold the full sequences (120 / 137 / 70); we sample them down.
 export const LAPTOP_FRAMES_FULL = sampled(
   120,
   2,
   (i) => `/images/laptop-frames/final2_prob${3000 + i}.webp`
 );
-export const ACTION_FRAMES_FULL = sampled(
-  39,
-  1,
-  (i) => `/images/action-frames/laptop${pad2(i)}.webp`
-);
+// 137-frame export (transparent, cut out by process-action-frames.cjs) sampled
+// to ~47 — proportionate to the old 39-frame set, not 137; the full set would
+// pin ~373 MB of decoded bitmaps for this one scrubber. Then the hold frame is
+// spliced in (it isn't a sampled index) and repeated to dwell on it.
+const actionUrl = (i: number) =>
+  `/images/action-frames/laptop-screen${pad3(i)}.webp`;
+export const ACTION_FRAMES_FULL = (() => {
+  const base = sampled(137, 3, actionUrl);
+  const holdUrl = actionUrl(ACTION_HOLD_FRAME);
+  let at = base.indexOf(holdUrl);
+  let frames = base;
+  if (at === -1) {
+    // 95 isn't a sampled index (step 3); splice it into sequence order. The
+    // zero-padded names sort by frame number, so the first URL that sorts after
+    // it is the insertion point.
+    at = base.findIndex((u) => u > holdUrl);
+    at = at === -1 ? base.length : at;
+    frames = [...base.slice(0, at), holdUrl, ...base.slice(at)];
+  }
+  return repeatAt(frames, at, ACTION_HOLD_COPIES);
+})();
 export const PEACE_FRAMES_FULL = sampled(
   70,
   2,
@@ -66,7 +103,14 @@ export const PEACE_FRAMES_FULL = sampled(
 // ── Phone sequences (<=767px) ──────────────────────────────────────────────
 // Counts MUST match the build script's `outCount` for each job.
 export const LAPTOP_FRAMES_SM = seq('laptop-frames-sm', 28);
-export const ACTION_FRAMES_SM = seq('action-frames-sm', 18);
+// Same HOOK-FOR-SAVES hold as the full set. The `-sm` frames are resampled +
+// renamed sequentially, so map frame 95's place in the 137-frame source to the
+// nearest `-sm` frame and dwell there.
+export const ACTION_FRAMES_SM = (() => {
+  const base = seq('action-frames-sm', 24);
+  const at = Math.round((ACTION_HOLD_FRAME / 136) * (base.length - 1));
+  return repeatAt(base, at, ACTION_HOLD_COPIES_SM);
+})();
 export const PEACE_FRAMES_SM = seq('peace-sm', 18);
 
 /**
