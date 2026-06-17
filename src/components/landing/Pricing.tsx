@@ -16,7 +16,7 @@ import { betaDeepDive } from './pricingTiers';
  * laid on top. To regenerate them after a copy/price/design change, edit
  * pricingTiers.tsx and run scripts/rebake-locked-cards.cjs.
  *
- * The bakes are 350x612 — the card width and its (stretched) height. Keep this
+ * The bakes are 350x650 — the card width and its (stretched) height. Keep this
  * in sync with the rebake script's logged dimensions if the design height
  * changes.
  */
@@ -27,7 +27,7 @@ function LockedCard({ src }: { src: string }): React.ReactElement {
         src={src}
         alt="Locked plan — coming soon"
         width={350}
-        height={612}
+        height={650}
         className="h-auto w-full rounded-[30px]"
       />
     </div>

@@ -205,7 +205,11 @@
    to 0 so the full phrase is centred. */
 .hero-tail {
   animation: hero-tail-shift 10.5s ease infinite;
-  will-change: transform;
+  /* No `will-change: transform` here on purpose. It pins a permanent GPU
+     backing layer for this span, and on iOS Safari that layer's bottom edge
+     rasterizes to a faint ~0.5px gray hairline over the fixed page background
+     (the line under "succeeds… or flops"). The shift is a slow 10.5s loop, so
+     the perf cost of letting the engine promote on demand is negligible. */
 }
 .hero-dot-1 {
   animation: hero-dot-1 10.5s ease infinite;

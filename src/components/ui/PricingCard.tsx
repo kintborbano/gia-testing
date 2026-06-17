@@ -1,3 +1,5 @@
+import { CircleCheckBig } from 'lucide-react';
+
 type PricingCardVariant = 'light' | 'featured' | 'gold';
 
 interface PricingCardProps {
@@ -87,7 +89,7 @@ export default function PricingCard({
                     ends so it looks like a drawn slash. */}
                 <span
                   aria-hidden="true"
-                  className="absolute top-1/2 left-[-9px] h-[5px] w-[155px] -translate-y-1/2 rotate-[5.72deg] rounded-full bg-[#e34b5e]"
+                  className="bg-brand-cream absolute top-1/2 left-[-9px] h-[5px] w-[155px] -translate-y-1/2 rotate-[5.72deg] rounded-full"
                 />
               </span>
             )}
@@ -121,12 +123,18 @@ export default function PricingCard({
           Includes:
         </p>
         <ul
-          className={`list-disc space-y-[10px] ps-[20px] font-sans text-[13px] leading-[1.45] tracking-[-0.065px] ${
+          className={`space-y-[10px] font-sans text-[13px] leading-[1.45] tracking-[-0.065px] ${
             featured ? 'mt-[11px] max-w-[280px]' : 'mt-[16px]'
           }`}
         >
           {features.map((feature, index) => (
-            <li key={index}>{feature}</li>
+            <li key={index} className="flex gap-[16px]">
+              <CircleCheckBig
+                aria-hidden="true"
+                className="mt-[2px] size-[15px] shrink-0"
+              />
+              <span>{feature}</span>
+            </li>
           ))}
         </ul>
       </div>
