@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { FormEvent, ReactElement } from 'react';
+import { Sparkles, ArrowRight } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { setToken } from '@/lib/auth';
 
@@ -11,6 +12,9 @@ interface Props {
   profileUrl: string;
   mode?: 'quick' | 'deep';
 }
+
+// Keep in sync with CHECKOUT_PRICE_CENTS on the backend (default ₱299).
+const PRICE = '₱299';
 
 export default function BetaGate({
   onSuccess,
@@ -22,6 +26,7 @@ export default function BetaGate({
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [buying, setBuying] = useState(false);
+  const busy = loading || buying;
 
   const handleBuy = async () => {
     setBuying(true);
@@ -39,10 +44,10 @@ export default function BetaGate({
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleRedeem = async (e: FormEvent) => {
     e.preventDefault();
     if (!code.trim()) {
-      setError('Enter your beta code.');
+      setError('Enter your voucher code.');
       return;
     }
     setLoading(true);
@@ -55,7 +60,7 @@ export default function BetaGate({
       setError(
         err instanceof ApiError
           ? err.message
-          : 'Something went wrong. Try again.'
+          : 'That code didn’t work. Check it and try again.'
       );
     } finally {
       setLoading(false);
@@ -66,69 +71,84 @@ export default function BetaGate({
     <div
       role="dialog"
       aria-modal
-      aria-label="Beta access"
+      aria-label="Unlock your analysis"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-brand-cream w-full max-w-[440px] rounded-[28px] px-8 py-10 shadow-2xl">
-        <h2 className="font-young-serif text-brand-primary text-[28px] leading-tight tracking-[-0.6px]">
-          enter your beta code
+      <div className="bg-brand-cream w-full max-w-[420px] rounded-[28px] px-8 py-9 shadow-2xl">
+        <div className="text-brand-primary flex items-center gap-1.5 text-[12px] font-semibold tracking-[0.12em] uppercase">
+          <Sparkles className="h-4 w-4" /> GIA
+        </div>
+        <h2 className="font-young-serif text-brand-primary mt-2 text-[26px] leading-tight tracking-[-0.6px]">
+          Unlock your full analysis
         </h2>
-        <p className="text-text/70 mt-2 font-sans text-[15px] leading-[1.45]">
-          GIA is currently in private beta. Enter your code to get access.
+        <p className="text-text/70 mt-2 font-sans text-[14px] leading-[1.5]">
+          Your complete GIA report — 20 videos scored, hook breakdowns, audience
+          insights, the PDF, and your shareable GIA Wrapped.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-3">
+        {/* Primary path — buy */}
+        <button
+          type="button"
+          onClick={handleBuy}
+          disabled={busy}
+          className="bg-brand-primary hover:bg-brand-primary-dark mt-5 flex h-[54px] w-full items-center justify-center gap-2 rounded-[14px] font-sans text-[15px] font-semibold text-white transition-colors disabled:opacity-60"
+        >
+          {buying ? (
+            'Opening checkout…'
+          ) : (
+            <>
+              Get my report — {PRICE} <ArrowRight className="h-4 w-4" />
+            </>
+          )}
+        </button>
+        <p className="text-text/50 mt-2 text-center font-sans text-[12px]">
+          One-time payment · GCash, card, Maya, QRPH
+        </p>
+
+        {/* Secondary path — voucher code */}
+        <div className="mt-6 mb-3.5 flex items-center gap-3">
+          <span className="bg-text/15 h-px flex-1" />
+          <span className="text-text/45 font-sans text-[11px] tracking-[0.1em] uppercase">
+            Have a voucher code?
+          </span>
+          <span className="bg-text/15 h-px flex-1" />
+        </div>
+
+        <form onSubmit={handleRedeem} className="flex gap-2">
           <input
             type="text"
-            autoFocus
-            placeholder="XXXX-XXXX"
+            placeholder="Enter code"
             value={code}
             onChange={(e) => {
               setCode(e.target.value.toUpperCase());
               setError('');
             }}
-            className="border-brand-gold text-text h-[52px] w-full rounded-[12px] border-[3px] bg-white px-5 font-mono text-[16px] tracking-[2px] shadow-[inset_0_0_0_2px_var(--color-text)] outline-none"
+            className="border-brand-gold text-text h-[46px] min-w-0 flex-1 rounded-[12px] border-[2px] bg-white px-4 font-mono text-[15px] tracking-[2px] outline-none"
           />
-          {error && (
-            <p role="alert" className="font-pixelify text-[14px] text-red-500">
-              {error}
-            </p>
-          )}
           <button
             type="submit"
-            disabled={loading}
-            className="bg-brand-primary h-[52px] rounded-[12px] font-sans text-[15px] font-semibold text-white disabled:opacity-60"
+            disabled={busy}
+            className="border-brand-primary text-brand-primary hover:bg-brand-primary/5 h-[46px] shrink-0 rounded-[12px] border-[2px] bg-white px-5 font-sans text-[14px] font-semibold transition-colors disabled:opacity-60"
           >
-            {loading ? 'verifying…' : 'ACCESS GIA'}
+            {loading ? 'Verifying…' : 'Redeem'}
           </button>
         </form>
 
-        <div className="mt-6 flex items-center gap-3">
-          <span className="bg-text/15 h-px flex-1" />
-          <span className="text-text/40 font-sans text-[12px] tracking-[1px] uppercase">
-            no code?
-          </span>
-          <span className="bg-text/15 h-px flex-1" />
-        </div>
-
-        <button
-          type="button"
-          onClick={handleBuy}
-          disabled={buying || loading}
-          className="border-brand-gold text-brand-primary mt-4 h-[52px] w-full rounded-[12px] border-[3px] bg-white font-sans text-[15px] font-semibold disabled:opacity-60"
-        >
-          {buying ? 'opening checkout…' : 'BUY FULL ACCESS'}
-        </button>
+        {error && (
+          <p role="alert" className="mt-3 font-sans text-[13px] text-red-500">
+            {error}
+          </p>
+        )}
 
         <button
           type="button"
           onClick={onClose}
-          className="text-text/50 hover:text-text/70 mt-4 w-full text-center font-sans text-[13px]"
+          className="text-text/50 hover:text-text/70 mt-6 w-full text-center font-sans text-[13px]"
         >
-          cancel
+          Cancel
         </button>
       </div>
     </div>
