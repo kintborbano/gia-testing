@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap');
 @import 'tailwindcss';
 
 html {
@@ -58,7 +57,7 @@ html {
   --font-young-serif: var(--font-young-serif);
   --font-itc-garamond: var(--font-itc-garamond);
   --font-itc-garamond-narrow-italic: var(--font-itc-garamond-narrow-italic);
-  --font-pixelify: 'Pixelify Sans', sans-serif;
+  --font-pixelify: var(--font-pixelify-sans), sans-serif;
 }
 
 body {

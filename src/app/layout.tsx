@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+import { Pixelify_Sans } from 'next/font/google';
 import PageTransitionProvider from '@/components/transition/PageTransitionProvider';
 import ImageGuard from '@/components/ImageGuard';
 import '@/styles/globals.css';
@@ -64,6 +65,12 @@ const itcGaramond = localFont({
   variable: '--font-itc-garamond',
 });
 
+const pixelifySans = Pixelify_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-pixelify-sans',
+});
+
 const itcGaramondNarrowItalic = localFont({
   src: [
     {
@@ -91,7 +98,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${instrumentSans.variable} ${averiaSerifLibre.variable} ${youngSerif.variable} ${itcGaramond.variable} ${itcGaramondNarrowItalic.variable} h-full antialiased`}
+      className={`${instrumentSans.variable} ${averiaSerifLibre.variable} ${youngSerif.variable} ${itcGaramond.variable} ${itcGaramondNarrowItalic.variable} ${pixelifySans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <ImageGuard />
