@@ -507,7 +507,7 @@ export default function AnalyzeForm(): ReactElement {
             className="bg-brand-primary mt-4 flex w-full max-w-[943px] flex-col items-center justify-center gap-10 rounded-[32px] px-8 py-12 text-center sm:px-12 sm:py-14 md:rounded-[44px] md:py-16"
           >
             <h2 className="font-young-serif text-[28px] leading-[1.1] tracking-[-0.6px] text-white md:text-[32px]">
-              continue to checkout
+              get your analysis
             </h2>
             {/* Centered, content-width column for the checkbox and consent text. */}
             <div className="mx-auto flex w-fit flex-col items-center gap-3">
