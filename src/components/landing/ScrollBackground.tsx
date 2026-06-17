@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { setPageColors } from '@/stores/pageBackgroundStore';
 import { subscribeScroll } from '@/lib/scroll/scrollTicker';
 import {
@@ -64,9 +64,7 @@ interface Props {
 export default function ScrollBackground({
   stops = STOPS,
   realBgStopCount = REAL_BG_STOP_COUNT,
-}: Props = {}): React.ReactElement {
-  const bgRef = useRef<HTMLDivElement>(null);
-
+}: Props = {}): null {
   // Resolve the palette from the stops. A segment `i` blends stops i and i+1, so
   // the last real-bg segment is the one ending on the last real-bg stop; past it
   // the real background holds the last painted color while the header keeps
@@ -84,15 +82,20 @@ export default function ScrollBackground({
   }, [stops, realBgStopCount]);
 
   useEffect(() => {
-    // Compute every stop's trigger scroll position fresh on each frame. Doing
-    // this per-frame (rather than caching on mount) keeps the seams accurate
-    // even after late layout shifts — custom font swaps and image loads push
-    // sections downward, and a cached position would fire the color snap at the
-    // wrong scroll depth. Six getBoundingClientRect reads per frame is cheap.
-    const measure = (): number[] => {
+    // Each stop's trigger scroll position is an ABSOLUTE document offset
+    // (rect.top + scrollY), so it doesn't change as you scroll — only when layout
+    // changes (viewport resize, font swap, late image load, the intro overlay
+    // unmounting). So measure once and cache, then recompute only on those events
+    // via a ResizeObserver — NOT on every scroll frame. This removes six
+    // getBoundingClientRect reads (forced layouts) per frame, the dominant
+    // per-frame cost here, which is what lets slower engines (WebKit/Safari) keep
+    // up; Chromium had the headroom either way, so it's unaffected.
+    let positions: number[] = [];
+
+    const remeasure = (): void => {
       const vh = window.innerHeight;
       const y = window.scrollY;
-      return stops.map((stop) => {
+      positions = stops.map((stop) => {
         const el = document.getElementById(stop.anchorId);
         if (!el) return Number.NaN;
         const rect = el.getBoundingClientRect();
@@ -104,11 +107,9 @@ export default function ScrollBackground({
       });
     };
 
-    const update = () => {
-      const positions = measure();
+    const update = (y: number) => {
       if (positions.length === 0) return;
 
-      const y = window.scrollY;
       let segIndex = -1;
       for (let i = 0; i < positions.length - 1; i++) {
         const a = positions[i];
@@ -124,9 +125,9 @@ export default function ScrollBackground({
       // every stop. The fixed div paints the REAL page background, which only
       // follows the leading stops and then holds the last painted color.
       const publish = (headerBg: string, headerFg: string, realBg: string) => {
-        // Paint the fixed div imperatively so the background color tween never
-        // triggers a React render of this component each frame.
-        if (bgRef.current) bgRef.current.style.backgroundColor = realBg;
+        // Paint the page backdrop imperatively so the background color tween
+        // never triggers a React render of this component each frame.
+        document.body.style.backgroundColor = realBg;
         setPageColors({ background: headerBg, foreground: headerFg });
       };
 
@@ -176,21 +177,39 @@ export default function ScrollBackground({
       publish(headerBg, headerFg, realBg);
     };
 
-    // The shared ticker fires once immediately and then on every scroll/resize
-    // frame, in sync with Lenis (or native scroll where Lenis isn't mounted).
-    return subscribeScroll(update);
+    // Measure now, then recompute only when layout can have shifted: a viewport
+    // resize, or any change to the document's size (font swaps, late image loads,
+    // the intro overlay unmounting) caught by a ResizeObserver on <body>. The
+    // cached positions stay valid for every scroll frame in between.
+    // Paint the page backdrop on the document body (not a fixed z-index:-1 div).
+    // A fixed full-screen element is its OWN compositing layer, and on iOS Safari
+    // the boundary between it and any GPU-promoted content layer above it (the
+    // scroll scrubbers' transforms, will-change, overflow clips) rasterizes to a
+    // faint ~0.5px seam. The body background is the document canvas, not a
+    // discrete layer, so promoted content composites against it cleanly — no
+    // seam. It also covers the iOS rubber-band overscroll area, which the fixed
+    // div didn't. Restore the prior inline value on unmount so sub-pages (which
+    // don't mount this) fall back to the stylesheet background.
+    const prevBodyBg = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = toRgb(rgbStops[0]);
+
+    remeasure();
+    const ro = new ResizeObserver(() => remeasure());
+    ro.observe(document.body);
+    window.addEventListener('resize', remeasure);
+
+    // The shared ticker fires once immediately and then on every animation frame
+    // while scrolling (it polls window.scrollY per frame — see scrollTicker).
+    const unsubscribe = subscribeScroll(update);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', remeasure);
+      unsubscribe();
+      document.body.style.backgroundColor = prevBodyBg;
+    };
   }, [stops, rgbStops, rgbFgStops, lastRealBgSeg, realBgHold]);
 
-  return (
-    <div
-      ref={bgRef}
-      aria-hidden
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: -1,
-        backgroundColor: toRgb(rgbStops[0]),
-      }}
-    />
-  );
+  // Renders nothing — the backdrop now lives on document.body (see the effect).
+  return null;
 }

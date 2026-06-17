@@ -207,8 +207,22 @@ export default function FeatureScene({
   }, [explode, onFrame, applyFrame]);
 
   const sceneClass = scene
-    ? 'relative mx-auto'
+    ? 'feature-scene-box relative mx-auto'
     : 'features-grid features-grid--stack';
+
+  // Icon + label sizes for the explode layouts, expressed as a % of the scene
+  // box (cqw) so they scale with the same box the scatter positions are a % of.
+  // The desktop arc is wider/flatter and the tablet ring is tighter, so each
+  // gets its own ratio; clamps keep icons sane on extreme box widths. Mobile
+  // keeps the breakpoint widths below — its grid handles spacing, not %.
+  const iconWidth =
+    layout === 'desktop'
+      ? 'clamp(56px, 11cqw, 136px)'
+      : 'clamp(64px, 13.5cqw, 120px)';
+  const labelFontSize =
+    layout === 'desktop'
+      ? 'clamp(10px, 1.16cqw, 14px)'
+      : 'clamp(10px, 1.7cqw, 13px)';
   // The scene lives inside a 100vh sticky container (overflow hidden) and the
   // description card stacks below it. Sizing the box by width alone (aspect
   // ratio) lets a tall layout — the tablet ring especially — overflow the
@@ -283,17 +297,23 @@ export default function FeatureScene({
                 alt={feature.label}
                 width={feature.width}
                 height={feature.height}
-                className={`pointer-events-none h-auto w-[78px] object-contain transition-transform duration-200 group-hover:scale-105 sm:w-[92px] md:w-[104px] lg:w-[120px] xl:w-[136px] ${
-                  isSelected ? 'scale-110' : ''
-                }`}
+                className={`pointer-events-none h-auto object-contain transition-transform duration-200 group-hover:scale-105 ${
+                  explode
+                    ? ''
+                    : 'w-[78px] sm:w-[92px] md:w-[104px] lg:w-[120px] xl:w-[136px]'
+                } ${isSelected ? 'scale-110' : ''}`}
+                style={explode ? { width: iconWidth } : undefined}
                 src={`/images/${encodeURIComponent(feature.label)}.png`}
               />
               <div
-                className={`font-pixelify pointer-events-none mt-2 text-center text-[10px] leading-tight transition-colors duration-200 sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] ${
-                  isSelected ? 'text-brand-primary' : ''
-                }`}
+                className={`font-pixelify pointer-events-none mt-2 text-center leading-tight transition-colors duration-200 ${
+                  explode
+                    ? ''
+                    : 'text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px]'
+                } ${isSelected ? 'text-brand-primary' : ''}`}
                 style={{
                   transform: `translateX(${feature.labelOffsetX ?? 0}px)`,
+                  ...(explode ? { fontSize: labelFontSize } : null),
                 }}
               >
                 <div>{first}</div>

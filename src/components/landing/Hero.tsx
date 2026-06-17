@@ -23,7 +23,7 @@ export default function Hero(): React.ReactElement {
   return (
     <section
       id="bg-stop-hero"
-      className="hero-viewport relative flex items-center justify-center overflow-hidden px-5 sm:px-8 md:px-16"
+      className="hero-viewport relative flex items-center justify-center overflow-x-clip px-5 sm:px-8 md:px-16"
     >
       {/* The block's bottom margin and the button row's mt (the clamp below)
           always sum to a constant, so the centred headline/subtext hold their
