@@ -2,8 +2,8 @@
 // feel valuable (perceived performance) and double as proof of what the
 // broadcast channel promises — see LoadingTip.tsx for how they're rotated.
 //
-// Inline *single asterisks* mark emphasis and render as italic; keep them in the
-// copy rather than baking <em> tags into the data.
+// Inline *single asterisks* render as italic and **double asterisks** as bold;
+// keep them in the copy rather than baking <em>/<strong> tags into the data.
 export const LOADING_TIPS: readonly string[] = [
   'Your first 3 seconds decide everything. If your hook doesn’t stop the scroll, nothing else matters.',
   'A question hook works best when it’s something your viewer is *already* asking themselves.',
@@ -36,4 +36,4 @@ export const LOADING_TIPS: readonly string[] = [
 // broadcast-channel CTA below offers, so it replaces the old static subtext that
 // used to sit under the heading.
 export const LOADING_CLOSING_TIP =
-  'For creator tips, behind the scenes, & access to new features';
+  'For creator tips, behind the scenes, & access to new features join our **broadcast channel** by the clicking the button above.';

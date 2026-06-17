@@ -10,22 +10,32 @@ import { LOADING_TIPS, LOADING_CLOSING_TIP } from '@/lib/loadingTips';
 const TIP_MS = 6000;
 const FADE_MS = 350;
 
-// Render *single-asterisk* spans as italic emphasis, leaving the markers out of
-// the visible copy. Mirrors report/Emphasis (which handles **bold**), but tips
-// read better with a lighter italic touch.
+// Render *single-asterisk* spans as italic emphasis and **double-asterisk**
+// spans as bold, leaving the markers out of the visible copy. Mirrors
+// report/Emphasis, but italic gets the lighter touch the rotating tips prefer.
 function withEmphasis(tip: string): ReactElement {
-  const parts = tip.split(/\*(.+?)\*/g);
+  // Capture the markers so the delimiters survive the split; **bold** is tried
+  // before *italic* so the double markers aren't mistaken for an empty italic.
+  const parts = tip.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
   return (
     <>
-      {parts.map((part, i) =>
-        i % 2 === 1 ? (
-          <em key={i} className="font-medium text-white italic">
-            {part}
-          </em>
-        ) : (
-          part
-        )
-      )}
+      {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return (
+            <strong key={i} className="font-semibold text-white">
+              {part.slice(2, -2)}
+            </strong>
+          );
+        }
+        if (part.startsWith('*') && part.endsWith('*')) {
+          return (
+            <em key={i} className="font-medium text-white italic">
+              {part.slice(1, -1)}
+            </em>
+          );
+        }
+        return part;
+      })}
     </>
   );
 }
