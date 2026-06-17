@@ -121,16 +121,31 @@ const ShareCard = forwardRef<HTMLDivElement, { data: Wrapped }>(
             borderTop: '1px solid rgba(254,247,221,.16)',
             paddingTop: 16,
             display: 'flex',
-            alignItems: 'baseline',
-            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 12,
           }}
         >
-          <span style={{ fontSize: 13, color: 'rgba(254,247,221,.85)' }}>
-            get your GIA Wrapped
-          </span>
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#e7b62e' }}>
-            gia.sofi.ai
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/wrapped/qr-gia.png"
+            alt=""
+            width={52}
+            height={52}
+            style={{
+              borderRadius: 8,
+              background: '#fef7dd',
+              padding: 5,
+              flex: 'none',
+            }}
+          />
+          <div style={{ lineHeight: 1.3 }}>
+            <div style={{ fontSize: 13, color: 'rgba(254,247,221,.85)' }}>
+              get your GIA Wrapped
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: '#e7b62e' }}>
+              gia.sofi.ai
+            </div>
+          </div>
         </div>
       </div>
     );
