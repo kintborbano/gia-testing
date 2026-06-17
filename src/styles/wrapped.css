@@ -36,17 +36,6 @@
     0 0 70px -10px rgba(0, 0, 0, 0.55);
 }
 
-/* Phones: the story fills the screen — drop the device-frame chrome. */
-@media (max-width: 599px) {
-  .gw-frame {
-    border-radius: 0;
-    box-shadow: none;
-  }
-  .gw-nav {
-    display: none;
-  }
-}
-
 /* progress bar */
 .gw-progress {
   position: absolute;
@@ -708,6 +697,10 @@
 .gw-pill:active {
   transform: scale(0.96);
 }
+.gw-pill:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .gw .anim,
@@ -733,5 +726,17 @@
     transform: scaleY(1);
     opacity: 1;
     animation: none !important;
+  }
+}
+
+/* Phones: the story fills the screen — drop the device-frame chrome and the
+   desktop nav arrows. Placed last so it overrides the base rules above. */
+@media (max-width: 599px) {
+  .gw-frame {
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .gw-nav {
+    display: none;
   }
 }

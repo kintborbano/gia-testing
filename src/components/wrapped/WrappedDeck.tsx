@@ -133,16 +133,15 @@ export default function WrappedDeck({
   // poster — not the current beat. Tries the native share sheet first (→ IG
   // Stories on mobile), falls back to a PNG download.
   const share = async () => {
-    if (!shareRef.current) return;
+    if (!shareRef.current || exporting) return;
     setPause(true);
     setExporting(true);
     try {
-      const blob = await toBlob(shareRef.current, {
-        pixelRatio: 3,
-        cacheBust: true,
-        width: 360,
-        height: 640,
-      });
+      const opts = { pixelRatio: 3, cacheBust: true, width: 360, height: 640 };
+      // Warm-up pass: html-to-image's first capture frequently drops webfonts
+      // and not-yet-decoded images (the QR), so the real capture is the second.
+      await toBlob(shareRef.current, opts);
+      const blob = await toBlob(shareRef.current, opts);
       if (!blob) return;
       const file = new File(
         [blob],
@@ -268,6 +267,7 @@ export default function WrappedDeck({
           )}
           <button
             className="gw-pill"
+            disabled={exporting}
             onClick={(e) => {
               e.stopPropagation();
               share();
