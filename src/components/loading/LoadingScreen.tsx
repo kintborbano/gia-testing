@@ -6,10 +6,39 @@ import { useSearchParams } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import ThinkingLoader from '@/components/loading/ThinkingLoader';
 import LoadingTip from '@/components/loading/LoadingTip';
-import { useJobPolling } from '@/hooks/useJobPolling';
+import { useJobPolling, type ErrorKind } from '@/hooks/useJobPolling';
 
 const BROADCAST_CHANNEL_URL =
   'https://www.instagram.com/channel/AbaXwsrEEM1hoSpY/';
+
+// Per-failure copy, in GIA's lowercase voice. Keyed by the hook's ErrorKind so
+// the screen tells the user what actually went down — no videos to analyze vs a
+// backend error vs a dropped connection vs a report that wouldn't load.
+const FAILURE_COPY: Record<
+  Exclude<ErrorKind, null>,
+  { heading: string; description: string }
+> = {
+  no_content: {
+    heading: "gia couldn't find videos to analyze",
+    description:
+      'this account doesn’t have analyzable videos yet — post a few, then come back and gia will dig in.',
+  },
+  backend: {
+    heading: 'gia hit a snag on this one',
+    description:
+      'something broke while gia was analyzing. give it another go in a moment.',
+  },
+  network: {
+    heading: 'gia lost the connection',
+    description:
+      'we couldn’t reach the server. check your connection and refresh to try again.',
+  },
+  results: {
+    heading: 'gia finished but couldn’t load the report',
+    description:
+      'the analysis is done, but we couldn’t pull the results. refresh to try loading them.',
+  },
+};
 
 // The fill tracks real job progress rather than a fixed clock: each status
 // message from the backend nudges it forward, and a slow idle creep keeps it
@@ -44,7 +73,7 @@ export default function LoadingScreen(): ReactElement {
   const handle = searchParams.get('handle') ?? '';
   const jobId = searchParams.get('job_id');
 
-  const { messages, done: pollDone, error } = useJobPolling(jobId);
+  const { messages, done: pollDone, errorKind } = useJobPolling(jobId);
 
   const [pct, setPct] = useState(START_PCT);
   const [reachedFull, setReachedFull] = useState(false);
@@ -104,7 +133,7 @@ export default function LoadingScreen(): ReactElement {
   // that into the error case so the heading, description and CTA can all speak
   // to the failure instead of falsely celebrating a result that never arrived.
   const done = jobId ? pollDone && reachedFull : reachedFull;
-  const failed = done && error !== null;
+  const failed = done && errorKind !== null;
 
   const reportHref = handle
     ? `/report?handle=${encodeURIComponent(handle)}&job=${jobId ?? ''}`
@@ -151,8 +180,8 @@ export default function LoadingScreen(): ReactElement {
         <div className="flex flex-col items-center gap-8">
           <div className="flex flex-col items-center gap-4 text-white">
             <h1 className="font-young-serif text-[28px] leading-[1.1] tracking-[-1.12px] sm:text-[36px]">
-              {failed
-                ? "gia couldn't finish this one"
+              {failed && errorKind
+                ? FAILURE_COPY[errorKind].heading
                 : done
                   ? 'gia is done analyzing!'
                   : 'gia is working on it!'}
@@ -162,8 +191,8 @@ export default function LoadingScreen(): ReactElement {
                 instead (see after the CTA). */}
             {(done || failed) && (
               <p className="max-w-[580px] font-sans text-[14px] leading-[1.3] font-normal tracking-[-0.12px] sm:text-[15px] md:text-[16px] md:leading-[1.25]">
-                {failed
-                  ? (error ?? 'Something went wrong — please try again.')
+                {failed && errorKind
+                  ? FAILURE_COPY[errorKind].description
                   : "GIA found what's actually driving your growth."}
               </p>
             )}
