@@ -116,39 +116,44 @@ export default function LoadingScreen(): ReactElement {
           transparent headroom, so symmetric padding reads as top-heavy. The
           done/failed view has no loader, so it keeps symmetric padding. */}
       <section
-        className={`flex flex-1 flex-col items-center justify-center gap-12 px-6 text-center ${
-          done ? 'py-16' : 'pt-10 pb-16'
+        className={`flex flex-1 flex-col items-center justify-center gap-8 px-6 text-center sm:gap-12 ${
+          done ? 'py-10 sm:py-16' : 'pt-6 pb-10 sm:pt-10 sm:pb-16'
         }`}
       >
         {!done && (
-          <div className="flex flex-col items-center gap-7">
+          <div className="flex w-full flex-col items-center gap-5 sm:gap-7">
             <ThinkingLoader />
 
-            <div
-              role="progressbar"
-              aria-label="Generating your report"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(pct)}
-              className="bg-brand-cream flex h-[16px] w-[553px] max-w-full rounded-full border border-black p-[2px]"
-            >
+            {/* Inset the bar a touch more than the section padding on phones so
+                it lands at roughly the broadcast-channel button's width; the
+                extra inset falls away at sm+ where the bar caps at 553px. */}
+            <div className="flex w-full justify-center px-4 sm:px-0">
               <div
-                className="rounded-full border border-black"
-                style={{
-                  width: `${pct}%`,
-                  backgroundColor: fillColor(pct),
-                  transition: 'width 600ms ease, background-color 600ms ease',
-                }}
-                onTransitionEnd={(e) => {
-                  if (e.propertyName === 'width' && pct >= 100)
-                    setReachedFull(true);
-                }}
-              />
+                role="progressbar"
+                aria-label="Generating your report"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(pct)}
+                className="bg-brand-cream flex h-[16px] w-full max-w-[553px] rounded-full border border-black p-[2px]"
+              >
+                <div
+                  className="rounded-full border border-black"
+                  style={{
+                    width: `${pct}%`,
+                    backgroundColor: fillColor(pct),
+                    transition: 'width 600ms ease, background-color 600ms ease',
+                  }}
+                  onTransitionEnd={(e) => {
+                    if (e.propertyName === 'width' && pct >= 100)
+                      setReachedFull(true);
+                  }}
+                />
+              </div>
             </div>
           </div>
         )}
 
-        <div className="flex flex-col items-center gap-8">
+        <div className="flex flex-col items-center gap-6 sm:gap-8">
           <div className="flex flex-col items-center gap-4 text-white">
             <h1 className="font-young-serif text-[28px] leading-[1.1] tracking-[-1.12px] sm:text-[36px]">
               {failed
