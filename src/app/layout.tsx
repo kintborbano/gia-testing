@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { Pixelify_Sans } from 'next/font/google';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import PageTransitionProvider from '@/components/transition/PageTransitionProvider';
 import ImageGuard from '@/components/ImageGuard';
 import '@/styles/globals.css';
@@ -90,6 +91,8 @@ export const metadata: Metadata = {
   description: 'A tool that analyzes your TikTok hooks',
 };
 
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -104,6 +107,11 @@ export default function RootLayout({
         <ImageGuard />
         <PageTransitionProvider>{children}</PageTransitionProvider>
       </body>
+      {/* GA4 — loads only when NEXT_PUBLIC_GA_ID is set at build time. Handles
+          App Router client-side navigations as page_views automatically.
+          googletagmanager.com / google-analytics.com are already allowed by the
+          hosting CSP in firebase.json. */}
+      {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
     </html>
   );
 }
