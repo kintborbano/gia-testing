@@ -84,7 +84,7 @@ const itcGaramondNarrowItalic = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://sofi-gia.web.app'),
+  metadataBase: new URL('https://gia-testing.vercel.app'),
   title: {
     default: 'GIA by SOFI AI',
     template: '%s · GIA by SOFI AI',
