@@ -103,4 +103,6 @@ export interface JobStatus {
   state: string;
   messages: string[];
   done: boolean;
+  // Set when state === 'error': 'no_content' (no analyzable videos) | 'failed'.
+  error_kind?: string;
 }

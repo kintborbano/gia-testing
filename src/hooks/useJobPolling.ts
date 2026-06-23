@@ -9,21 +9,6 @@ import type { ApiResult } from '@/types/api';
 // failure. The raw `error` string is kept for logging, not for display.
 export type ErrorKind = 'no_content' | 'backend' | 'network' | 'results' | null;
 
-// The backend streams human-readable status lines; when an account has nothing
-// to analyze those lines carry a recognizable signal (e.g. "...no content
-// provided..."). We only ever scan for these on failure, so a benign mention
-// during a healthy run can't misclassify a successful job.
-const NO_CONTENT_SIGNALS = [
-  'no content provided',
-  'no videos',
-  'other content',
-  '(n/a',
-];
-function hasNoContentSignal(lines: string[]): boolean {
-  const hay = lines.join('\n').toLowerCase();
-  return NO_CONTENT_SIGNALS.some((s) => hay.includes(s));
-}
-
 interface PollingState {
   messages: string[];
   done: boolean;
@@ -39,10 +24,6 @@ export function useJobPolling(jobId: string | null): PollingState {
   const [errorKind, setErrorKind] = useState<ErrorKind>(null);
   const [result, setResult] = useState<ApiResult | null>(null);
   const fromRef = useRef(0);
-  // Every status line we've received, kept in a ref so the error branch (which
-  // runs inside poll()) can scan the freshest stream without the staleness of
-  // the `messages` state captured by this effect's closure.
-  const seenMessagesRef = useRef<string[]>([]);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -50,7 +31,6 @@ export function useJobPolling(jobId: string | null): PollingState {
 
     let cancelled = false;
     fromRef.current = 0;
-    seenMessagesRef.current = [];
 
     const poll = async () => {
       try {
@@ -59,18 +39,15 @@ export function useJobPolling(jobId: string | null): PollingState {
 
         if (status.messages.length > 0) {
           setMessages((prev) => [...prev, ...status.messages]);
-          seenMessagesRef.current.push(...status.messages);
           fromRef.current += status.messages.length;
         }
 
         if (status.done) {
           if (status.state === 'error') {
-            // Distinguish "this account has nothing to analyze" from a generic
-            // processing failure by reading the backend's own status stream.
+            // The backend tags the failure: "no_content" = account has no
+            // analyzable videos, anything else = a processing failure.
             setErrorKind(
-              hasNoContentSignal(seenMessagesRef.current)
-                ? 'no_content'
-                : 'backend'
+              status.error_kind === 'no_content' ? 'no_content' : 'backend'
             );
             setError('Analysis failed — please try again.');
           } else {
