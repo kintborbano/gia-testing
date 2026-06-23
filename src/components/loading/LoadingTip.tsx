@@ -7,7 +7,7 @@ import { LOADING_TIPS, LOADING_CLOSING_TIP } from '@/lib/loadingTips';
 // How long each tip holds before crossfading to the next, and how long the
 // fade itself takes. The fade-out and fade-in share FADE_MS so the swap lands
 // at the midpoint when the line is fully transparent — no flicker of two tips.
-const TIP_MS = 6000;
+const TIP_MS = 9000;
 const FADE_MS = 350;
 
 // Render *single-asterisk* spans as italic emphasis and **double-asterisk**
