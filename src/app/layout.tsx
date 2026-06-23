@@ -84,11 +84,33 @@ const itcGaramondNarrowItalic = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://sofi-gia.web.app'),
   title: {
     default: 'GIA by SOFI AI',
     template: '%s · GIA by SOFI AI',
   },
   description: 'A tool that analyzes your TikTok hooks',
+  openGraph: {
+    title: 'GIA by SOFI AI',
+    description: 'A tool that analyzes your TikTok hooks',
+    url: '/',
+    siteName: 'GIA by SOFI AI',
+    images: [
+      {
+        url: '/images/opengraph.png',
+        width: 2400,
+        height: 1350,
+        alt: 'GIA by SOFI AI',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'GIA by SOFI AI',
+    description: 'A tool that analyzes your TikTok hooks',
+    images: ['/images/opengraph.png'],
+  },
 };
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
