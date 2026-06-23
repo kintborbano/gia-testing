@@ -112,9 +112,10 @@ function SocialGlyph({
 }
 
 // Listed in the order GIA promotes them — owned social first, contact last.
-// `external` toggles the new-tab + noopener treatment; the mailto link opens in
-// place. Paths: Instagram/TikTok/Facebook from Simple Icons, envelope from the
-// Material set — all single-colour, filled, 24×24.
+// `external` toggles the new-tab + noopener treatment; the contact link opens
+// Gmail's web composer in a new tab like the other externals. Paths:
+// Instagram/TikTok/Facebook from Simple Icons, envelope from the Material set —
+// all single-colour, filled, 24×24.
 const SOCIAL_LINKS = [
   {
     label: 'Follow GIA on Instagram',
@@ -136,8 +137,8 @@ const SOCIAL_LINKS = [
   },
   {
     label: 'Email GIA',
-    href: 'mailto:gia@sofitech.ai',
-    external: false,
+    href: 'https://mail.google.com/mail/?view=cm&fs=1&to=gia@sofitech.ai',
+    external: true,
     path: 'M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z',
   },
 ];

@@ -35,16 +35,13 @@ function LockedCard({ src }: { src: string }): React.ReactElement {
 }
 
 export default function Pricing(): React.ReactElement {
-  // The divider on the cards sits a fixed distance K below the top of the page
-  // (static layout): K ~= 600px stacked (mobile), ~= 572px once the cards sit
-  // in a row (md+). To land that divider on the fold on ANY screen height, the
-  // gap above the cards tracks the viewport: gap = 100svh - K. clamp() keeps
-  // the prices on-screen on short viewports (min) and caps the whitespace on
-  // very tall ones (max). The space below the cards (cards -> footer) is kept
-  // equal to the gap by offsetting pb by the shell's py-10 (40px), so both the
-  // clamp bounds and the calc stay in lockstep.
+  // The shell vertically centers this section between the header and footer, so
+  // it only needs a fixed gap between the heading block and the cards. The top
+  // padding mirrors the footer's cream band (pt-10 -> md:pt-16) — on this cream
+  // page that band reads as whitespace below the cards, so matching it above the
+  // heading keeps the space above and below the card block equal.
   return (
-    <section className="flex w-full flex-col items-center gap-[clamp(48px,calc(100svh_-_600px),400px)] px-5 pt-8 pb-[clamp(8px,calc(100svh_-_640px),360px)] sm:px-8 md:gap-[clamp(48px,calc(100svh_-_572px),400px)] md:px-16 md:pb-[clamp(8px,calc(100svh_-_612px),360px)]">
+    <section className="flex w-full flex-col items-center gap-12 px-5 pt-10 sm:px-8 md:gap-16 md:px-16 md:pt-16">
       <div className="text-brand-primary flex w-full flex-col items-center gap-6 text-center">
         <p className="bg-brand-primary flex h-[34px] w-[350px] max-w-full items-center justify-center rounded-full font-sans text-[15px] leading-[1.45] font-bold tracking-[-0.075px] text-white">
           BETA IS OPEN, FOR NOW.
