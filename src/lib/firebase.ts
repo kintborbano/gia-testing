@@ -5,6 +5,8 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   type Auth,
 } from 'firebase/auth';
 
@@ -23,8 +25,34 @@ function auth(): Auth {
   return getAuth(app());
 }
 
+// Popup failures that mean the environment can't show one (in-app browsers,
+// blocked popups) — fall back to a full-page redirect. User-initiated closes
+// (popup-closed-by-user, cancelled-popup-request) are NOT in this set: those
+// are deliberate cancels, so we re-throw instead of redirecting.
+const REDIRECT_FALLBACK_CODES = new Set([
+  'auth/popup-blocked',
+  'auth/operation-not-supported-in-this-environment',
+  'auth/web-storage-unsupported',
+]);
+
 export async function signInWithGoogle(): Promise<string> {
   const provider = new GoogleAuthProvider();
-  const cred = await signInWithPopup(auth(), provider);
-  return cred.user.getIdToken();
+  try {
+    const cred = await signInWithPopup(auth(), provider);
+    return cred.user.getIdToken();
+  } catch (err) {
+    const code = (err as { code?: string }).code ?? '';
+    if (REDIRECT_FALLBACK_CODES.has(code)) {
+      // Navigates away; this promise never resolves. The caller's pending
+      // analysis is recovered from the form draft on return (see AnalyzeForm).
+      await signInWithRedirect(auth(), provider);
+      return new Promise<string>(() => {});
+    }
+    throw err;
+  }
+}
+
+export async function getRedirectIdToken(): Promise<string | null> {
+  const result = await getRedirectResult(auth());
+  return result ? result.user.getIdToken() : null;
 }
