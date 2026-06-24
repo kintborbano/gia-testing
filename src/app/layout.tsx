@@ -108,6 +108,12 @@ export const metadata: Metadata = {
         height: 1200,
         alt: 'GIA by SOFI AI',
       },
+      {
+        url: '/images/opengraph-portrait.png',
+        width: 1000,
+        height: 1500,
+        alt: 'GIA by SOFI AI',
+      },
     ],
     type: 'website',
   },
