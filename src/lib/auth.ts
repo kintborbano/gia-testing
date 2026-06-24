@@ -1,4 +1,10 @@
 const TOKEN_KEY = 'gia_token';
+const USER_KEY = 'gia_user';
+
+export interface GiaUser {
+  name: string;
+  email: string;
+}
 
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -15,4 +21,25 @@ export function clearToken(): void {
 
 export function isAuthenticated(): boolean {
   return !!getToken();
+}
+
+export function setSession(token: string, user: GiaUser): void {
+  setToken(token);
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+}
+
+export function getUser(): GiaUser | null {
+  if (typeof window === 'undefined') return null;
+  const raw = localStorage.getItem(USER_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as GiaUser;
+  } catch {
+    return null;
+  }
+}
+
+export function signOut(): void {
+  clearToken();
+  localStorage.removeItem(USER_KEY);
 }
