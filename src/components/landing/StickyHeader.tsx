@@ -459,11 +459,10 @@ export default function StickyHeader(): React.ReactElement {
   // Maroon (the Action section) is NOT near-black, so it keeps the white pill.
   const [user, setUser] = useState<GiaUser | null>(null);
   useEffect(() => {
-    const syncUser = (): void => {
-      const loaded = getUser();
-      if (loaded !== null) setUser(loaded);
-    };
+    const syncUser = () => setUser(getUser());
     syncUser();
+    window.addEventListener('storage', syncUser);
+    return () => window.removeEventListener('storage', syncUser);
   }, []);
 
   const [onDarkBg, setOnDarkBg] = useState(() =>
