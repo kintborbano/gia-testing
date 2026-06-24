@@ -1,5 +1,6 @@
 'use client';
 
+import { Sparkles } from 'lucide-react';
 import { Pill } from '@/components/report/Primitives';
 import ScoreRing from '@/components/report/ScoreRing';
 import Reveal from '@/components/report/Reveal';
@@ -46,9 +47,11 @@ function MetricCard({
 export default function Main({
   handle,
   result,
+  wrappedHref,
 }: {
   handle: string;
   result?: ApiResult | null;
+  wrappedHref?: string;
 }): React.ReactElement {
   const [metricsRef, metricsInView] = useInView<HTMLDivElement>();
 
@@ -84,6 +87,35 @@ export default function Main({
           </h1>
         </section>
       </Reveal>
+
+      {wrappedHref && (
+        <Reveal>
+          <a
+            href={wrappedHref}
+            className="bg-brand-primary group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl px-6 py-5 text-left text-white transition-transform duration-200 hover:-translate-y-0.5"
+          >
+            <span
+              aria-hidden
+              className="bg-brand-gold/25 pointer-events-none absolute -top-10 -right-8 h-40 w-40 rounded-full blur-2xl"
+            />
+            <span className="relative">
+              <span className="text-brand-secondary flex items-center gap-2 text-xs font-semibold tracking-widest uppercase">
+                <Sparkles className="h-4 w-4" /> New
+              </span>
+              <span className="font-young-serif mt-1 block text-xl">
+                Your GIA Wrapped is ready
+              </span>
+              <span className="mt-1 block text-sm text-white/70">
+                A shareable, story-style recap of your hooks — built for the
+                &apos;gram.
+              </span>
+            </span>
+            <span className="relative shrink-0 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold transition-colors group-hover:bg-white/25">
+              Watch →
+            </span>
+          </a>
+        </Reveal>
+      )}
 
       <Reveal delay={120}>
         <section className="flex flex-col items-center gap-8 sm:flex-row sm:items-center sm:gap-10">
