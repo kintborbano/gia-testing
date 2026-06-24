@@ -4,13 +4,15 @@ import { useState } from 'react';
 import type { FormEvent, ReactElement } from 'react';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
-import { setToken } from '@/lib/auth';
+import { setToken, setSession } from '@/lib/auth';
+import { signInWithGoogle } from '@/lib/firebase';
 
 interface Props {
   onSuccess: () => void;
   onClose: () => void;
   profileUrl: string;
   mode?: 'quick' | 'deep';
+  freeSpent?: boolean;
 }
 
 // Keep in sync with CHECKOUT_PRICE_CENTS on the backend (default ₱299).
@@ -21,6 +23,7 @@ export default function BetaGate({
   onClose,
   profileUrl,
   mode = 'deep',
+  freeSpent = false,
 }: Props): ReactElement {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -67,6 +70,25 @@ export default function BetaGate({
     }
   };
 
+  const handleGoogle = async () => {
+    setBuying(false);
+    setLoading(true);
+    setError('');
+    try {
+      const idToken = await signInWithGoogle();
+      const { token, name, email } = await api.googleLogin(idToken);
+      setSession(token, { name, email });
+      onSuccess();
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'Google sign-in failed. Try again or use another option.'
+      );
+      setLoading(false);
+    }
+  };
+
   return (
     <div
       role="dialog"
@@ -88,6 +110,24 @@ export default function BetaGate({
           Your complete GIA report — 20 videos scored, hook breakdowns, audience
           insights, the PDF, and your shareable GIA Wrapped.
         </p>
+
+        {!freeSpent && (
+          <button
+            type="button"
+            onClick={handleGoogle}
+            disabled={busy}
+            className="border-brand-primary text-brand-primary hover:bg-brand-primary/5 mt-5 flex h-[54px] w-full items-center justify-center gap-2 rounded-[14px] border-[2px] bg-white font-sans text-[15px] font-semibold transition-colors disabled:opacity-60"
+          >
+            Continue with Google — free
+          </button>
+        )}
+
+        {freeSpent && (
+          <p className="text-text/70 mt-5 font-sans text-[14px] leading-[1.5]">
+            You&rsquo;ve used your free analysis. Buy your full report or enter
+            a voucher code.
+          </p>
+        )}
 
         {/* Primary path — buy */}
         <button

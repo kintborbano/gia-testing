@@ -159,6 +159,7 @@ export default function AnalyzeForm(): ReactElement {
   const [showGate, setShowGate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [freeSpent, setFreeSpent] = useState(false);
 
   // `restored` flips true only after the mount effect below has had a chance to
   // re-hydrate from a saved draft. The persist effect waits on it so the empty
@@ -281,13 +282,15 @@ export default function AnalyzeForm(): ReactElement {
       );
     } catch (err) {
       // 401 = expired/invalid token (API client already cleared it).
-      // 403 = the code's one analysis is spent. Either way, pop the BetaGate so
-      // the user can enter a new code or buy access instead of hitting a wall.
+      // 403 = analysis quota spent. If the user was authenticated (Google free
+      // run), flag freeSpent so the gate hides the Google door on re-open.
       if (
         err instanceof ApiError &&
         (err.status === 401 || err.status === 403)
       ) {
+        const wasAuthed = isAuthenticated();
         clearToken();
+        if (err.status === 403 && wasAuthed) setFreeSpent(true);
         setShowGate(true);
         setSubmitting(false);
         return;
@@ -554,6 +557,7 @@ export default function AnalyzeForm(): ReactElement {
 
       {showGate && (
         <BetaGate
+          freeSpent={freeSpent}
           profileUrl={`https://www.tiktok.com/@${extractHandle(tiktok) ?? ''}`}
           onSuccess={() => {
             setShowGate(false);
