@@ -56,23 +56,6 @@ export default function ReportShell(): React.ReactElement {
 
   return (
     <main className="mx-auto max-w-3xl space-y-12 px-4 py-12 text-gray-900 sm:px-6">
-      <Main handle={handle} result={shown} />
-      <Reveal>
-        <ContentPillars result={shown} />
-      </Reveal>
-      <Reveal>
-        <ContentStrategy result={shown} />
-      </Reveal>
-      <Reveal>
-        <AudienceIntelligence result={shown} />
-      </Reveal>
-      <Reveal>
-        <HookFormulaScripts result={shown} />
-      </Reveal>
-      <Reveal>
-        <VideoBreakdownSection handle={handle} result={shown} />
-      </Reveal>
-
       {wrappedHref && (
         <Reveal>
           <a
@@ -101,6 +84,23 @@ export default function ReportShell(): React.ReactElement {
           </a>
         </Reveal>
       )}
+
+      <Main handle={handle} result={shown} />
+      <Reveal>
+        <ContentPillars result={shown} />
+      </Reveal>
+      <Reveal>
+        <ContentStrategy result={shown} />
+      </Reveal>
+      <Reveal>
+        <AudienceIntelligence result={shown} />
+      </Reveal>
+      <Reveal>
+        <HookFormulaScripts result={shown} />
+      </Reveal>
+      <Reveal>
+        <VideoBreakdownSection handle={handle} result={shown} />
+      </Reveal>
 
       <Reveal>
         <section className="flex flex-col justify-center gap-3 pt-4 sm:flex-row">
