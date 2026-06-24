@@ -85,7 +85,7 @@ export default function ThinkingLoader(): React.ReactElement {
       width={FRAME_W}
       height={FRAME_H}
       aria-label="GIA, the SOFI AI analyst, thinking as she works"
-      className="h-auto w-[280px] max-w-full sm:w-[320px] md:w-[360px]"
+      className="h-auto w-[260px] max-w-full sm:w-[300px] md:w-[330px]"
     />
   );
 }

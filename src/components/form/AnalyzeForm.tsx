@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, ReactElement } from 'react';
 import { usePageTransition } from '@/components/transition/PageTransitionProvider';
 import StickyHeader from '@/components/landing/StickyHeader';
@@ -48,6 +48,12 @@ const GOALS = [
 
 /** TikTok usernames: letters, numbers, underscores and periods, up to 24. */
 const TIKTOK_HANDLE = /^[a-z0-9_.]{1,24}$/i;
+
+// Where the in-progress form is stashed so navigating away and back (e.g.
+// hitting Back from the loading screen) restores what was typed. sessionStorage
+// keeps it scoped to the tab and clears it on close, so email/handle aren't left
+// in long-term storage.
+const DRAFT_KEY = 'gia:analyze-form-draft';
 
 /**
  * Pull a TikTok handle out of whatever people actually type — a bare
@@ -153,6 +159,61 @@ export default function AnalyzeForm(): ReactElement {
   const [showGate, setShowGate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+
+  // `restored` flips true only after the mount effect below has had a chance to
+  // re-hydrate from a saved draft. The persist effect waits on it so the empty
+  // starting state can't overwrite the draft before it's read back.
+  const [restored, setRestored] = useState(false);
+
+  // Restore a saved draft once, after hydration. Reading storage in an effect
+  // (not during render) keeps the server-rendered empty form and the first
+  // client render in agreement; the setState happens on the next tick so it
+  // stays out of the effect body (which the lint rules flag as a cascading
+  // render).
+  useEffect(() => {
+    const apply = setTimeout(() => {
+      try {
+        const raw = sessionStorage.getItem(DRAFT_KEY);
+        if (raw) {
+          const d = JSON.parse(raw) as Record<string, unknown>;
+          if (typeof d.email === 'string') setEmail(d.email);
+          if (typeof d.tiktok === 'string') setTiktok(d.tiktok);
+          if (typeof d.accountType === 'string') setAccountType(d.accountType);
+          if (typeof d.goal === 'string') setGoal(d.goal);
+          if (typeof d.focus === 'string') setFocus(d.focus);
+          if (typeof d.instagram === 'string') setInstagram(d.instagram);
+          if (typeof d.agreed === 'boolean') setAgreed(d.agreed);
+        }
+      } catch {
+        // Corrupt or unavailable storage — start with a blank form.
+      }
+      setRestored(true);
+    }, 0);
+    return () => clearTimeout(apply);
+  }, []);
+
+  // Persist the draft as the user fills it in (only once the restore above has
+  // run). Transient state — errors, submit status, the gate — is intentionally
+  // left out; only the user's actual answers are saved.
+  useEffect(() => {
+    if (!restored) return;
+    try {
+      sessionStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({
+          email,
+          tiktok,
+          accountType,
+          goal,
+          focus,
+          instagram,
+          agreed,
+        })
+      );
+    } catch {
+      // Quota or private-mode failures are non-fatal for a convenience save.
+    }
+  }, [restored, email, tiktok, accountType, goal, focus, instagram, agreed]);
 
   /** Drop a single field's error once the user starts correcting it. */
   const clearError = (field: keyof FormErrors): void => {
@@ -446,7 +507,7 @@ export default function AnalyzeForm(): ReactElement {
             className="bg-brand-primary mt-4 flex w-full max-w-[943px] flex-col items-center justify-center gap-10 rounded-[32px] px-8 py-12 text-center sm:px-12 sm:py-14 md:rounded-[44px] md:py-16"
           >
             <h2 className="font-young-serif text-[28px] leading-[1.1] tracking-[-0.6px] text-white md:text-[32px]">
-              continue to checkout
+              get your analysis
             </h2>
             {/* Centered, content-width column for the checkbox and consent text. */}
             <div className="mx-auto flex w-fit flex-col items-center gap-3">

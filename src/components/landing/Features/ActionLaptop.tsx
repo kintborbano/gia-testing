@@ -12,23 +12,36 @@ import {
   ACTION_FRAMES_SM,
 } from '@/lib/preloadAssets';
 
-// Laptop-opening frames for the "GIA in action" section, scrubbed by scroll.
-// Files: public/images/action-frames/laptop00.webp ... laptop38.webp (frame
-// list owned by ACTION_FRAMES_* in preloadAssets; phones get the lighter `-sm`
-// set). The canvas backing store keeps the full-res dimensions on every device
-// and drawImage scales the source into it — no hydration-sensitive size swap.
-// Downscaled from 4K to display resolution; the red background is baked in and
-// matches the section, so no transparency/cut-out is needed here.
-const FRAME_W = 1280;
-const FRAME_H = 720;
+// Laptop sequence for the "GIA in action" section, scrubbed by scroll. The
+// laptop is PINNED (CSS sticky) while the section's tall track scrolls past, so
+// it holds centred in the viewport and the scroll position drives the frame —
+// same sticky-scrub model as the Features section.
+// Files: public/images/action-frames/laptop-screen000.webp ... 136.webp
+// (137-frame export, sampled by ACTION_FRAMES_* in preloadAssets; phones get
+// the lighter `-sm` set). The maroon background is cut out to transparent
+// (process-action-frames.cjs), so the laptop floats on the section's
+// brand-primary fill. The canvas backing store keeps full-res dimensions on
+// every device and drawImage scales the source into it — no hydration-sensitive
+// size swap.
+const FRAME_W = 1100;
+const FRAME_H = 618;
 
-// Keep the laptop closed until halfway through the section, then open it fast
-// over a short slice of progress so the open state is the highlight and the
-// whole open finishes well before the section scrolls away (i.e. stays seen).
-const OPEN_START = 0.5;
-const OPEN_DURATION = 0.2;
+// Sticky track height. The laptop pins for the middle of this scroll, which is
+// where the scrub plays out (1 viewport enters before the pin, 1 scrolls the
+// track past while pinned).
+const TRACK_VH = 200;
+
+// The laptop holds frame 0 (open report) while it rises into view, and only
+// starts scrubbing once it's PINNED dead-centre. With a 200vh track + a
+// viewport-tall sticky child, the pin engages at progress 0.5 (the track top
+// reaches the viewport top) and releases at 1.0 — so the scrub lives entirely
+// inside the pinned window [0.5 .. SCRUB_END], finishing (laptop closed) just
+// before it unpins and scrolls away.
+const SCRUB_START = 0.5;
+const SCRUB_END = 0.95;
 
 export default function ActionLaptop(): React.ReactElement {
+  const sectionRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef<number>(-1);
@@ -118,24 +131,22 @@ export default function ActionLaptop(): React.ReactElement {
     });
   }, [frames, frameCount]);
 
-  // Scrub by the canvas's travel through the viewport (no pinning, so the page
-  // keeps scrolling): 0 = top at viewport bottom, 1 = bottom at viewport top,
-  // 0.5 = centred. Closed until OPEN_START, then a fast open across
-  // OPEN_DURATION, then held open. Drawn directly from the shared scroll ticker
-  // — no React state per frame.
+  // Scrub by the section track's progress through the viewport. 0 = track top at
+  // viewport bottom (entering), 1 = track bottom at viewport top (leaving); the
+  // laptop is pinned across the middle. Frame 0 is held until SCRUB_START, then
+  // the sequence plays to the closed frame by SCRUB_END, then holds. Drawn
+  // directly from the shared scroll ticker — no React state per frame.
   useEffect(() => {
-    return subscribeScroll(() => {
-      const el = canvasRef.current;
+    return subscribeScroll((scrollY) => {
+      const el = sectionRef.current;
       if (!el) return;
-      const rect = el.getBoundingClientRect();
       const vh = window.innerHeight;
-      const progress = Math.max(
-        0,
-        Math.min(1, (vh - rect.top) / (vh + rect.height))
-      );
+      const start = el.offsetTop - vh;
+      const range = el.offsetHeight;
+      const progress = Math.max(0, Math.min(1, (scrollY - start) / range));
       const scrub = Math.min(
         1,
-        Math.max(0, (progress - OPEN_START) / OPEN_DURATION)
+        Math.max(0, (progress - SCRUB_START) / (SCRUB_END - SCRUB_START))
       );
       const index = Math.round(scrub * (frameCount - 1));
       if (index === currentFrameRef.current) return;
@@ -145,13 +156,26 @@ export default function ActionLaptop(): React.ReactElement {
   }, [frameCount]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={FRAME_W}
-      height={FRAME_H}
-      aria-label="GIA in action"
-      className="h-auto w-full max-w-[1100px]"
-      style={{ opacity: posterReady ? 1 : 0, transition: 'opacity 0.3s ease' }}
-    />
+    // Tall track: the sticky child pins to the viewport while this scrolls past,
+    // so the laptop holds centred and the scroll position scrubs the frames.
+    <div
+      ref={sectionRef}
+      className="relative w-full"
+      style={{ height: `${TRACK_VH}vh` }}
+    >
+      <div className="sticky top-0 flex h-screen w-full items-center justify-center">
+        <canvas
+          ref={canvasRef}
+          width={FRAME_W}
+          height={FRAME_H}
+          aria-label="GIA in action"
+          className="h-auto w-full max-w-[1100px]"
+          style={{
+            opacity: posterReady ? 1 : 0,
+            transition: 'opacity 0.3s ease',
+          }}
+        />
+      </div>
+    </div>
   );
 }

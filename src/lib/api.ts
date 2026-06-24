@@ -6,6 +6,7 @@ import {
   devStatus,
 } from './devBypass';
 import type { ApiResult, JobStatus } from '@/types/api';
+import type { Wrapped } from '@/types/wrapped';
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -83,6 +84,10 @@ export const api = {
   getResults(jobId: string) {
     if (DEV_BYPASS) return devResults();
     return request<ApiResult>(`/api/results/${jobId}`);
+  },
+
+  getWrapped(jobId: string) {
+    return request<Wrapped>(`/api/wrapped/${jobId}`);
   },
 
   checkoutCreate(profileUrl: string, mode: 'quick' | 'deep' = 'deep') {

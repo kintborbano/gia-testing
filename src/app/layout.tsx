@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+import { Pixelify_Sans } from 'next/font/google';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import PageTransitionProvider from '@/components/transition/PageTransitionProvider';
 import ImageGuard from '@/components/ImageGuard';
 import '@/styles/globals.css';
@@ -64,6 +66,12 @@ const itcGaramond = localFont({
   variable: '--font-itc-garamond',
 });
 
+const pixelifySans = Pixelify_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-pixelify-sans',
+});
+
 const itcGaramondNarrowItalic = localFont({
   src: [
     {
@@ -76,12 +84,48 @@ const itcGaramondNarrowItalic = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://sofi-gia.web.app'),
   title: {
     default: 'GIA by SOFI AI',
     template: '%s · GIA by SOFI AI',
   },
   description: 'A tool that analyzes your TikTok hooks',
+  openGraph: {
+    title: 'GIA by SOFI AI',
+    description: 'A tool that analyzes your TikTok hooks',
+    url: '/',
+    siteName: 'GIA by SOFI AI',
+    images: [
+      {
+        url: '/images/opengraph.png',
+        width: 2400,
+        height: 1350,
+        alt: 'GIA by SOFI AI',
+      },
+      {
+        url: '/images/opengraph-square.png',
+        width: 1200,
+        height: 1200,
+        alt: 'GIA by SOFI AI',
+      },
+      {
+        url: '/images/opengraph-portrait.png',
+        width: 1000,
+        height: 1500,
+        alt: 'GIA by SOFI AI',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'GIA by SOFI AI',
+    description: 'A tool that analyzes your TikTok hooks',
+    images: ['/images/opengraph.png'],
+  },
 };
+
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 export default function RootLayout({
   children,
@@ -91,12 +135,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${instrumentSans.variable} ${averiaSerifLibre.variable} ${youngSerif.variable} ${itcGaramond.variable} ${itcGaramondNarrowItalic.variable} h-full antialiased`}
+      className={`${instrumentSans.variable} ${averiaSerifLibre.variable} ${youngSerif.variable} ${itcGaramond.variable} ${itcGaramondNarrowItalic.variable} ${pixelifySans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <ImageGuard />
         <PageTransitionProvider>{children}</PageTransitionProvider>
       </body>
+      {/* GA4 — loads only when NEXT_PUBLIC_GA_ID is set at build time. Handles
+          App Router client-side navigations as page_views automatically.
+          googletagmanager.com / google-analytics.com are already allowed by the
+          hosting CSP in firebase.json. */}
+      {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
     </html>
   );
 }

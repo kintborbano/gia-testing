@@ -33,6 +33,8 @@ type FooterTheme = {
   navLink: string;
   /** Copyright + legal text colour. */
   meta: string;
+  /** Social icon button — resting/hover icon colour + hover background. */
+  social: string;
 };
 
 // The maroon panel shared by every light-page variant; only the band differs.
@@ -44,6 +46,7 @@ const MAROON_PANEL: Omit<FooterTheme, 'band'> = {
   logo: 'bg-white',
   navLink: 'text-white/50 hover:text-white active:text-white',
   meta: 'text-white/80',
+  social: 'text-white/60 hover:bg-white/10 hover:text-white active:text-white',
 };
 
 const FOOTER_THEME: Record<FooterVariant, FooterTheme> = {
@@ -64,6 +67,8 @@ const FOOTER_THEME: Record<FooterVariant, FooterTheme> = {
     logo: 'bg-brand-primary',
     navLink: 'text-brand-text/55 hover:text-brand-text active:text-brand-text',
     meta: 'text-brand-text/65',
+    social:
+      'text-brand-text/55 hover:bg-brand-text/10 hover:text-brand-text active:text-brand-text',
   },
 };
 
@@ -81,6 +86,61 @@ const NAV_LINKS = [
 const LEGAL_LINKS = [
   { label: 'Privacy Policy', href: '/privacy' },
   { label: 'Terms of Use', href: '/terms' },
+];
+
+// Brand glyphs are inlined as filled 24×24 paths (lucide ships no brand icons)
+// so they tint with `currentColor` like the rest of the footer art and share a
+// single solid visual weight with the envelope. `aria-hidden` keeps them
+// decorative — the enclosing <a> carries the accessible label.
+function SocialGlyph({
+  path,
+  className = '',
+}: {
+  path: string;
+  className?: string;
+}): React.ReactElement {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d={path} />
+    </svg>
+  );
+}
+
+// Listed in the order GIA promotes them — owned social first, contact last.
+// `external` toggles the new-tab + noopener treatment; the contact link opens
+// Gmail's web composer in a new tab like the other externals. Paths:
+// Instagram/TikTok/Facebook from Simple Icons, envelope from the Material set —
+// all single-colour, filled, 24×24.
+const SOCIAL_LINKS = [
+  {
+    label: 'Follow GIA on Instagram',
+    href: 'https://www.instagram.com/gia.sofi.ai/',
+    external: true,
+    path: 'M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0Zm0 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.336 3.608 1.311.975.975 1.249 2.242 1.311 3.608.058 1.266.069 1.646.069 4.85 0 3.205-.012 3.584-.069 4.85-.062 1.366-.336 2.633-1.311 3.608-.975.975-2.242 1.249-3.608 1.311-1.266.058-1.646.069-4.85.069-3.204 0-3.584-.012-4.85-.069-1.366-.062-2.633-.336-3.608-1.311-.975-.975-1.249-2.242-1.311-3.608-.058-1.266-.069-1.646-.069-4.85 0-3.204.012-3.584.069-4.85.062-1.366.336-2.633 1.311-3.608.975-.975 2.242-1.249 3.608-1.311 1.266-.058 1.646-.069 4.85-.069Zm0 3.678a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324ZM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881Z',
+  },
+  {
+    label: 'Follow GIA on TikTok',
+    href: 'https://www.tiktok.com/@gia.sofi.ai',
+    external: true,
+    path: 'M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z',
+  },
+  {
+    label: 'Follow GIA on Facebook',
+    href: 'https://www.facebook.com/giasofiai',
+    external: true,
+    path: 'M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z',
+  },
+  {
+    label: 'Email GIA',
+    href: 'https://mail.google.com/mail/?view=cm&fs=1&to=gia@sofitech.ai',
+    external: true,
+    path: 'M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z',
+  },
 ];
 
 // Instagram handle rules: 1–30 chars of letters, numbers, periods, or
@@ -234,23 +294,47 @@ export default function Footer({
             }}
           />
 
-          {/* Copyright + legal links on one row, spaced apart */}
-          <div className="flex flex-wrap items-center gap-x-10 gap-y-2.5 md:justify-end">
-            <p
-              className={`font-sans text-[13px] leading-[1.5] tracking-[-0.065px] ${theme.meta}`}
-            >
-              © 2026 GIA. All rights reserved. · Powered by SOFI
-            </p>
-            <div className="flex items-center gap-6">
-              {LEGAL_LINKS.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className={`font-sans text-[13px] leading-[1.5] tracking-[-0.065px] transition-opacity hover:opacity-100 ${theme.meta}`}
+          {/* Right utility stack: the follow/contact icons cap the copyright +
+              legal line, sitting directly above the Privacy / Terms links.
+              Right-aligned on desktop to track those links; left-aligns to the
+              column once the bottom row stacks on phones and tablets. */}
+          <div className="flex flex-col gap-5 md:items-end">
+            {/* 44px circular hit targets keep the glyphs comfortably tappable
+                on phones and tablets; the row never wraps at its narrow width. */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {SOCIAL_LINKS.map(({ label, href, external, path }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  {...(external
+                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    : {})}
+                  className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${theme.social}`}
                 >
-                  {link.label}
-                </Link>
+                  <SocialGlyph path={path} className="h-[22px] w-[22px]" />
+                </a>
               ))}
+            </div>
+
+            {/* Copyright + legal links on one row, spaced apart */}
+            <div className="flex flex-wrap items-center gap-x-10 gap-y-2.5 md:justify-end">
+              <p
+                className={`font-sans text-[13px] leading-[1.5] tracking-[-0.065px] ${theme.meta}`}
+              >
+                © 2026 GIA. All rights reserved. · Powered by SOFI
+              </p>
+              <div className="flex items-center gap-6">
+                {LEGAL_LINKS.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    className={`font-sans text-[13px] leading-[1.5] tracking-[-0.065px] transition-opacity hover:opacity-100 ${theme.meta}`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </div>

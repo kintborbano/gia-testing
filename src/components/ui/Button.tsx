@@ -94,16 +94,14 @@ const VARIANT_CLASSES: Record<ButtonVariant, VariantStyle> = {
   onBrand: {
     base: 'border-white bg-white text-brand-primary hover:border-brand-cream hover:bg-brand-cream hover:text-brand-primary',
     pressed: 'active:border-transparent active:bg-black active:text-white',
-    disabled:
-      'disabled:border-transparent disabled:bg-white/40 disabled:text-brand-primary/50',
+    disabled: 'border-transparent! bg-white/40 text-brand-primary/50',
   },
   // Cream CTA on a gold surface (the dark-page footer panel): cream fill with
   // dark text, brightening to white on hover so it never blends into the gold.
   onGold: {
     base: 'border-brand-cream bg-brand-cream text-brand-text hover:border-white hover:bg-white hover:text-brand-text',
     pressed: 'active:border-transparent active:bg-black active:text-white',
-    disabled:
-      'disabled:border-transparent disabled:bg-brand-cream/40 disabled:text-brand-text/50',
+    disabled: 'border-transparent! bg-brand-cream/40 text-brand-text/50',
   },
   // Maroon CTA on a cream surface (the dark-page footer's cream panel): maroon
   // fill with white text, deepening to the darker maroon on hover so it never
@@ -111,8 +109,7 @@ const VARIANT_CLASSES: Record<ButtonVariant, VariantStyle> = {
   onCream: {
     base: 'border-brand-primary bg-brand-primary text-white hover:border-brand-primary-dark hover:bg-brand-primary-dark hover:text-white',
     pressed: 'active:border-transparent active:bg-black active:text-white',
-    disabled:
-      'disabled:border-transparent disabled:bg-brand-primary/30 disabled:text-brand-text/40',
+    disabled: 'border-transparent! bg-brand-primary/30 text-brand-text/40',
   },
   whiteStatic: { base: 'border-black bg-white text-black' },
   adaptive: {

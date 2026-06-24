@@ -45,6 +45,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# GA4 measurement id is public (inlined client-side) — commit it so every
+# prod build picks it up
+!.env.production
 
 # claude code
 AGENTS.md
@@ -59,3 +62,10 @@ CLAUDE.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# raw frame export — processed into public/images/action-frames by
+# scripts/process-action-frames.cjs; only the transparent webp output is committed
+/public/images/laptop-screen-frames/
+
+# Firebase deploy cache
+.firebase/

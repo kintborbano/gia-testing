@@ -1,0 +1,742 @@
+/* GIA Wrapped — vertical story deck. Ported from the design handoff; fonts map
+   to the app's self-hosted vars, avatar to /public/wrapped. Scoped under .gw. */
+
+.gw {
+  --wine: #8c1f2e;
+  --wine-deep: #5e131e;
+  --gold: #c9920a;
+  --gold-soft: #e7b62e;
+  --cream: #fef7dd;
+  --cream-warm: #f6ead0;
+  --ink: #1a1208;
+  --ink-soft: #2a1f12;
+}
+
+.gw-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #100a05
+    radial-gradient(80% 60% at 50% 50%, #2a1018, transparent 70%);
+  overflow: hidden;
+}
+
+.gw-frame {
+  width: 400px;
+  height: 820px;
+  position: relative;
+  border-radius: 38px;
+  overflow: hidden;
+  transform-origin: center;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 0 70px -10px rgba(0, 0, 0, 0.55);
+}
+
+/* progress bar */
+.gw-progress {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 50;
+  display: flex;
+  gap: 5px;
+}
+.gw-seg {
+  flex: 1;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.24);
+  overflow: hidden;
+}
+.gw-seg i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: 3px;
+  background: var(--cream);
+  transform-origin: left;
+  transform: scaleX(var(--p, 0));
+}
+.gw-seg.active i {
+  transform: scaleX(0);
+  animation: gw-fill var(--dur, 6s) linear forwards;
+  animation-play-state: var(--play, running);
+}
+@keyframes gw-fill {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* tap zone */
+.gw-tap {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+}
+
+/* per-page share watermark — sits in the card so it inherits the theme --muted
+   and is captured in PNG export */
+.gw-watermark {
+  position: absolute;
+  top: 32px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 6;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+/* nav arrows (desktop) */
+.gw-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 70;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-50%);
+  background: rgba(254, 247, 221, 0.1);
+  color: var(--cream);
+  border: 1px solid rgba(254, 247, 221, 0.2);
+  font-size: 20px;
+  cursor: pointer;
+}
+.gw-nav:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.card {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 76px 34px 136px;
+  overflow: hidden;
+  isolation: isolate;
+  --bg1: var(--ink);
+  --bg2: var(--ink-soft);
+  --fg: var(--cream);
+  --accent: var(--gold-soft);
+  --muted: rgba(254, 247, 221, 0.62);
+  background: linear-gradient(165deg, var(--bg1) 0%, var(--bg2) 100%);
+  color: var(--fg);
+}
+.card[data-theme='wine'] {
+  --bg1: var(--wine);
+  --bg2: var(--wine-deep);
+  --fg: var(--cream);
+  --accent: var(--gold-soft);
+  --muted: rgba(254, 247, 221, 0.66);
+}
+.card[data-theme='gold'] {
+  --bg1: var(--gold-soft);
+  --bg2: var(--gold);
+  --fg: var(--ink);
+  --accent: var(--wine);
+  --muted: rgba(26, 18, 8, 0.66);
+}
+.card[data-theme='cream'] {
+  --bg1: #fff8e6;
+  --bg2: var(--cream-warm);
+  --fg: var(--wine);
+  --accent: var(--gold);
+  --muted: rgba(94, 19, 30, 0.6);
+}
+.card[data-theme='ink'] {
+  --bg1: #221708;
+  --bg2: #140d05;
+  --fg: var(--cream);
+  --accent: var(--gold-soft);
+  --muted: rgba(254, 247, 221, 0.6);
+}
+
+.gw .eyebrow {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.gw .kicker {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.gw .serif {
+  font-family: var(--font-young-serif), serif;
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+}
+.gw .body {
+  font-size: 18.5px;
+  line-height: 1.42;
+  color: var(--fg);
+}
+.gw .muted {
+  color: var(--muted);
+}
+.gw .grow {
+  flex: 1;
+}
+.gw .spacer {
+  flex: 1;
+}
+.gw .bignum {
+  font-family: var(--font-young-serif), serif;
+  line-height: 0.86;
+  letter-spacing: -0.03em;
+}
+
+/* entrance animation, gated on active */
+.gw .anim {
+  opacity: 0;
+}
+.card[data-active] .anim {
+  animation: gw-riseIn 0.72s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: var(--d, 0s);
+}
+.card[data-active] .anim.pop {
+  animation-name: gw-popIn;
+  animation-duration: 0.8s;
+  animation-timing-function: cubic-bezier(0.18, 0.9, 0.28, 1.25);
+}
+.card[data-active] .anim.fade {
+  animation-name: gw-fadeIn;
+  animation-duration: 0.9s;
+}
+.card[data-active] .anim.blur {
+  animation-name: gw-blurIn;
+  animation-duration: 0.95s;
+}
+.card[data-active] .anim.drop {
+  animation-name: gw-dropIn;
+  animation-duration: 0.82s;
+  animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.card[data-active] .anim.wipe {
+  animation-name: gw-wipeUp;
+  animation-duration: 0.95s;
+  animation-timing-function: cubic-bezier(0.16, 0.8, 0.24, 1);
+}
+.card[data-active] .anim.mask {
+  animation-name: gw-maskR;
+  animation-duration: 1.05s;
+  animation-timing-function: cubic-bezier(0.16, 0.8, 0.24, 1);
+}
+@keyframes gw-riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes gw-popIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.66);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes gw-fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes gw-blurIn {
+  from {
+    opacity: 0;
+    filter: blur(13px);
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+@keyframes gw-slideR {
+  from {
+    opacity: 0;
+    transform: translateX(-36px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes gw-dropIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-34px);
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes gw-wipeUp {
+  from {
+    opacity: 0;
+    clip-path: inset(105% 0 -10% 0);
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(-10% 0 -10% 0);
+    transform: none;
+  }
+}
+@keyframes gw-maskR {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 -2% 0 0);
+  }
+}
+
+/* role-based entrance mapping */
+.card[data-active] .anim.eyebrow {
+  animation-name: gw-slideR;
+}
+.card[data-active] .anim.kicker {
+  animation-name: gw-fadeIn;
+  animation-duration: 0.85s;
+}
+.card[data-active] .anim.body {
+  animation-name: gw-blurIn;
+  animation-duration: 0.95s;
+}
+.card[data-active] h1.anim.serif {
+  animation-name: gw-wipeUp;
+  animation-duration: 0.95s;
+  animation-timing-function: cubic-bezier(0.16, 0.8, 0.24, 1);
+}
+.card[data-active] .giavoice.anim {
+  animation-name: gw-slideR;
+}
+
+/* settle guarantee — content must always end fully visible (capture/share) */
+.card[data-settled] .anim {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  clip-path: none !important;
+  animation: none !important;
+}
+
+/* card-to-card transitions */
+.card[data-active] {
+  animation: gw-cardSlide 0.52s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+.card[data-active][data-dir='back'] {
+  animation-name: gw-cardSlideBack;
+}
+.card[data-active][data-trans='zoom'] {
+  animation-name: gw-cardZoom;
+  animation-duration: 0.48s;
+}
+.card[data-active][data-trans='rise'] {
+  animation-name: gw-cardRise;
+  animation-duration: 0.54s;
+}
+.card[data-active][data-trans='fade'] {
+  animation-name: gw-cardFade;
+  animation-duration: 0.58s;
+}
+@keyframes gw-cardSlide {
+  from {
+    opacity: 0;
+    transform: translateX(6%) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes gw-cardSlideBack {
+  from {
+    opacity: 0;
+    transform: translateX(-6%) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes gw-cardZoom {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes gw-cardRise {
+  from {
+    opacity: 0;
+    transform: translateY(5%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes gw-cardFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* brand elements */
+.gw .rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--fg) 26%, transparent),
+    transparent
+  );
+}
+.gw .divider {
+  height: 1px;
+  background: color-mix(in srgb, var(--fg) 16%, transparent);
+}
+.gw .spk {
+  color: var(--accent);
+  display: inline-block;
+  flex: 0 0 auto;
+}
+.gw .giadot {
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.frame-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  pointer-events: none;
+}
+.frame-corner.tl {
+  top: 60px;
+  left: 24px;
+  border-top: 1.5px solid;
+  border-left: 1.5px solid;
+}
+.frame-corner.tr {
+  top: 60px;
+  right: 24px;
+  border-top: 1.5px solid;
+  border-right: 1.5px solid;
+}
+.frame-corner.bl {
+  bottom: 124px;
+  left: 24px;
+  border-bottom: 1.5px solid;
+  border-left: 1.5px solid;
+}
+.frame-corner.br {
+  bottom: 124px;
+  right: 24px;
+  border-bottom: 1.5px solid;
+  border-right: 1.5px solid;
+}
+
+.gia-hero {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  position: relative;
+  background:
+    url('/wrapped/gia-avatar.png') center 22% / 122% no-repeat,
+    var(--cream);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--accent) 60%, transparent),
+    0 0 0 8px color-mix(in srgb, var(--fg) 9%, transparent);
+}
+.gia-ava {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background:
+    url('/wrapped/gia-avatar.png') center 22% / 122% no-repeat,
+    var(--cream);
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--fg) 8%, transparent);
+}
+.giavoice {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+}
+.gia-name {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  white-space: nowrap;
+}
+.gia-name em {
+  font-style: normal;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+  text-transform: none;
+  font-weight: 500;
+  font-size: 11.5px;
+}
+.gia-line {
+  font-family: var(--font-young-serif), serif;
+  font-size: 17px;
+  line-height: 1.32;
+  margin-top: 6px;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  align-self: flex-start;
+  padding: 8px 15px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.statgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 12px;
+}
+.statbox {
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+.statbox .v {
+  font-family: var(--font-young-serif), serif;
+  font-size: 27px;
+  line-height: 1;
+}
+.statbox .l {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 7px;
+}
+.idxnum {
+  font-family: var(--font-young-serif), serif;
+  font-size: 22px;
+  color: var(--accent);
+  line-height: 1;
+  width: 34px;
+  flex: 0 0 auto;
+}
+
+.erbar {
+  height: 5px;
+  border-radius: 4px;
+  margin-top: 11px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--fg) 12%, transparent);
+}
+.erbar i {
+  display: block;
+  height: 100%;
+  width: var(--w, 50%);
+  border-radius: 4px;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: linear-gradient(
+    90deg,
+    var(--accent),
+    color-mix(in srgb, var(--accent) 45%, var(--fg))
+  );
+}
+.card[data-active] .erbar i {
+  animation: gw-growbar 1s cubic-bezier(0.2, 0.7, 0.2, 1) var(--bd, 0s) forwards;
+}
+.card[data-settled] .erbar i {
+  transform: scaleX(1);
+  animation: none;
+}
+@keyframes gw-growbar {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.meter {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  height: 30px;
+}
+.meter i {
+  flex: 1;
+  height: 100%;
+  border-radius: 4px;
+  transform: scaleY(0.25);
+  transform-origin: bottom;
+  opacity: 0.3;
+  background: color-mix(in srgb, var(--fg) 16%, transparent);
+}
+.meter i.on {
+  background: linear-gradient(
+    180deg,
+    var(--accent),
+    color-mix(in srgb, var(--accent) 55%, var(--fg))
+  );
+}
+.card[data-active] .meter i {
+  animation: gw-segpop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) var(--md, 0s) both;
+}
+.card[data-settled] .meter i {
+  transform: scaleY(1);
+  opacity: 1;
+  animation: none;
+}
+@keyframes gw-segpop {
+  0% {
+    transform: scaleY(0.18);
+    opacity: 0.25;
+  }
+  60% {
+    transform: scaleY(1.12);
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.gw-action {
+  position: absolute;
+  left: 50%;
+  bottom: 44px;
+  transform: translateX(-50%);
+  z-index: 48;
+  display: flex;
+  gap: 10px;
+}
+.gw-pill {
+  white-space: nowrap;
+  padding: 12px 22px;
+  border-radius: 100px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--gold-soft) 18%, #1a1208);
+  color: var(--gold-soft);
+  border: 1px solid color-mix(in srgb, var(--gold-soft) 38%, transparent);
+}
+.gw-pill:active {
+  transform: scale(0.96);
+}
+.gw-pill:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gw .anim,
+  .card[data-active] .anim {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+  }
+  .card[data-active] {
+    animation: none !important;
+  }
+  .gw-seg.active i {
+    animation: none;
+    transform: scaleX(1);
+  }
+  .erbar i {
+    transform: scaleX(1);
+    animation: none !important;
+  }
+  .meter i {
+    transform: scaleY(1);
+    opacity: 1;
+    animation: none !important;
+  }
+}
+
+/* Phones: the story fills the screen — drop the device-frame chrome and the
+   desktop nav arrows. Placed last so it overrides the base rules above. */
+@media (max-width: 599px) {
+  .gw-frame {
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .gw-nav {
+    display: none;
+  }
+}
