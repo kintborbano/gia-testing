@@ -23,6 +23,7 @@ export default function WrappedDeck({
   const [paused, setPaused] = useState(false);
   const [settled, setSettled] = useState(false);
   const [scale, setScale] = useState(1);
+  const [fluid, setFluid] = useState(false);
   const frameRef = useRef<HTMLDivElement>(null);
   const shareRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
@@ -39,22 +40,20 @@ export default function WrappedDeck({
     [last]
   );
 
-  // Contain on every device so the whole story always fits — no cropped content
-  // or off-screen controls. Off-ratio screens get brand-dark letterbox bars from
-  // .gw-stage. Phones fill nearly edge-to-edge; desktop/tablet caps at 1.
+  // Phones: the frame fills the viewport edge-to-edge (fluid) and the card's
+  // flex column + spacers reflow to the height — no scaling, so no side/letterbox
+  // bars. Desktop/tablet: contain a fixed phone frame, capped at 1.
+  // visualViewport (not innerHeight) is the area actually visible behind mobile
+  // browser toolbars, so bottom controls stay on-screen.
   useEffect(() => {
     const fit = () => {
-      // Use the visual viewport so the story fits the area actually visible
-      // behind mobile browser toolbars — innerHeight is the larger layout
-      // viewport and would push the bottom controls under the URL bar.
       const vv = window.visualViewport;
       const vw = vv?.width ?? window.innerWidth;
       const vh = vv?.height ?? window.innerHeight;
       const isMobile = vw < 600;
+      setFluid(isMobile);
       setScale(
-        isMobile
-          ? Math.min(vh / CANVAS_H, vw / CANVAS_W)
-          : Math.min(1, (vh - 40) / CANVAS_H, (vw - 40) / CANVAS_W)
+        isMobile ? 1 : Math.min(1, (vh - 40) / CANVAS_H, (vw - 40) / CANVAS_W)
       );
     };
     fit();
@@ -234,7 +233,17 @@ export default function WrappedDeck({
       <div
         ref={frameRef}
         className="gw-frame"
-        style={{ transform: `scale(${scale})` }}
+        style={
+          fluid
+            ? {
+                width: '100dvw',
+                height: '100dvh',
+                transform: 'none',
+                borderRadius: 0,
+                boxShadow: 'none',
+              }
+            : { transform: `scale(${scale})` }
+        }
       >
         <div className="gw-progress">
           {BEATS.map((b, i) => (
