@@ -32,11 +32,13 @@ export default function UnlockShell(): React.ReactElement {
         kind: 'unlock',
         jobId: job,
       });
-      window.location.href = checkout_url;
+      // replace (not assign) so /unlock leaves no history entry — pressing back
+      // from the payment page returns to the report, not into a checkout loop.
+      window.location.replace(checkout_url);
     } catch (err) {
       kickedOff.current = false;
       if (err instanceof ApiError && err.status === 409) {
-        window.location.href = `/report?job=${job}`;
+        window.location.replace(`/report?job=${job}`);
       } else if (err instanceof ApiError && err.status === 403) {
         setStatus('wrong-account');
       } else {

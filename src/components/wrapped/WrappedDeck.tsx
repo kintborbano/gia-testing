@@ -7,6 +7,9 @@ import type { Wrapped } from '@/types/wrapped';
 
 const CANVAS_W = 400;
 const CANVAS_H = 820;
+// Exported share image is taller than the on-screen card so Instagram's top
+// username overlay and bottom reply bar fall on safe bands, not on content.
+const EXPORT_H = 908;
 const SPEED = 6; // seconds per card
 const TRANS = ['fade', 'zoom', 'rise', 'slide'] as const;
 
@@ -151,7 +154,7 @@ export default function WrappedDeck({
         pixelRatio: 3,
         cacheBust: true,
         width: CANVAS_W,
-        height: CANVAS_H,
+        height: EXPORT_H,
       };
       // Warm-up pass: html-to-image's first capture frequently drops webfonts
       // and not-yet-decoded images (the QR), so the real capture is the second.
@@ -317,13 +320,22 @@ export default function WrappedDeck({
         <div
           ref={shareRef}
           className="gw-frame"
-          style={{ transform: 'none', borderRadius: 0, boxShadow: 'none' }}
+          style={{
+            width: CANVAS_W,
+            height: EXPORT_H,
+            transform: 'none',
+            borderRadius: 0,
+            boxShadow: 'none',
+          }}
         >
           <div
             className="card"
             data-active
             data-settled
             data-theme={beat.theme}
+            // Extra top/bottom safe bands for the exported image so Instagram's
+            // username overlay (top) and reply bar (bottom) don't cover content.
+            style={{ padding: '150px 34px 150px' }}
           >
             <beat.render w={data} />
             <span className="gw-watermark">{data.handle} · gia wrapped</span>
