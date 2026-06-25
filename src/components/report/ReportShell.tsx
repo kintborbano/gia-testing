@@ -26,6 +26,24 @@ export default function ReportShell(): React.ReactElement {
   const [result, setResult] = useState<ApiResult | null>(null);
   const [error, setError] = useState('');
   const [unlocking, setUnlocking] = useState(false);
+  const [fetchSeq, setFetchSeq] = useState(0);
+
+  useEffect(() => {
+    const cs = new URLSearchParams(window.location.search).get('cs');
+    if (!cs) return;
+    (async () => {
+      try {
+        await api.unlockRedeem(cs);
+      } catch {
+        // leave the locked view; user can retry the unlock CTA
+      } finally {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('cs');
+        window.history.replaceState({}, '', url.toString());
+        setFetchSeq((n) => n + 1);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (!jobId) return;
@@ -33,7 +51,7 @@ export default function ReportShell(): React.ReactElement {
       .getResults(jobId)
       .then(setResult)
       .catch((err: ApiError) => setError(err.message));
-  }, [jobId]);
+  }, [jobId, fetchSeq]);
 
   const shown = demo ? DEMO_RESULT : result;
 
