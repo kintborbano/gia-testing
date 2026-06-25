@@ -44,8 +44,12 @@ export default function WrappedDeck({
   // .gw-stage. Phones fill nearly edge-to-edge; desktop/tablet caps at 1.
   useEffect(() => {
     const fit = () => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
+      // Use the visual viewport so the story fits the area actually visible
+      // behind mobile browser toolbars — innerHeight is the larger layout
+      // viewport and would push the bottom controls under the URL bar.
+      const vv = window.visualViewport;
+      const vw = vv?.width ?? window.innerWidth;
+      const vh = vv?.height ?? window.innerHeight;
       const isMobile = vw < 600;
       setScale(
         isMobile
@@ -55,7 +59,13 @@ export default function WrappedDeck({
     };
     fit();
     window.addEventListener('resize', fit);
-    return () => window.removeEventListener('resize', fit);
+    window.visualViewport?.addEventListener('resize', fit);
+    window.visualViewport?.addEventListener('scroll', fit);
+    return () => {
+      window.removeEventListener('resize', fit);
+      window.visualViewport?.removeEventListener('resize', fit);
+      window.visualViewport?.removeEventListener('scroll', fit);
+    };
   }, []);
 
   // Settle guarantee: after ~1.2s the active card is forced to final state so
