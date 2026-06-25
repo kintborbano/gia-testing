@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { Lock } from 'lucide-react';
 import { SectionLabel } from '@/components/report/Primitives';
 import VideoBreakdown from '@/components/report/VideoBreakdown';
 import VideoExplorer from '@/components/report/VideoExplorer';
@@ -68,9 +69,13 @@ function toPoint(a: VideoAnalysis): ExplorerPoint | null {
 export default function VideoBreakdownSection({
   handle,
   result,
+  locked,
+  unlockHref,
 }: {
   handle: string;
   result?: ApiResult | null;
+  locked?: boolean;
+  unlockHref?: string;
 }): React.ReactElement | null {
   const [openId, setOpenId] = useState<string | null>(null);
   const cardRefs = useRef(new Map<string, HTMLDivElement>());
@@ -98,11 +103,28 @@ export default function VideoBreakdownSection({
         <SectionLabel>Video Breakdown</SectionLabel>
         <span className="text-sm text-gray-500">{videos.length} videos</span>
       </div>
-      <VideoExplorer
-        points={points}
-        selectedId={openId}
-        onSelect={selectFromExplorer}
-      />
+      {locked ? (
+        <a href={unlockHref} className="relative block">
+          <div className="pointer-events-none blur-sm">
+            <VideoExplorer
+              points={points}
+              selectedId={null}
+              onSelect={() => {}}
+            />
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 font-sans text-sm font-semibold text-gray-700 shadow">
+              <Lock className="h-4 w-4" /> Click to unlock
+            </span>
+          </div>
+        </a>
+      ) : (
+        <VideoExplorer
+          points={points}
+          selectedId={openId}
+          onSelect={selectFromExplorer}
+        />
+      )}
       <VideoBreakdown
         videos={videos}
         profileUrl={`https://www.tiktok.com/@${handle}`}

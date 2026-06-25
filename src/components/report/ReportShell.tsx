@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Download, Sparkles } from 'lucide-react';
+import { Download, Lock, Sparkles } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 import { DEMO_RESULT } from '@/lib/dummy/apiResult';
@@ -15,6 +15,40 @@ import AudienceIntelligence from '@/components/report/AudienceIntelligence';
 import HookFormulaScripts from '@/components/report/HookFormulaScripts';
 import VideoBreakdownSection from '@/components/report/VideoBreakdownSection';
 
+const PLACEHOLDER_CAP = 6;
+
+function LockedVideoPlaceholders({
+  count,
+  unlockHref,
+}: {
+  count: number;
+  unlockHref: string;
+}): React.ReactElement | null {
+  if (count <= 0) return null;
+  const visible = Math.min(count, PLACEHOLDER_CAP);
+  const overflow = count - visible;
+  return (
+    <a href={unlockHref} className="block">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {Array.from({ length: visible }).map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-gray-400 select-none"
+          >
+            <Lock className="h-4 w-4 shrink-0" />
+            <span className="font-sans text-sm">Click to unlock</span>
+          </div>
+        ))}
+      </div>
+      {overflow > 0 && (
+        <p className="mt-2 text-center font-sans text-xs text-gray-400">
+          +{overflow} more locked video{overflow === 1 ? '' : 's'}
+        </p>
+      )}
+    </a>
+  );
+}
+
 export default function ReportShell(): React.ReactElement {
   const searchParams = useSearchParams();
   const jobId = searchParams.get('job');
@@ -25,7 +59,6 @@ export default function ReportShell(): React.ReactElement {
     searchParams.get('handle') ?? (demo ? DEMO_RESULT.profile_handle : '');
   const [result, setResult] = useState<ApiResult | null>(null);
   const [error, setError] = useState('');
-  const [unlocking, setUnlocking] = useState(false);
   const [fetchSeq, setFetchSeq] = useState(0);
 
   useEffect(() => {
@@ -119,8 +152,24 @@ export default function ReportShell(): React.ReactElement {
         <HookFormulaScripts result={shown} />
       </Reveal>
       <Reveal>
-        <VideoBreakdownSection handle={handle} result={shown} />
+        <VideoBreakdownSection
+          handle={handle}
+          result={shown}
+          locked={shown?.locked}
+          unlockHref={
+            shown?.locked && jobId ? `/unlock?job=${jobId}` : undefined
+          }
+        />
       </Reveal>
+
+      {shown?.locked && jobId && (
+        <Reveal>
+          <LockedVideoPlaceholders
+            count={shown.hidden_video_count ?? 0}
+            unlockHref={`/unlock?job=${jobId}`}
+          />
+        </Reveal>
+      )}
 
       {shown?.locked && (
         <Reveal>
@@ -133,31 +182,15 @@ export default function ReportShell(): React.ReactElement {
               videos
             </h2>
             <p className="mt-1 text-sm text-white/70">
-              Unlock every video breakdown in this report — a one-time ₱299.
+              Unlock every video breakdown in this report — a one-time
+              &#8369;299.
             </p>
-            <button
-              type="button"
-              disabled={unlocking}
-              onClick={async () => {
-                setUnlocking(true);
-                try {
-                  const { checkout_url } = await api.checkoutCreate(
-                    '',
-                    'deep',
-                    {
-                      kind: 'unlock',
-                      jobId: jobId!,
-                    }
-                  );
-                  window.location.href = checkout_url;
-                } catch {
-                  setUnlocking(false);
-                }
-              }}
-              className="bg-brand-gold text-brand-primary mt-4 rounded-full px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
+            <a
+              href={jobId ? `/unlock?job=${jobId}` : '/form'}
+              className="bg-brand-gold text-brand-primary mt-4 inline-block rounded-full px-6 py-2.5 text-sm font-semibold"
             >
-              {unlocking ? 'Opening checkout…' : 'Unlock the full report →'}
-            </button>
+              Unlock the full report &#8594;
+            </a>
           </section>
         </Reveal>
       )}
