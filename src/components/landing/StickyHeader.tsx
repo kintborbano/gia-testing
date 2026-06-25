@@ -8,6 +8,8 @@ import {
   useRef,
   useState,
 } from 'react';
+import type { GiaUser } from '@/lib/auth';
+import { getUser, signOut } from '@/lib/auth';
 import type { CSSProperties } from 'react';
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
@@ -455,6 +457,14 @@ export default function StickyHeader(): React.ReactElement {
   // that flips only when the background crosses the near-black threshold (at
   // section seams), so it re-renders rarely instead of on every color frame.
   // Maroon (the Action section) is NOT near-black, so it keeps the white pill.
+  const [user, setUser] = useState<GiaUser | null>(null);
+  useEffect(() => {
+    const syncUser = () => setUser(getUser());
+    syncUser();
+    window.addEventListener('storage', syncUser);
+    return () => window.removeEventListener('storage', syncUser);
+  }, []);
+
   const [onDarkBg, setOnDarkBg] = useState(() =>
     isNearBlack(getPageColorsSnapshot().background)
   );
@@ -548,9 +558,33 @@ export default function StickyHeader(): React.ReactElement {
           {NAV_LINKS.map(({ label, href }) => (
             <NavItem key={label} href={href} label={label} />
           ))}
-          <Button href="/form" variant="adaptive" size="default" transition>
-            ANALYZE MY TIKTOK
-          </Button>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <span
+                aria-hidden
+                className="bg-brand-primary flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-semibold text-white"
+              >
+                {user.name.trim().charAt(0).toUpperCase() || 'G'}
+              </span>
+              <span className="text-brand-primary font-sans text-[14px]">
+                {user.name.split(' ')[0]}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  signOut();
+                  setUser(null);
+                }}
+                className="text-text/60 hover:text-text/80 font-sans text-[13px]"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <Button href="/form" variant="adaptive" size="default" transition>
+              ANALYZE MY TIKTOK
+            </Button>
+          )}
         </nav>
 
         {/* Menu toggle: shown on phone by the `md:hidden` baseline, plus anywhere

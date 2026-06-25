@@ -54,6 +54,13 @@ export const api = {
     );
   },
 
+  googleLogin(idToken: string) {
+    return request<{ token: string; name: string; email: string }>(
+      '/api/auth/google',
+      { method: 'POST', body: JSON.stringify({ id_token: idToken }) }
+    );
+  },
+
   startAnalysis(
     profileUrl: string,
     opts: {

@@ -11,8 +11,9 @@ import ScrollBackground from '@/components/landing/ScrollBackground';
 import type { ScrollStop } from '@/components/landing/scrollBackground.config';
 import { HEADER_HEIGHT_LARGE } from '@/animations/headerAnimations';
 import BetaGate from '@/components/auth/BetaGate';
-import { isAuthenticated, clearToken } from '@/lib/auth';
+import { isAuthenticated, clearToken, setSession } from '@/lib/auth';
 import { api, ApiError } from '@/lib/api';
+import { getRedirectIdToken } from '@/lib/firebase';
 
 // White → cream as you scroll past the first screen — the exact transition the
 // landing uses from the hero into features: the cream stop is anchored to its
@@ -159,6 +160,8 @@ export default function AnalyzeForm(): ReactElement {
   const [showGate, setShowGate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [freeSpent, setFreeSpent] = useState(false);
+  const [resuming, setResuming] = useState(false);
 
   // `restored` flips true only after the mount effect below has had a chance to
   // re-hydrate from a saved draft. The persist effect waits on it so the empty
@@ -259,17 +262,22 @@ export default function AnalyzeForm(): ReactElement {
     setErrors((prev) => ({ ...prev, [field]: validate()[field] }));
   };
 
-  const doAnalyze = async (): Promise<void> => {
-    const handle = extractHandle(tiktok);
+  const doAnalyze = async (override?: {
+    handle: string;
+    email?: string;
+    goal?: string;
+    accountType?: string;
+  }): Promise<void> => {
+    const handle = override?.handle ?? extractHandle(tiktok);
     if (!handle) return;
     setSubmitting(true);
     setSubmitError('');
     try {
       const profileUrl = `https://www.tiktok.com/@${handle}`;
       const { job_id } = await api.startAnalysis(profileUrl, {
-        email: email.trim(),
-        goal,
-        accountType,
+        email: (override?.email ?? email).trim(),
+        goal: override?.goal ?? goal,
+        accountType: override?.accountType ?? accountType,
       });
       const rect = ctaRef.current?.getBoundingClientRect();
       const flood = rect
@@ -281,13 +289,15 @@ export default function AnalyzeForm(): ReactElement {
       );
     } catch (err) {
       // 401 = expired/invalid token (API client already cleared it).
-      // 403 = the code's one analysis is spent. Either way, pop the BetaGate so
-      // the user can enter a new code or buy access instead of hitting a wall.
+      // 403 = analysis quota spent. If the user was authenticated (Google free
+      // run), flag freeSpent so the gate hides the Google door on re-open.
       if (
         err instanceof ApiError &&
         (err.status === 401 || err.status === 403)
       ) {
+        const wasAuthed = isAuthenticated();
         clearToken();
+        if (err.status === 403 && wasAuthed) setFreeSpent(true);
         setShowGate(true);
         setSubmitting(false);
         return;
@@ -300,6 +310,60 @@ export default function AnalyzeForm(): ReactElement {
       setSubmitting(false);
     }
   };
+
+  // On return from a Google redirect sign-in, complete the JWT exchange and
+  // resume the pending analysis from the form draft saved before navigation.
+  useEffect(() => {
+    let cancelled = false;
+    const resume = async (): Promise<void> => {
+      let idToken: string | null = null;
+      try {
+        idToken = await getRedirectIdToken();
+      } catch {
+        return; // no/failed redirect result — normal page load
+      }
+      if (!idToken || cancelled) return;
+      setResuming(true);
+      try {
+        const { token, name, email: em } = await api.googleLogin(idToken);
+        setSession(token, { name, email: em });
+      } catch {
+        if (!cancelled) {
+          setResuming(false);
+          setShowGate(true); // signed-in exchange failed — let them retry
+        }
+        return;
+      }
+      let draft: {
+        tiktok?: string;
+        email?: string;
+        goal?: string;
+        accountType?: string;
+      } | null = null;
+      try {
+        draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? 'null');
+      } catch {
+        draft = null;
+      }
+      const handle = draft?.tiktok ? extractHandle(draft.tiktok) : null;
+      if (cancelled) return;
+      if (!handle) {
+        setResuming(false); // signed in, nothing pending — leave them on the form
+        return;
+      }
+      await doAnalyze({
+        handle,
+        email: draft?.email,
+        goal: draft?.goal,
+        accountType: draft?.accountType,
+      });
+    };
+    void resume();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
@@ -538,6 +602,11 @@ export default function AnalyzeForm(): ReactElement {
                 {submitError}
               </p>
             )}
+            {resuming && (
+              <p className="text-text/70 font-sans text-[14px]">
+                Signing you in…
+              </p>
+            )}
             <Button
               type="submit"
               variant="onBrand"
@@ -554,6 +623,7 @@ export default function AnalyzeForm(): ReactElement {
 
       {showGate && (
         <BetaGate
+          freeSpent={freeSpent}
           profileUrl={`https://www.tiktok.com/@${extractHandle(tiktok) ?? ''}`}
           onSuccess={() => {
             setShowGate(false);
