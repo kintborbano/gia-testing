@@ -25,6 +25,7 @@ export default function ReportShell(): React.ReactElement {
     searchParams.get('handle') ?? (demo ? DEMO_RESULT.profile_handle : '');
   const [result, setResult] = useState<ApiResult | null>(null);
   const [error, setError] = useState('');
+  const [unlocking, setUnlocking] = useState(false);
 
   useEffect(() => {
     if (!jobId) return;
@@ -57,21 +58,6 @@ export default function ReportShell(): React.ReactElement {
   return (
     <main className="mx-auto max-w-3xl space-y-12 px-4 py-12 text-gray-900 sm:px-6">
       <Main handle={handle} result={shown} />
-      <Reveal>
-        <ContentPillars result={shown} />
-      </Reveal>
-      <Reveal>
-        <ContentStrategy result={shown} />
-      </Reveal>
-      <Reveal>
-        <AudienceIntelligence result={shown} />
-      </Reveal>
-      <Reveal>
-        <HookFormulaScripts result={shown} />
-      </Reveal>
-      <Reveal>
-        <VideoBreakdownSection handle={handle} result={shown} />
-      </Reveal>
 
       {wrappedHref && (
         <Reveal>
@@ -99,6 +85,62 @@ export default function ReportShell(): React.ReactElement {
               Watch →
             </span>
           </a>
+        </Reveal>
+      )}
+
+      <Reveal>
+        <ContentPillars result={shown} />
+      </Reveal>
+      <Reveal>
+        <ContentStrategy result={shown} />
+      </Reveal>
+      <Reveal>
+        <AudienceIntelligence result={shown} />
+      </Reveal>
+      <Reveal>
+        <HookFormulaScripts result={shown} />
+      </Reveal>
+      <Reveal>
+        <VideoBreakdownSection handle={handle} result={shown} />
+      </Reveal>
+
+      {shown?.locked && (
+        <Reveal>
+          <section className="bg-brand-primary rounded-2xl px-6 py-8 text-center text-white">
+            <p className="text-brand-secondary text-xs font-semibold tracking-widest uppercase">
+              Locked
+            </p>
+            <h2 className="font-young-serif mt-1 text-2xl">
+              You&rsquo;re seeing 1 of {(shown.hidden_video_count ?? 0) + 1}{' '}
+              videos
+            </h2>
+            <p className="mt-1 text-sm text-white/70">
+              Unlock every video breakdown in this report — a one-time ₱299.
+            </p>
+            <button
+              type="button"
+              disabled={unlocking}
+              onClick={async () => {
+                setUnlocking(true);
+                try {
+                  const { checkout_url } = await api.checkoutCreate(
+                    '',
+                    'deep',
+                    {
+                      kind: 'unlock',
+                      jobId: jobId!,
+                    }
+                  );
+                  window.location.href = checkout_url;
+                } catch {
+                  setUnlocking(false);
+                }
+              }}
+              className="bg-brand-gold text-brand-primary mt-4 rounded-full px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
+            >
+              {unlocking ? 'Opening checkout…' : 'Unlock the full report →'}
+            </button>
+          </section>
         </Reveal>
       )}
 
