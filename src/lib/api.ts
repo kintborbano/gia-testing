@@ -88,10 +88,19 @@ export const api = {
     return request<Wrapped>(`/api/wrapped/${jobId}`);
   },
 
-  checkoutCreate(profileUrl: string, mode: 'quick' | 'deep' = 'deep') {
+  checkoutCreate(
+    profileUrl: string,
+    mode: 'quick' | 'deep' = 'deep',
+    opts: { kind?: 'new' | 'unlock'; jobId?: string } = {}
+  ) {
     return request<{ checkout_url: string }>('/api/checkout/create-session', {
       method: 'POST',
-      body: JSON.stringify({ profile_url: profileUrl, mode }),
+      body: JSON.stringify({
+        profile_url: profileUrl,
+        mode,
+        kind: opts.kind ?? 'new',
+        job_id: opts.jobId,
+      }),
     });
   },
 
@@ -105,5 +114,12 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ nonce }),
     });
+  },
+
+  unlockRedeem(nonce: string) {
+    return request<{ job_id: string; already_unlocked: boolean }>(
+      '/api/checkout/redeem',
+      { method: 'POST', body: JSON.stringify({ nonce }) }
+    );
   },
 };

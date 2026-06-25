@@ -97,6 +97,8 @@ export interface ApiResult {
   overall: OverallStrategy;
   profile_handle: string;
   creator_profile: CreatorProfile;
+  locked?: boolean;
+  hidden_video_count?: number;
 }
 
 export interface JobStatus {
