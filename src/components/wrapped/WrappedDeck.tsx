@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toBlob } from 'html-to-image';
 import { BEATS } from '@/components/wrapped/cards';
-import ShareCard from '@/components/wrapped/ShareCard';
 import type { Wrapped } from '@/types/wrapped';
 
 const CANVAS_W = 400;
@@ -40,8 +39,9 @@ export default function WrappedDeck({
     [last]
   );
 
-  // Phones: scale to COVER so the story fills the screen edge-to-edge (no dark
-  // letterbox). Desktop/tablet: contain inside a centered phone frame, capped at 1.
+  // Contain on every device so the whole story always fits — no cropped content
+  // or off-screen controls. Off-ratio screens get brand-dark letterbox bars from
+  // .gw-stage. Phones fill nearly edge-to-edge; desktop/tablet caps at 1.
   useEffect(() => {
     const fit = () => {
       const vw = window.innerWidth;
@@ -49,7 +49,7 @@ export default function WrappedDeck({
       const isMobile = vw < 600;
       setScale(
         isMobile
-          ? Math.max(vh / CANVAS_H, vw / CANVAS_W)
+          ? Math.min(vh / CANVAS_H, vw / CANVAS_W)
           : Math.min(1, (vh - 40) / CANVAS_H, (vw - 40) / CANVAS_W)
       );
     };
@@ -129,15 +129,21 @@ export default function WrappedDeck({
   }, [idx, go, onClose]);
 
   const [exporting, setExporting] = useState(false);
-  // Always exports the dedicated 9:16 share card (1080×1920) — the recruiting
-  // poster — not the current beat. Tries the native share sheet first (→ IG
-  // Stories on mobile), falls back to a PNG download.
+  // Exports the beat the user is currently viewing — captured from an off-screen,
+  // unscaled, fully-settled clone of the active card so the image matches the page
+  // on screen. Tries the native share sheet first (→ IG Stories on mobile), falls
+  // back to a PNG download.
   const share = async () => {
     if (!shareRef.current || exporting) return;
     setPause(true);
     setExporting(true);
     try {
-      const opts = { pixelRatio: 3, cacheBust: true, width: 360, height: 640 };
+      const opts = {
+        pixelRatio: 3,
+        cacheBust: true,
+        width: CANVAS_W,
+        height: CANVAS_H,
+      };
       // Warm-up pass: html-to-image's first capture frequently drops webfonts
       // and not-yet-decoded images (the QR), so the real capture is the second.
       await toBlob(shareRef.current, opts);
@@ -278,7 +284,8 @@ export default function WrappedDeck({
         </div>
       </div>
 
-      {/* Off-screen 9:16 share card — the image Save/Share actually exports. */}
+      {/* Off-screen, unscaled, fully-settled clone of the CURRENT beat — the image
+          Save/Share exports, so it matches the page on screen. */}
       <div
         aria-hidden
         style={{
@@ -288,7 +295,21 @@ export default function WrappedDeck({
           pointerEvents: 'none',
         }}
       >
-        <ShareCard ref={shareRef} data={data} />
+        <div
+          ref={shareRef}
+          className="gw-frame"
+          style={{ transform: 'none', borderRadius: 0, boxShadow: 'none' }}
+        >
+          <div
+            className="card"
+            data-active
+            data-settled
+            data-theme={beat.theme}
+          >
+            <beat.render w={data} />
+            <span className="gw-watermark">{data.handle} · gia wrapped</span>
+          </div>
+        </div>
       </div>
 
       <button
