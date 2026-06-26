@@ -24,6 +24,7 @@ function toVideo(a: VideoAnalysis): Video {
   const breakdown = a.gia_breakdown ?? {};
   return {
     id: a.video_id,
+    url: a.url,
     gia: a.gia_score.toFixed(1),
     score: a.gia_score,
     title: a.title || a.video_id,

@@ -29,6 +29,7 @@ export interface VideoDetails {
 
 export interface Video {
   id?: string;
+  url?: string;
   gia: string;
   score: number;
   title: string;
