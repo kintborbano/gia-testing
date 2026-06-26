@@ -169,6 +169,7 @@ function VideoCard({
   cardRef?: (el: HTMLDivElement | null) => void;
 }) {
   const [showPlayer, setShowPlayer] = useState(false);
+  const playerActive = open && showPlayer;
 
   return (
     <div
@@ -228,11 +229,11 @@ function VideoCard({
         <div className="min-h-0 overflow-hidden">
           {video.id && (
             <div className="border-t border-gray-200 px-5 pt-5">
-              {showPlayer ? (
-                <div
-                  className="relative mx-auto w-full max-w-[325px] overflow-hidden rounded-xl bg-black"
-                  style={{ aspectRatio: '9 / 16' }}
-                >
+              <div
+                className="bg-brand-primary/5 relative mx-auto w-full max-w-[325px] overflow-hidden rounded-xl"
+                style={{ aspectRatio: '9 / 16' }}
+              >
+                {playerActive ? (
                   <iframe
                     src={`https://www.tiktok.com/embed/v2/${video.id}`}
                     title={video.title}
@@ -240,16 +241,18 @@ function VideoCard({
                     allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                     className="absolute inset-0 h-full w-full border-0"
                   />
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowPlayer(true)}
-                  className="bg-brand-primary hover:bg-brand-primary-dark inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white transition-colors"
-                >
-                  <Play className="h-4 w-4" /> Watch this video
-                </button>
-              )}
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowPlayer(true)}
+                      className="bg-brand-primary hover:bg-brand-primary-dark inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white transition-colors"
+                    >
+                      <Play className="h-4 w-4" /> Watch this video
+                    </button>
+                  </div>
+                )}
+              </div>
               {video.url && (
                 <a
                   href={video.url}
