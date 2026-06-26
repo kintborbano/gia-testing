@@ -9,6 +9,7 @@ import {
   Bookmark,
   MessageCircle,
   ExternalLink,
+  Play,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Emphasis from '@/components/report/Emphasis';
@@ -167,6 +168,8 @@ function VideoCard({
   onToggle: () => void;
   cardRef?: (el: HTMLDivElement | null) => void;
 }) {
+  const [showPlayer, setShowPlayer] = useState(false);
+
   return (
     <div
       ref={cardRef}
@@ -223,6 +226,42 @@ function VideoCard({
         style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
       >
         <div className="min-h-0 overflow-hidden">
+          {video.id && (
+            <div className="border-t border-gray-200 px-5 pt-5">
+              {showPlayer ? (
+                <div
+                  className="relative mx-auto w-full max-w-[325px] overflow-hidden rounded-xl bg-black"
+                  style={{ aspectRatio: '9 / 16' }}
+                >
+                  <iframe
+                    src={`https://www.tiktok.com/embed/v2/${video.id}`}
+                    title={video.title}
+                    loading="lazy"
+                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                    className="absolute inset-0 h-full w-full border-0"
+                  />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowPlayer(true)}
+                  className="bg-brand-primary hover:bg-brand-primary-dark inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white transition-colors"
+                >
+                  <Play className="h-4 w-4" /> Watch this video
+                </button>
+              )}
+              {video.url && (
+                <a
+                  href={video.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-primary mt-2 block text-xs underline"
+                >
+                  View on TikTok ↗
+                </a>
+              )}
+            </div>
+          )}
           {video.details ? (
             <ExpandedDetails details={video.details} profileUrl={profileUrl} />
           ) : (
