@@ -84,7 +84,7 @@ const itcGaramondNarrowItalic = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://sofi-gia.web.app'),
+  metadataBase: new URL('https://gia.sofitech.ai'),
   title: {
     default: 'GIA by SOFI AI',
     template: '%s · GIA by SOFI AI',
@@ -98,8 +98,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: '/images/opengraph.png',
-        width: 2400,
-        height: 1350,
+        width: 1200,
+        height: 630,
         alt: 'GIA by SOFI AI',
       },
       {
