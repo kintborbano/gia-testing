@@ -59,6 +59,7 @@ export default function ReportShell(): React.ReactElement {
     searchParams.get('handle') ?? (demo ? DEMO_RESULT.profile_handle : '');
   const [result, setResult] = useState<ApiResult | null>(null);
   const [error, setError] = useState('');
+  const [unlockError, setUnlockError] = useState('');
   const [fetchSeq, setFetchSeq] = useState(0);
 
   useEffect(() => {
@@ -67,8 +68,11 @@ export default function ReportShell(): React.ReactElement {
     (async () => {
       try {
         await api.unlockRedeem(cs);
+        setUnlockError('');
       } catch {
-        // leave the locked view; user can retry the unlock CTA
+        setUnlockError(
+          "We couldn't confirm your unlock. Try the unlock button again — if you've already paid, you won't be charged twice."
+        );
       } finally {
         const url = new URL(window.location.href);
         url.searchParams.delete('cs');
@@ -108,6 +112,11 @@ export default function ReportShell(): React.ReactElement {
 
   return (
     <main className="mx-auto max-w-3xl space-y-12 px-4 py-12 text-gray-900 sm:px-6">
+      {unlockError && (
+        <div className="border-brand-gold bg-brand-gold/10 text-brand-primary rounded-xl border px-4 py-3 text-sm font-semibold">
+          {unlockError}
+        </div>
+      )}
       <Main handle={handle} result={shown} />
 
       {wrappedHref && (
@@ -197,13 +206,22 @@ export default function ReportShell(): React.ReactElement {
 
       <Reveal>
         <section className="flex flex-col justify-center gap-3 pt-4 sm:flex-row">
-          {downloadHref && (
+          {downloadHref && !shown?.locked && (
             <a
               href={downloadHref}
               className="bg-brand-primary hover:bg-brand-primary-dark hover:shadow-brand-primary/30 inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-center text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
             >
               <Download className="h-4 w-4" />
               Download PDF Report
+            </a>
+          )}
+          {shown?.locked && jobId && (
+            <a
+              href={`/unlock?job=${jobId}`}
+              className="bg-brand-primary hover:bg-brand-primary-dark inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-center text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
+            >
+              <Lock className="h-4 w-4" />
+              Unlock to download the full PDF
             </a>
           )}
           <a
