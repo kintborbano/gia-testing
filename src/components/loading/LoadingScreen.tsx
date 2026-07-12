@@ -23,6 +23,11 @@ const FAILURE_COPY: Record<
     description:
       'this account doesn’t have analyzable videos yet — post a few, then come back and gia will dig in.',
   },
+  private: {
+    heading: 'this account is private',
+    description:
+      'gia can only analyze public accounts. switch it to public in TikTok settings, then try again.',
+  },
   backend: {
     heading: 'gia hit a snag on this one',
     description:

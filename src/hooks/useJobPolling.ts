@@ -7,7 +7,13 @@ import type { ApiResult } from '@/types/api';
 // A coarse classification of why a job failed, so the UI can describe what
 // actually went down instead of showing one generic line. `null` means no
 // failure. The raw `error` string is kept for logging, not for display.
-export type ErrorKind = 'no_content' | 'backend' | 'network' | 'results' | null;
+export type ErrorKind =
+  | 'no_content'
+  | 'private'
+  | 'backend'
+  | 'network'
+  | 'results'
+  | null;
 
 interface PollingState {
   messages: string[];
@@ -45,9 +51,13 @@ export function useJobPolling(jobId: string | null): PollingState {
         if (status.done) {
           if (status.state === 'error') {
             // The backend tags the failure: "no_content" = account has no
-            // analyzable videos, anything else = a processing failure.
+            // analyzable videos, "private" = account is private, anything
+            // else = a processing failure.
             setErrorKind(
-              status.error_kind === 'no_content' ? 'no_content' : 'backend'
+              status.error_kind === 'no_content' ||
+                status.error_kind === 'private'
+                ? status.error_kind
+                : 'backend'
             );
             setError('Analysis failed — please try again.');
           } else {
