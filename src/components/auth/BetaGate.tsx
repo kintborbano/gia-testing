@@ -13,6 +13,7 @@ interface Props {
   profileUrl: string;
   mode?: 'quick' | 'deep';
   freeSpent?: boolean;
+  email?: string;
 }
 
 // Keep in sync with CHECKOUT_PRICE_CENTS on the backend (default ₱299).
@@ -24,6 +25,7 @@ export default function BetaGate({
   profileUrl,
   mode = 'deep',
   freeSpent = false,
+  email,
 }: Props): ReactElement {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -35,7 +37,9 @@ export default function BetaGate({
     setBuying(true);
     setError('');
     try {
-      const { checkout_url } = await api.checkoutCreate(profileUrl, mode);
+      const { checkout_url } = await api.checkoutCreate(profileUrl, mode, {
+        email,
+      });
       window.location.href = checkout_url;
     } catch (err) {
       setError(

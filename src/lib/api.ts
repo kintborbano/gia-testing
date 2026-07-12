@@ -91,7 +91,7 @@ export const api = {
   checkoutCreate(
     profileUrl: string,
     mode: 'quick' | 'deep' = 'deep',
-    opts: { kind?: 'new' | 'unlock'; jobId?: string } = {}
+    opts: { kind?: 'new' | 'unlock'; jobId?: string; email?: string } = {}
   ) {
     return request<{ checkout_url: string }>('/api/checkout/create-session', {
       method: 'POST',
@@ -100,6 +100,7 @@ export const api = {
         mode,
         kind: opts.kind ?? 'new',
         job_id: opts.jobId,
+        email: opts.email,
       }),
     });
   },
